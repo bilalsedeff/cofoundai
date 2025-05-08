@@ -1,0 +1,94 @@
+# CoFound.ai Yüksek Seviye Mimari Dökümantasyonu
+
+## Genel Klasör/Dosya Yapısı
+
+```
+cofoundai/                      # Ana paket
+  ├── agents/                   # Ajan tanımları ve davranışları
+  ├── cli/                      # Komut satırı arabirimi
+  ├── communication/            # Ajanlar arası iletişim
+  ├── config/                   # Konfigürasyon dosyaları
+  │   ├── schema/               # JSON şemaları
+  ├── core/                     # Çekirdek sistem bileşenleri
+  ├── memory/                   # Hafıza sistemleri
+  ├── orchestration/            # Ajan orkestrasyon ve koordinasyon
+  ├── tests/                    # Test dosyaları
+  ├── tools/                    # Ajan araçları
+  └── utils/                    # Yardımcı fonksiyonlar
+logs/                           # Loglar
+  ├── system/                   # Sistem logları
+  └── workflows/                # İş akışı logları
+```
+
+## Modül Detayları
+
+### cofoundai/agents/ - Ajan Tanımları ve Davranışları
+- **planner.py**: Proje planlama ve görev ayrıştırma ajanı
+- **architect.py**: Sistem mimarisi tasarlama ajanı
+- **developer.py**: Kod geliştirme ajanı
+- **tester.py**: Kod testi ve kalite kontrol ajanı
+- **reviewer.py**: Kod inceleme ve geliştirme ajanı
+- **documentor.py**: Proje dokümantasyon ajanı
+
+### cofoundai/cli/ - Komut Satırı Arabirimi
+- **main.py**: Ana CLI giriş noktası
+- **commands.py**: CLI komutları ve işlevselliği
+- **output_formatter.py**: Çıktı biçimlendirme
+
+### cofoundai/communication/ - Ajan İletişimi
+- **message_bus.py**: Mesaj iletim sistemi
+- **protocol.py**: İletişim protokolü tanımları
+- **schemas.py**: Mesaj şemaları
+
+### cofoundai/config/ - Konfigürasyon Dosyaları
+- **agent_config.yaml**: Ajan konfigürasyonları
+- **system_config.yaml**: Sistem konfigürasyonları
+- **workflows.yaml**: İş akışı tanımları (LangGraph entegrasyonu)
+- **schema/**: JSON şema dosyaları
+  - **workflows_schema.json**: İş akışı yapılandırma dosyasının şeması
+
+### cofoundai/core/ - Çekirdek Sistem Bileşenleri
+- **llm_interface.py**: LLM API entegrasyonu
+- **config_manager.py**: Konfigürasyon yönetimi
+- **system.py**: Sistem yönetimi
+- **base_agent.py**: Temel ajan sınıfı
+
+### cofoundai/memory/ - Hafıza Sistemleri
+- **short_term.py**: Kısa süreli hafıza
+- **long_term.py**: Uzun süreli hafıza (vektör veritabanı)
+- **project_context.py**: Proje bağlamı
+
+### cofoundai/orchestration/ - Ajan Orkestrasyon ve Koordinasyon
+- **orchestrator.py**: Ana orkestrasyon motoru
+- **workflow.py**: İş akışı tanımları
+- **task_manager.py**: Görev dağıtımı ve takibi
+- **langgraph_workflow.py**: LangGraph iş akışı yönetimi
+
+### cofoundai/tests/ - Test Dosyaları
+- **unit/**: Birim testleri
+- **integration/**: Entegrasyon testleri
+- **fixtures/**: Test fikstürleri
+
+### cofoundai/tools/ - Ajan Araçları
+- **code_execution.py**: Kod yürütme aracı
+- **testing_tools.py**: Test araçları
+- **version_control.py**: Sürüm kontrol aracı
+- **file_manager.py**: Dosya yönetimi
+
+### cofoundai/utils/ - Yardımcı Fonksiyonlar
+- **logger.py**: Loglama modülü
+- **prompt_templates.py**: Prompt şablonları
+- **helpers.py**: Yardımcı fonksiyonlar
+
+### logs/ - Log Dosyaları
+- **system/**: Sistem logları
+- **workflows/**: İş akışı logları
+
+## Tamamlanan Çalışmalar
+
+- LangGraph entegrasyonu için gerekli iş akışı yapıları oluşturuldu.
+- JSON Schema doğrulama sistemi kuruldu ve uygulandı.
+- Tüm ajan sınıfları (PlannerAgent, ArchitectAgent, DeveloperAgent, TesterAgent, ReviewerAgent, DocumentorAgent) oluşturuldu.
+- İş akışı yönetimi için LangGraph entegrasyonu tamamlandı.
+- Loglama sistemi kuruldu, hem sisteme hem de iş akışlarına özel loglar üretiliyor.
+- YAML yapılandırma dosyaları oluşturuldu ve doğrulama süreçleri tamamlandı.
