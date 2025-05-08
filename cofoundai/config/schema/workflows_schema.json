@@ -1,0 +1,151 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CoFound.ai Workflow Schema",
+  "description": "JSON Schema for CoFound.ai workflow YAML configuration",
+  "type": "object",
+  "oneOf": [
+    {
+      "required": ["main"],
+      "additionalProperties": false,
+      "properties": {
+        "main": {
+          "type": "object",
+          "required": ["workflows"],
+          "additionalProperties": false,
+          "properties": {
+            "workflows": {
+              "type": "array",
+              "description": "List of workflow definitions",
+              "items": {
+                "$ref": "#/definitions/workflow"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "required": ["workflows"],
+      "additionalProperties": false,
+      "properties": {
+        "workflows": {
+          "type": "array",
+          "description": "List of workflow definitions", 
+          "items": {
+            "$ref": "#/definitions/workflow"
+          }
+        }
+      }
+    }
+  ],
+  "definitions": {
+    "workflow": {
+      "type": "object",
+      "required": ["id", "name", "description", "initiator", "initial_prompt", "phases"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the workflow"
+        },
+        "name": {
+          "type": "string",
+          "description": "Workflow name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Workflow description"
+        },
+        "initiator": {
+          "type": "string",
+          "description": "The agent that initiates the workflow"
+        },
+        "initial_prompt": {
+          "type": "string",
+          "description": "The initial prompt to start the workflow"
+        },
+        "langgraph": {
+          "type": "object",
+          "description": "LangGraph integration configuration",
+          "required": ["states", "transitions"],
+          "additionalProperties": false,
+          "properties": {
+            "states": {
+              "type": "array",
+              "description": "List of workflow states",
+              "items": {
+                "type": "object",
+                "required": ["name", "description", "agent"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "State name"
+                  },
+                  "description": {
+                    "type": "string",
+                    "description": "State description"
+                  },
+                  "agent": {
+                    "type": "string",
+                    "description": "Agent responsible for this state"
+                  }
+                }
+              }
+            },
+            "transitions": {
+              "type": "array",
+              "description": "List of workflow transitions",
+              "items": {
+                "type": "object",
+                "required": ["from", "to"],
+                "additionalProperties": false,
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Source state"
+                  },
+                  "to": {
+                    "type": ["string", "null"],
+                    "description": "Destination state or null for end state"
+                  },
+                  "condition": {
+                    "type": "string",
+                    "description": "Optional condition for transition"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "phases": {
+          "type": "array",
+          "description": "List of workflow phases (legacy format)",
+          "items": {
+            "type": "object",
+            "required": ["name", "description", "agent", "next"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Phase name"
+              },
+              "description": {
+                "type": "string",
+                "description": "Phase description"
+              },
+              "agent": {
+                "type": "string",
+                "description": "Agent responsible for this phase"
+              },
+              "next": {
+                "type": ["string", "null"],
+                "description": "Next phase or null for end phase"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+} 

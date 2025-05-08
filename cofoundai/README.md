@@ -1,59 +1,6 @@
-# CoFound.ai - Multi-Agent Software Development System
+# CoFound.ai CLI-Based Multi-Agent Software Development System
 
-CoFound.ai is a CLI-based multi-agent system that automates software development processes. The system orchestrates multiple specialized AI agents that work together like a software development team to build applications based on user requirements.
-
-## Features
-
-- **Multi-Agent Architecture**: Specialized agents for planning, architecture design, development, testing, review, and documentation
-- **Workflow Orchestration**: Coordinated workflows between agents to complete software development tasks
-- **CLI Interface**: Simple command-line interface for interacting with the system
-- **Memory Management**: Short-term and long-term memory for maintaining context across interactions
-- **Tool Integration**: Integration with code generation, testing, and version control tools
-
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/cofoundai.git
-cd cofoundai
-
-# Create and activate virtual environment
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# OR
-venv\Scripts\activate     # Windows
-
-# Install dependencies
-pip install -r requirements.txt
-```
-
-## Usage
-
-### Basic Usage
-
-```bash
-# Start a new project with a description
-python -m cofoundai.cli.main "Create a simple TODO list web application with Flask"
-```
-
-### Interactive Mode
-
-```bash
-# Start in interactive mode
-python -m cofoundai.cli.main
-
-# Then use commands:
-> develop Create a simple TODO list web application
-> status
-> help
-```
-
-### Configuration
-
-You can customize the system by modifying the configuration files in the `cofoundai/config/` directory:
-
-- `system_config.yaml`: General system settings, LLM providers, and agent configurations
-- `workflows.yaml`: Predefined workflows for different development scenarios
+This project aims to automate software development processes using a CLI-based multi-agent AI system. The system orchestrates multiple specialized AI agents that work together like a software development team based on user requirements.
 
 ## Project Structure
 
@@ -105,8 +52,8 @@ cofoundai/
 │   └── output_formatter.py # Output formatting
 │
 ├── config/               # Configuration files
+│   ├── agent_config.yaml # Agent configurations
 │   ├── system_config.yaml # System configurations
-│   ├── workflows.yaml     # Workflow definitions
 │   └── prompts/          # Prompt files
 │
 └── tests/                # Test files
@@ -115,32 +62,35 @@ cofoundai/
     └── fixtures/         # Test fixtures
 ```
 
-## Development
-
-### Running Tests
+## Installation
 
 ```bash
-# Run all tests
-pytest
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
 
-# Run specific test category
-pytest cofoundai/tests/unit/
+# Install dependencies
+pip install -r requirements.txt
+
+# Install development dependencies (optional)
+pip install -r requirements-dev.txt
 ```
 
-### Adding New Agents
+## Usage
 
-To add a new agent type:
+```bash
+# Start a project
+python -m cofoundai.cli.main [project_description]
 
-1. Create a new agent class in the `cofoundai/agents/` directory
-2. Inherit from the `BaseAgent` class
-3. Implement the required methods
-4. Register the agent in the configuration
+# Example
+python -m cofoundai.cli.main "Create a simple TODO list application"
+```
+
+## Development
+
+To contribute to this project, please review the CONTRIBUTING.md file.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- OpenAI for providing the LLM capabilities
-- The open-source community for inspiration and tools 
+This project is licensed under the [MIT License](LICENSE). 
