@@ -37,3 +37,7 @@
 2025-05-09: Modified JSON schema to support both nested and flat workflow structure formats
 2025-05-09: Created HIGHLEVEL-ARCHITECTURE.txt for project-wide structural documentation
 2025-05-09: Updated workflows_schema.json to use $ref for better code reuse and maintainability
+2025-05-09: Standardized workflows.yaml formatting by moving workflows under "main" key as required by schema
+2025-05-09: Resolved conflict between different YAML validation systems (linter vs JSON schema)
+2025-05-09: Updated yamllint configuration to ignore specific schema properties needed for workflow functionality
+2025-05-09: Prioritized JSON schema validation over linter rules for critical workflow configuration
