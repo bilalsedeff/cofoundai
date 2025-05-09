@@ -92,3 +92,5 @@ logs/                           # Loglar
 - İş akışı yönetimi için LangGraph entegrasyonu tamamlandı.
 - Loglama sistemi kuruldu, hem sisteme hem de iş akışlarına özel loglar üretiliyor.
 - YAML yapılandırma dosyaları oluşturuldu ve doğrulama süreçleri tamamlandı.
+- YAML yapılandırma şemaları iyileştirildi ve esnek yapı desteği eklendi.
+- İş akışları YAML dosyası, ana bölüm (main) altına taşınarak standardize edildi.
