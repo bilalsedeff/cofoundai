@@ -2,6 +2,7 @@
 
 ## Platform Core
 
+2025-05-13: Düzeltildi: cofoundai/orchestration/agentic_graph.py - "null bytes" hatası giderilerek dosya UTF-8 formatında yeniden oluşturuldu
 2025-05-12: Geliştirme: cofoundai/orchestration/agentic_graph.py - Gelişmiş loglama, hata yakalama ve durum izleme özellikleri eklendi
 2025-05-12: İyileştirme: Multi-agent workflow iyileştirildi, serbest graph yapısı ile handoff mekanizması güçlendirildi
 2025-05-12: İyileştirme: Ajanlar arası geçişler ve tool kullanımı dinamik olarak kontrol edilebilir hale geldi
