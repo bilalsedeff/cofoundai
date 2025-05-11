@@ -29,6 +29,7 @@ class BaseAgent(ABC):
         self.config = config or {}
         self.memory = []  # Stores past interactions
         self.status = "idle"  # Agent status (idle, busy, error)
+        self.tools = {}  # Dictionary to store registered tools
     
     def process_message(self, message: Message) -> Message:
         """
@@ -119,6 +120,40 @@ class BaseAgent(ABC):
             )
             self._add_to_memory(error_response)
             return error_response
+    
+    def register_tool(self, tool_name: str, tool_instance: Any) -> None:
+        """
+        Register a tool for use by the agent.
+        
+        Args:
+            tool_name: Name to use for accessing the tool
+            tool_instance: Instance of the tool to register
+        """
+        self.tools[tool_name] = tool_instance
+        
+    def get_tool(self, tool_name: str) -> Optional[Any]:
+        """
+        Get a registered tool by name.
+        
+        Args:
+            tool_name: Name of the tool to retrieve
+            
+        Returns:
+            Tool instance or None if not found
+        """
+        return self.tools.get(tool_name)
+        
+    def has_tool(self, tool_name: str) -> bool:
+        """
+        Check if a tool with the given name is registered.
+        
+        Args:
+            tool_name: Name of the tool to check
+            
+        Returns:
+            True if the tool is registered, False otherwise
+        """
+        return tool_name in self.tools
     
     def _add_to_memory(self, message: Message) -> None:
         """
