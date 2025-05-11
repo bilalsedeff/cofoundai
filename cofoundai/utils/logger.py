@@ -205,6 +205,21 @@ system_logger = get_logger("system", os.path.join(SYSTEM_LOG_DIR, "system.log"))
 workflow_logger = JSONLogger("workflow", WORKFLOW_LOG_DIR)
 
 
+def get_workflow_logger(workflow_name: str) -> Union[logging.Logger, JSONLogger]:
+    """
+    Get a logger for a specific workflow.
+    
+    Args:
+        workflow_name: Name of the workflow
+        
+    Returns:
+        Logger configured for the workflow
+    """
+    # For structured logging, return a JSON logger
+    workflow_log_dir = os.path.join(WORKFLOW_LOG_DIR, workflow_name.lower().replace('.', '_'))
+    return JSONLogger(workflow_name, workflow_log_dir)
+
+
 def get_agent_logger(agent_name: str) -> JSONLogger:
     """
     Create or get an agent-specific logger.

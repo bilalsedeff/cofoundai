@@ -1,18 +1,21 @@
 # CoFound.ai Project Changelog
 
-2025-05-23: Güncellendi: test_acp.py - FileManager, VersionControl ve Context7Adapter araçları eklendi ve entegre edildi
-2025-05-23: Eklendi: test_context7.py - Context7Adapter aracının dokümantasyon erişimi için test script
-2025-05-23: Düzeltildi: cofoundai/tools/context7_adapter.py - f-string sentaks hatası düzeltildi
-2025-05-23: Eklendi: cofoundai/tools/version_control.py - Ajanlar için Git versiyon kontrol aracı
-2025-05-23: Eklendi: test_version_control.py - VersionControl aracının Git işlemlerini test eden script
-2025-05-23: Eklendi: test_file_manager.py - FileManager aracının dosya işlemlerini test eden script
-2025-05-23: Eklendi: FileManager sınıfı - ajanlar için güvenli dosya okuma/yazma işlemleri yapan araç
-2025-05-23: Güncellendi: tools/__init__.py - FileManager ve VersionControl sınıfları projeye eklendi ve dışa açıldı
-2025-05-22: Eklendi: Context7 entegrasyonu için context7_adapter.py modülü oluşturuldu
-2025-05-22: Eklendi: test_context7.py test dosyası, Context7 adaptörünün temel işlevlerini test etmek için
-2025-05-22: Eklendi: test_acp.py dosyası, LLM modelleri olmadan ajanlar arası iletişim protokolünün (ACP) testi için
-2025-05-22: Güncellendi: LangGraphWorkflow sınıfı, yapıcı metoduna agents parametresi eklenerek ajanların otomatik kaydedilmesi sağlandı
-2025-05-22: Düzeltildi: Loosely-coupled ajanlar için LangGraph workflow entegrasyonu yapıldı ve test modunu destekleyen bir test dosyası oluşturuldu
+2025-05-11: Eklendi: run_demo.bat, run_demo.sh - Demo çalıştırma betikleri (Windows, Linux/Mac için)
+2025-05-11: Eklendi: technology_comparison.md - LangGraph, CrewAI ve LlamaIndex karşılaştırması, teknoloji seçim stratejisi
+2025-05-11: Eklendi: demo_cofoundai_cli.py - CoFound.ai CLI demo without LLM integration
+2025-05-11: Güncellendi: test_acp.py - FileManager, VersionControl ve Context7Adapter araçları eklendi ve entegre edildi
+2025-05-11: Eklendi: test_context7.py - Context7Adapter aracının dokümantasyon erişimi için test script
+2025-05-11: Düzeltildi: cofoundai/tools/context7_adapter.py - f-string sentaks hatası düzeltildi
+2025-05-11: Eklendi: cofoundai/tools/version_control.py - Ajanlar için Git versiyon kontrol aracı
+2025-05-11: Eklendi: test_version_control.py - VersionControl aracının Git işlemlerini test eden script
+2025-05-11: Eklendi: test_file_manager.py - FileManager aracının dosya işlemlerini test eden script
+2025-05-11: Eklendi: FileManager sınıfı - ajanlar için güvenli dosya okuma/yazma işlemleri yapan araç
+2025-05-11: Güncellendi: tools/__init__.py - FileManager ve VersionControl sınıfları projeye eklendi ve dışa açıldı
+2025-05-11: Güncellendi: HIGHLEVEL-ARCHITECTURE.txt - Detaylı sistem mimarisi dokümantasyonu eklendi
+2025-05-11: Eklendi: visualize_prototype.py - Prototip çalışma akışını görselleştiren demo script
+2025-05-11: Eklendi: test_workflow.py - LangGraph tabanlı çalışma akışını simüle eden test
+2025-05-11: Eklendi: visualize_code_review.py - Kod inceleme iş akışını görselleştiren script
+2025-05-11: Eklendi: visualize_develop_app.py - Uygulama geliştirme iş akışını görselleştiren script
 2025-05-11: Eklendi: test_workflow.py - Multi-agent workflow ile project-specific version control entegrasyonunu gösteren demo script
 2025-05-11: Eklendi: Project-specific version control system - Her kullanıcı projesi için izole Git repository yönetimi
 2025-05-11: Güncellendi: VersionControl sınıfı - Proje bazlı çalışacak ve snapshot sistemini destekleyecek şekilde yeniden tasarlandı
@@ -60,13 +63,13 @@
 2025-05-08: Created __init__ files for all packages
 2025-05-08: Created base README.md file with project overview and structure
 2025-05-08: Created initial project directory structure with core modules
-2025-05-20: Ajanlar için loosely-coupled çalışma düzeni geliştirildi. BaseAgent ve diğer tüm Ajanlar LangGraph workflow entegrasyonu için düzenlendi.
-2025-05-14: BaseAgent ve tüm ajanlar (Planner, Architect, Developer, Tester, Reviewer, Documentor) arasındaki uyumsuzluklar giderildi. Tüm ajan sınıfları için process_message ve process metodları standartlaştırıldı.
-2025-05-12: LangGraph workflow entegrasyonu için temel yapı düzenlendi. Şimdilik, LLM entegrasyonu olmadan ajanların iletişimi test edilebilir hale getirildi.
-2025-05-10: Eklendi: LangGraph ile test amaçlı workflow entegrasyonu tanımlandı. Geliştirme sürecinin izlenmesi için tanılama ve test modu eklendi.
-2025-05-09: Eklendi: Belgeleme ajanı için temel kod yapısı oluşturuldu. README.md oluşturma ve API dokümantasyon yetenekleri dahil edildi
-2025-05-08: Eklendi: Gözden geçirme ajanı için arayüz tanımlandı. Kod kalite değerlendirmesi ve öneriler sunma yeteneği eklendi
-2025-05-07: Eklendi: Test ajanı sınıfı tanımlandı. Birim test ve entegrasyon testi çerçevesi oluşturuldu
+2025-05-06: Ajanlar için loosely-coupled çalışma düzeni geliştirildi. BaseAgent ve diğer tüm Ajanlar LangGraph workflow entegrasyonu için düzenlendi.
+2025-05-06: BaseAgent ve tüm ajanlar (Planner, Architect, Developer, Tester, Reviewer, Documentor) arasındaki uyumsuzluklar giderildi. Tüm ajan sınıfları için process_message ve process metodları standartlaştırıldı.
+2025-05-06: LangGraph workflow entegrasyonu için temel yapı düzenlendi. Şimdilik, LLM entegrasyonu olmadan ajanların iletişimi test edilebilir hale getirildi.
+2025-05-06: Eklendi: LangGraph ile test amaçlı workflow entegrasyonu tanımlandı. Geliştirme sürecinin izlenmesi için tanılama ve test modu eklendi.
+2025-05-06: Eklendi: Belgeleme ajanı için temel kod yapısı oluşturuldu. README.md oluşturma ve API dokümantasyon yetenekleri dahil edildi
+2025-05-06: Eklendi: Gözden geçirme ajanı için arayüz tanımlandı. Kod kalite değerlendirmesi ve öneriler sunma yeteneği eklendi
+2025-05-06: Eklendi: Test ajanı sınıfı tanımlandı. Birim test ve entegrasyon testi çerçevesi oluşturuldu
 2025-05-06: Eklendi: Geliştirici ajanı için kod üretimi yetenekleri eklendi. Mevcut kodu yeniden düzenleme ve hata ayıklama fonksiyonları dahil edildi
 2025-05-05: Eklendi: Mimar ajanı için veri modelleri ve sistem mimarisi tanımlama yetenekleri eklendi
 2025-05-04: Eklendi: Planlayıcı ajanı temel alt görevlere bölme ve planlama yetenekleri eklendi
