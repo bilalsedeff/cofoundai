@@ -94,3 +94,225 @@ logs/                           # Loglar
 - YAML yapılandırma dosyaları oluşturuldu ve doğrulama süreçleri tamamlandı.
 - YAML yapılandırma şemaları iyileştirildi ve esnek yapı desteği eklendi.
 - İş akışları YAML dosyası, ana bölüm (main) altına taşınarak standardize edildi.
+
+# CoFound.ai High-Level Architecture
+
+CoFound.ai is a multi-agent PaaS (Platform as a Service) system that orchestrates 
+specialized AI agents working together as a software development team.
+
+## System Layers
+
+The platform architecture follows a layered approach for better modularity and separation of concerns:
+
+1. **User Interface Layer**
+   - CLI (Command Line Interface) - Primary interaction point for users
+   - Future: Web UI and API endpoints
+
+2. **API & Service Layer**
+   - REST API endpoints
+   - Authentication and authorization
+   - Rate limiting and request validation
+
+3. **Business Logic Layer**
+   - Workflow definitions
+   - Project management
+   - Task scheduling and orchestration
+   - Decision making
+
+4. **Agent Orchestration Layer**
+   - LangGraph-based workflow engine
+   - Agent state management
+   - Message routing
+   - Supervisor patterns
+
+5. **Agent Layer**
+   - Specialized agent implementations:
+     - Planner Agent
+     - Architect Agent
+     - Developer Agent
+     - Tester Agent
+     - Reviewer Agent
+     - Documentor Agent
+
+6. **Memory Layer**
+   - Short-term memory (conversation history)
+   - Long-term memory (vector database)
+   - Project context storage
+   - Snapshot system
+
+7. **Tools Layer**
+   - FileManager for file operations
+   - VersionControl for project-specific Git operations
+   - CodeGenerator for code writing and editing
+   - Context7Adapter for accessing documentation
+   - More specialized tools for agents
+
+8. **Integration Layer**
+   - LLM service integration
+   - Vector database connectors
+   - Version control system integration 
+   - Monitoring and analytics integrations
+
+9. **Infrastructure Layer**
+   - Configuration management
+   - Logging and monitoring
+   - Resource provisioning
+   - Distributed deployment (future)
+
+## Agent Communication Protocol (ACP)
+
+Agents communicate through a standardized message protocol:
+
+1. **Message Structure**
+   - JSON-based message format
+   - Support for multi-modal content (text, code, images)
+   - Structured metadata
+
+2. **Message Routing**
+   - Direct agent-to-agent communication
+   - Broadcast messages
+   - Addressed messages with specific recipients
+   - Request-response patterns
+
+## LangGraph Integration
+
+CoFound.ai uses LangGraph as the foundation for its multi-agent orchestration:
+
+1. **Workflow Definitions**
+   - YAML-based workflow configuration
+   - Agent states and transitions
+   - Conditional routing
+   - Error handling and recovery
+
+2. **State Management**
+   - Graph-based state tracking
+   - Message state
+   - Agent-specific state
+   - Global context
+
+3. **Supervision Patterns**
+   - Hierarchical supervision
+   - Collaborative decision making
+   - Task delegation
+   - Progress monitoring
+
+4. **Execution Models**
+   - Synchronous execution
+   - Streaming responses
+   - Checkpoint-based resumption
+   - Human-in-the-loop interruptions
+
+## Memory System
+
+The memory system is divided into three main components:
+
+1. **Short-Term Memory**
+   - Conversation history
+   - Working memory
+   - Current session state
+   - Token-limited, recency-focused
+
+2. **Vector Memory**
+   - FAISS-based vector storage
+   - Semantic search capabilities
+   - Long-term context storage
+   - Similarity-based retrieval
+
+3. **Project Context**
+   - Requirements
+   - Architecture decisions
+   - File structure
+   - Design patterns
+   - Persistent JSON-based storage
+
+## Project-Specific Version Control
+
+Each user project has its own isolated version control environment:
+
+1. **Project Repositories**
+   - Isolated Git repositories per project
+   - Unique project identifiers
+   - Independent workspace directories
+
+2. **Snapshot System**
+   - Point-in-time captures of project state
+   - Metadata tracking
+   - Restoration capabilities
+   - Branching support
+
+3. **Change Tracking**
+   - Commit history
+   - Code diffs
+   - Branch management
+   - Rollback capabilities
+
+## CLI Workflow
+
+The primary workflow for users follows this pattern:
+
+1. User initiates a project via CLI
+2. System initializes project workspace and Git repository
+3. Planner agent breaks down the requirements
+4. Agents collaborate through the LangGraph workflow
+5. Progress is tracked and reported back to the user
+6. User can review, approve, or modify the results
+7. System maintains project state for future sessions
+
+## Testing and Logging
+
+1. **Test-Driven Development**
+   - Unit tests for core components
+   - Integration tests for agent interactions
+   - End-to-end tests for workflows
+   - Test mode for agent operations without LLM calls
+
+2. **Comprehensive Logging**
+   - Structured JSON logs
+   - Agent activity tracking
+   - Message flow monitoring
+   - Performance metrics
+   - Error diagnostics
+
+## Deployment Model
+
+Current deployment is local, with plans for:
+
+1. **Self-Hosted**
+   - Docker-based deployment
+   - Configuration via environment variables
+   - Resource management
+   - Data persistence
+
+2. **Future: Cloud-Hosted**
+   - Multi-tenant architecture
+   - Serverless functions
+   - Managed services
+   - Horizontal scaling
+
+## Exception Handling
+
+1. **Error Recovery**
+   - LangGraph-based retry mechanisms
+   - Fallback strategies
+   - Checkpoint-based resumption
+   - User intervention for critical errors
+
+2. **Validation**
+   - Input validation
+   - Output validation
+   - Schema enforcement
+   - Consistency checks
+
+## Security Considerations
+
+1. **Data Security**
+   - Isolated project workspaces
+   - Minimal permissions
+   - No external data sharing
+   - Local-first approach
+
+2. **Code Execution Safety**
+   - Sandboxed environments
+   - Limited scope for tool operations
+   - Validation before execution
+   - Audit trails

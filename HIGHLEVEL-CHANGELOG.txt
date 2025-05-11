@@ -1,11 +1,23 @@
 # CoFound.ai Project Changelog
 
+2025-05-23: Güncellendi: test_acp.py - FileManager, VersionControl ve Context7Adapter araçları eklendi ve entegre edildi
+2025-05-23: Eklendi: test_context7.py - Context7Adapter aracının dokümantasyon erişimi için test script
+2025-05-23: Düzeltildi: cofoundai/tools/context7_adapter.py - f-string sentaks hatası düzeltildi
+2025-05-23: Eklendi: cofoundai/tools/version_control.py - Ajanlar için Git versiyon kontrol aracı
+2025-05-23: Eklendi: test_version_control.py - VersionControl aracının Git işlemlerini test eden script
+2025-05-23: Eklendi: test_file_manager.py - FileManager aracının dosya işlemlerini test eden script
+2025-05-23: Eklendi: FileManager sınıfı - ajanlar için güvenli dosya okuma/yazma işlemleri yapan araç
+2025-05-23: Güncellendi: tools/__init__.py - FileManager ve VersionControl sınıfları projeye eklendi ve dışa açıldı
 2025-05-22: Eklendi: Context7 entegrasyonu için context7_adapter.py modülü oluşturuldu
 2025-05-22: Eklendi: test_context7.py test dosyası, Context7 adaptörünün temel işlevlerini test etmek için
 2025-05-22: Eklendi: test_acp.py dosyası, LLM modelleri olmadan ajanlar arası iletişim protokolünün (ACP) testi için
 2025-05-22: Güncellendi: LangGraphWorkflow sınıfı, yapıcı metoduna agents parametresi eklenerek ajanların otomatik kaydedilmesi sağlandı
 2025-05-22: Düzeltildi: Loosely-coupled ajanlar için LangGraph workflow entegrasyonu yapıldı ve test modunu destekleyen bir test dosyası oluşturuldu
-2025-05-11: Eklendi: Workflow şema görselleştirme scriptleri (visualize_develop_app.py, visualize_prototype.py, visualize_code_review.py), LangGraph iş akışlarını Mermaid diagramları olarak görselleştirmek için
+2025-05-11: Eklendi: test_workflow.py - Multi-agent workflow ile project-specific version control entegrasyonunu gösteren demo script
+2025-05-11: Eklendi: Project-specific version control system - Her kullanıcı projesi için izole Git repository yönetimi
+2025-05-11: Güncellendi: VersionControl sınıfı - Proje bazlı çalışacak ve snapshot sistemini destekleyecek şekilde yeniden tasarlandı
+2025-05-11: Güncellendi: test_version_control.py - Proje bazlı version kontrol sistemini test etmek için yeniden yazıldı
+2025-05-11: Güncellendi: HIGHLEVEL-ARCHITECTURE.txt - Detaylı mimari dökümantasyon eklendi, katmanlar, workflow ve memory sistemi açıklandı
 2025-05-10: Düzeltildi: CLI'da langgraph paketi kontrolü gerektiren hard-coded mesaj, paketlerin başarıyla yüklendiğini gösteren mesajla değiştirildi
 2025-05-09: Resolved conflict between different YAML validation systems (linter vs JSON schema)
 2025-05-09: Updated yamllint configuration to ignore specific schema properties needed for workflow functionality
