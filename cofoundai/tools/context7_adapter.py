@@ -289,13 +289,13 @@ yarn create next-app
 
 ```jsx
 // pages/index.js
-export default function Home() {
+export default function Home() {{
   return (
     <div>
       <h1>Welcome to Next.js!</h1>
     </div>
   )
-}
+}}
 ```
 
 ## Learn More
@@ -370,7 +370,7 @@ import {repo.lower()}
 
 ```javascript
 // JavaScript example
-const {repo} = require('{repo.lower()}');
+const myModule = require('{repo.lower()}');
 
 // Your code here
 ```
