@@ -527,4 +527,4 @@ class AgenticGraph:
             return {
                 "status": "error",
                 "message": f"Error getting graph schema: {str(e)}"
-            }
+            } 
