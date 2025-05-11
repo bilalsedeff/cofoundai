@@ -49,13 +49,19 @@ def load_workflow_config(workflow_id: str) -> Optional[Dict[str, Any]]:
         raise FileNotFoundError(f"Workflows configuration file not found: {workflows_path}")
     
     with open(workflows_path, 'r', encoding='utf-8') as f:
-        workflows = yaml.safe_load(f)
+        all_config = yaml.safe_load(f)
     
-    if not workflows or "workflows" not in workflows:
+    # Check if the file has the new structure with 'main' key
+    if all_config and "main" in all_config and "workflows" in all_config["main"]:
+        workflows = all_config["main"]["workflows"]
+    elif all_config and "workflows" in all_config:
+        # Fallback to old structure
+        workflows = all_config["workflows"]
+    else:
         return None
     
     # Find the workflow with the specified ID
-    for workflow in workflows["workflows"]:
+    for workflow in workflows:
         if workflow.get("id") == workflow_id:
             return workflow
     

@@ -1,5 +1,7 @@
 # CoFound.ai Project Changelog
 
+2025-05-11: Düzeltildi: cofoundai/config/__init__.py - load_workflow_config fonksiyonu güncellendi, 'main' anahtarı yapısı destekleniyor
+2025-05-11: Test Edildi: demo_cofoundai_cli.py - LLM entegrasyonu olmadan tam ajan iş akışı başarıyla çalıştı
 2025-05-11: Eklendi: run_demo.bat, run_demo.sh - Demo çalıştırma betikleri (Windows, Linux/Mac için)
 2025-05-11: Eklendi: technology_comparison.md - LangGraph, CrewAI ve LlamaIndex karşılaştırması, teknoloji seçim stratejisi
 2025-05-11: Eklendi: demo_cofoundai_cli.py - CoFound.ai CLI demo without LLM integration
