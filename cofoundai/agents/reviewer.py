@@ -22,18 +22,20 @@ class ReviewerAgent(BaseAgent):
     - Verifying compliance with standards
     """
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], test_mode: bool = False):
         """
         Initialize the reviewer agent.
         
         Args:
             config: Dictionary containing the agent's configuration settings
+            test_mode: Whether to run in test mode with simulated responses
         """
         super().__init__(config)
         self.name = config.get("name", "Reviewer")
         self.description = config.get("description", "Agent that performs code review and quality assurance")
         self.logger = get_agent_logger(self.name)
         self.logger.info(f"Reviewer agent initialized: {self.name}")
+        self.test_mode = test_mode
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """

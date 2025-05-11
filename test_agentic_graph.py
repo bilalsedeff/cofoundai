@@ -1,7 +1,7 @@
 """
 CoFound.ai Agentic Graph Test
 
-Bu script, CoFound.ai projesindeki Agentic Graph yapısını test eder.
+This script tests the Agentic Graph structure in the CoFound.ai project.
 """
 
 import logging
@@ -9,31 +9,31 @@ import sys
 import traceback
 from typing import Dict, Any, Optional
 
-# Logging ayarları
+# Logging settings
 logging.basicConfig(level=logging.DEBUG, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def test_agentic_graph():
     """
-    Agentic Graph yapısını test eder.
+    Tests the Agentic Graph structure.
     """
     try:
-        print("CoFound.ai Agentic Graph yapısını test ediyorum...")
+        print("Testing CoFound.ai Agentic Graph structure...")
         
-        # Modülleri içe aktar
+        # Import modules
         from cofoundai.communication.message import Message
         from cofoundai.communication.agent_command import Command, CommandType
         
-        # LangGraph yapılandırmasını değiştirmeden temel yapıyı test edelim
+        # Test the basic structure without changing LangGraph configuration
         from cofoundai.orchestration.langgraph_workflow import LangGraphWorkflow
         
-        print("Gerekli modüller başarıyla içe aktarıldı.")
+        print("Required modules successfully imported.")
         
-        # Basit bir workflow oluştur
+        # Create a simple workflow
         workflow_config = {
             "name": "test_workflow",
-            "test_mode": True,  # Test modunda çalış
+            "test_mode": True,  # Run in test mode
             "test_agent_order": ["agent1", "agent2"],
         }
         
@@ -42,23 +42,23 @@ def test_agentic_graph():
             config=workflow_config
         )
         
-        print(f"Workflow oluşturuldu: {workflow.name}")
+        print(f"Workflow created: {workflow.name}")
         
-        # Test modu workflowu çalıştır
+        # Run the test mode workflow
         initial_state = {
-            "project_description": "Basit bir hesap makinesi uygulaması",
-            "user_request": "Toplama, çıkarma, çarpma ve bölme yapabilen bir hesap makinesi geliştir",
+            "project_description": "Simple calculator application",
+            "user_request": "Develop a calculator that can perform addition, subtraction, multiplication, and division",
         }
         
-        print("Workflow çalıştırılıyor...")
+        print("Running workflow...")
         result = workflow.run(initial_state)
         
-        print(f"Workflow sonucu: {result.get('status', 'unknown')}")
+        print(f"Workflow result: {result.get('status', 'unknown')}")
         
-        print("\nAgentic Graph testi başarılı!")
+        print("\nAgentic Graph test successful!")
         return {
             "success": True,
-            "message": "Agentic Graph testi başarıyla tamamlandı",
+            "message": "Agentic Graph test completed successfully",
             "details": {
                 "workflow": workflow.name,
                 "status": result.get("status", "unknown")
@@ -66,24 +66,24 @@ def test_agentic_graph():
         }
         
     except Exception as e:
-        print(f"HATA: Test sırasında hata: {str(e)}")
+        print(f"ERROR: Error during test: {str(e)}")
         traceback.print_exc()
         return {
             "success": False,
-            "message": f"Test başarısız oldu: {str(e)}",
+            "message": f"Test failed: {str(e)}",
             "error": str(e)
         }
 
 if __name__ == "__main__":
-    print("CoFound.ai Agentic Graph testini başlatıyorum...")
+    print("Starting CoFound.ai Agentic Graph test...")
     
     try:
         result = test_agentic_graph()
         
         if result["success"]:
-            print(f"\nTEST BAŞARILI: {result['message']}")
+            print(f"\nTEST SUCCESSFUL: {result['message']}")
         else:
-            print(f"\nTEST BAŞARISIZ: {result['message']}")
+            print(f"\nTEST FAILED: {result['message']}")
     except Exception as e:
-        print(f"\nTEST SIRASINDA KRİTİK HATA: {str(e)}")
+        print(f"\nCRITICAL ERROR DURING TEST: {str(e)}")
         traceback.print_exc() 

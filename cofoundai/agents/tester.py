@@ -22,18 +22,20 @@ class TesterAgent(BaseAgent):
     - Reporting test results
     """
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], test_mode: bool = False):
         """
         Initialize the tester agent.
         
         Args:
             config: Dictionary containing the agent's configuration settings
+            test_mode: Whether to run in test mode with simulated responses
         """
         super().__init__(config)
         self.name = config.get("name", "Tester")
         self.description = config.get("description", "Agent that performs testing tasks")
         self.logger = get_agent_logger(self.name)
         self.logger.info(f"Tester agent initialized: {self.name}")
+        self.test_mode = test_mode
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """

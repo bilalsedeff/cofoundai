@@ -16,12 +16,13 @@ class DeveloperAgent(BaseAgent):
     AI agent that performs code development and programming tasks.
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], test_mode: bool = False):
         """
         Initialize the developer agent.
         
         Args:
             config: Dictionary containing the agent's configuration settings
+            test_mode: Whether to run in test mode with simulated responses
         """
         super().__init__(config)
         self.name = config.get("name", "Developer")
@@ -29,6 +30,7 @@ class DeveloperAgent(BaseAgent):
         self.code_generator = CodeGenerator(config.get("code_generator", {}))
         self.current_task = None
         self.current_context = {}
+        self.test_mode = test_mode
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
