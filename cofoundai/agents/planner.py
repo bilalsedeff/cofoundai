@@ -24,10 +24,38 @@ class PlannerAgent(BaseAgent):
             config: Dictionary containing the agent's configuration settings
         """
         super().__init__(config)
-        self.name = "Planner"
-        self.description = "Agent that plans and coordinates software development tasks"
+        self.name = config.get("name", "Planner")
+        self.description = config.get("description", "Agent that plans and coordinates software development tasks")
         self.current_plan = None
         
+    def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process input data and create a project plan.
+        
+        Args:
+            input_data: Input data including project requirements
+            
+        Returns:
+            Output data including project plan
+        """
+        # Extract project description
+        project_description = input_data.get("project_description", "")
+        
+        # Create a project plan
+        plan = self.create_project_plan(project_description)
+        
+        # Determine tasks for the first phase
+        first_phase = plan["phases"][0]["name"] if plan["phases"] else "Design"
+        task_assignments = self.assign_tasks(first_phase)
+        
+        return {
+            "status": "success",
+            "message": f"Project plan created for '{project_description}'",
+            "plan": plan,
+            "first_phase": first_phase,
+            "task_assignments": task_assignments
+        }
+    
     def create_project_plan(self, requirements: str) -> Dict[str, Any]:
         """
         Create a project plan based on user requirements.
@@ -78,15 +106,16 @@ class PlannerAgent(BaseAgent):
         task_assignments = []
         
         # Sample task assignments
-        for phase in self.current_plan["phases"]:
-            if phase["name"] == phase_name:
-                for task in phase["tasks"]:
-                    assigned_agent = self._determine_agent_for_task(task)
-                    task_assignments.append({
-                        "task": task,
-                        "agent": assigned_agent,
-                        "status": "Assigned"
-                    })
+        if self.current_plan:
+            for phase in self.current_plan["phases"]:
+                if phase["name"] == phase_name:
+                    for task in phase["tasks"]:
+                        assigned_agent = self._determine_agent_for_task(task)
+                        task_assignments.append({
+                            "task": task,
+                            "agent": assigned_agent,
+                            "status": "Assigned"
+                        })
         
         return task_assignments
     
@@ -141,8 +170,5 @@ class PlannerAgent(BaseAgent):
                 metadata={"assignments": assignments}
             )
         else:
-            return Message(
-                sender=self.name,
-                recipient=message.sender,
-                content="Planner agent: Please ask me to create a project plan or assign tasks."
-            ) 
+            # Fall back to the base implementation which will call process()
+            return super().process_message(message) 

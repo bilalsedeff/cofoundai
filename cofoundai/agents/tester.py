@@ -8,6 +8,7 @@ import logging
 from typing import Dict, Any, List, Optional
 
 from cofoundai.core.base_agent import BaseAgent
+from cofoundai.communication.message import Message
 from cofoundai.utils.logger import get_agent_logger
 
 class TesterAgent(BaseAgent):
@@ -21,16 +22,18 @@ class TesterAgent(BaseAgent):
     - Reporting test results
     """
     
-    def __init__(self, name: str = "Tester"):
+    def __init__(self, config: Dict[str, Any]):
         """
         Initialize the tester agent.
         
         Args:
-            name: Agent name
+            config: Dictionary containing the agent's configuration settings
         """
-        super().__init__(name)
-        self.logger = get_agent_logger(name)
-        self.logger.info(f"Tester agent initialized: {name}")
+        super().__init__(config)
+        self.name = config.get("name", "Tester")
+        self.description = config.get("description", "Agent that performs testing tasks")
+        self.logger = get_agent_logger(self.name)
+        self.logger.info(f"Tester agent initialized: {self.name}")
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -42,7 +45,7 @@ class TesterAgent(BaseAgent):
         Returns:
             Output data including test results
         """
-        self.logger.info("Processing testing request", input=input_data)
+        self.logger.info("Processing testing request", extra={"input": str(input_data)[:200]})
         
         # Extract data
         code_files = input_data.get("code_files", {})
@@ -54,8 +57,10 @@ class TesterAgent(BaseAgent):
         # Log the testing process
         self.logger.info(
             "Creating and executing tests",
-            code_files_count=len(code_files),
-            test_requirements_count=len(test_requirements)
+            extra={
+                "code_files_count": len(code_files),
+                "test_requirements_count": len(test_requirements)
+            }
         )
         
         # Creating mock test results
@@ -82,13 +87,53 @@ class TesterAgent(BaseAgent):
         
         self.logger.info(
             "Testing completed", 
-            total_tests=test_results["unit_tests"]["total"] + test_results["integration_tests"]["total"],
-            failed_tests=test_results["unit_tests"]["failed"] + test_results["integration_tests"]["failed"],
-            coverage=test_results["coverage"]
+            extra={
+                "total_tests": test_results["unit_tests"]["total"] + test_results["integration_tests"]["total"],
+                "failed_tests": test_results["unit_tests"]["failed"] + test_results["integration_tests"]["failed"],
+                "coverage": test_results["coverage"]
+            }
         )
         
         return {
             "status": "success" if test_results["unit_tests"]["failed"] + test_results["integration_tests"]["failed"] == 0 else "partial_success",
             "test_results": test_results,
             "message": "Testing completed with some failures" if test_results["unit_tests"]["failed"] + test_results["integration_tests"]["failed"] > 0 else "All tests passed"
-        } 
+        }
+        
+    def process_message(self, message: Message) -> Message:
+        """
+        Process an incoming message and generate an appropriate response.
+        
+        Args:
+            message: The message object to process
+            
+        Returns:
+            Response message
+        """
+        content = message.content.lower()
+        metadata = message.metadata or {}
+        
+        if "test" in content or "run tests" in content:
+            # Extract code from metadata
+            code_files = metadata.get("code_files", {})
+            test_requirements = metadata.get("test_requirements", [])
+            
+            # Create input data for process function
+            input_data = {
+                "code_files": code_files,
+                "test_requirements": test_requirements
+            }
+            
+            # Process the testing request
+            result = self.process(input_data)
+            
+            # Create and return response message
+            return Message(
+                sender=self.name,
+                recipient=message.sender,
+                content=result["message"],
+                metadata={"test_results": result["test_results"]}
+            )
+        else:
+            # Default to super implementation
+            return super().process_message(message) 

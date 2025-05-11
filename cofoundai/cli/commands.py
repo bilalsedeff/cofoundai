@@ -51,13 +51,22 @@ def initialize_agents() -> Dict[str, BaseAgent]:
     Returns:
         Dictionary containing agent names and objects
     """
+    # Create empty configuration dictionaries for each agent
+    planner_config = {"name": "Planner", "description": "Project planning and task breakdown"}
+    architect_config = {"name": "Architect", "description": "System architecture design"}
+    developer_config = {"name": "Developer", "description": "Code implementation"}
+    tester_config = {"name": "Tester", "description": "Code testing and quality assurance"}
+    reviewer_config = {"name": "Reviewer", "description": "Code review and improvements"}
+    documentor_config = {"name": "Documentor", "description": "Project documentation"}
+    
+    # Initialize agents with their respective configurations
     agents = {
-        "Planner": PlannerAgent("Planner"),
-        "Architect": ArchitectAgent("Architect"),
-        "Developer": DeveloperAgent("Developer"),
-        "Tester": TesterAgent("Tester"),
-        "Reviewer": ReviewerAgent("Reviewer"),
-        "Documentor": DocumentorAgent("Documentor")
+        "Planner": PlannerAgent(planner_config),
+        "Architect": ArchitectAgent(architect_config),
+        "Developer": DeveloperAgent(developer_config),
+        "Tester": TesterAgent(tester_config),
+        "Reviewer": ReviewerAgent(reviewer_config),
+        "Documentor": DocumentorAgent(documentor_config)
     }
     
     system_logger.info(f"Agents initialized: {', '.join(agents.keys())}")

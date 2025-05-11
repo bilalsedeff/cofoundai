@@ -8,6 +8,8 @@ Each agent type inherits from this class and adds its own specialized functional
 from abc import ABC, abstractmethod
 from typing import Dict, Any, List, Optional
 from cofoundai.communication.message import Message
+import json
+from datetime import datetime
 
 
 class BaseAgent(ABC):
@@ -15,23 +17,23 @@ class BaseAgent(ABC):
     Base class for all agents. Defines the foundational functionality.
     """
     
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any] = None):
         """
         Initialize the base agent.
         
         Args:
-            config: Dictionary containing the agent's configuration settings
+            config: Dictionary containing the agent's configuration settings (default: None)
         """
         self.name = "BaseAgent"
         self.description = "Base agent class"
-        self.config = config
+        self.config = config or {}
         self.memory = []  # Stores past interactions
         self.status = "idle"  # Agent status (idle, busy, error)
-        
-    @abstractmethod
+    
     def process_message(self, message: Message) -> Message:
         """
         Process an incoming message and generate an appropriate response.
+        Default implementation extracts data from message and calls process().
         
         Args:
             message: The message object to process
@@ -39,7 +41,48 @@ class BaseAgent(ABC):
         Returns:
             Response message
         """
-        pass
+        # Extract data from message
+        input_data = {
+            "content": message.content,
+            **(message.metadata or {})
+        }
+        
+        # Process the data
+        try:
+            result = self.process(input_data)
+            
+            # Create response message
+            return Message(
+                sender=self.name,
+                recipient=message.sender,
+                content=result.get("message", f"Task completed by {self.name}"),
+                metadata=result
+            )
+        except Exception as e:
+            # Create error response
+            return Message(
+                sender=self.name,
+                recipient=message.sender,
+                content=f"Error processing message: {str(e)}",
+                metadata={"error": str(e)}
+            )
+    
+    def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process input data and perform agent-specific tasks.
+        
+        Args:
+            input_data: Input data for processing
+            
+        Returns:
+            Output data with processing results
+        """
+        # Default implementation - should be overridden by concrete agent classes
+        return {
+            "status": "error",
+            "message": f"{self.name} does not implement process() method",
+            "error": "NotImplementedError"
+        }
     
     def receive_message(self, message: Message) -> Message:
         """
@@ -86,6 +129,7 @@ class BaseAgent(ABC):
         """
         self.memory.append({
             "timestamp": message.timestamp,
+            "formatted_time": datetime.fromtimestamp(message.timestamp).strftime("%Y-%m-%d %H:%M:%S"),
             "sender": message.sender,
             "recipient": message.recipient,
             "content": message.content,
