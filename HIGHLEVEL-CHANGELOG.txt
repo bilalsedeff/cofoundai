@@ -2,6 +2,10 @@
 
 ## Platform Core
 
+2025-05-12: Düzeltildi: cofoundai/agents/langgraph_agent.py - DummyLLM sınıfında _llm_type abstract metodu eksikliği giderildi
+2025-05-12: Test Edildi: test_agent_communication.py - Temel ajan iletişim modülleri başarıyla test edildi
+2025-05-12: Test Edildi: test_agentic_graph.py - LangGraph workflow sistemi test modunda başarıyla çalıştırıldı
+2025-05-12: Geliştirme: LangGraph ile uyumlu DummyLLM implement edildi, LLM olmadan ajanların testini kolaylaştıran altyapı eklendi
 2025-05-13: Düzeltildi: cofoundai/orchestration/agentic_graph.py - "null bytes" hatası giderilerek dosya UTF-8 formatında yeniden oluşturuldu
 2025-05-12: Geliştirme: cofoundai/orchestration/agentic_graph.py - Gelişmiş loglama, hata yakalama ve durum izleme özellikleri eklendi
 2025-05-12: İyileştirme: Multi-agent workflow iyileştirildi, serbest graph yapısı ile handoff mekanizması güçlendirildi
@@ -49,6 +53,9 @@
 2025-05-11: Eklendi: utils/logger.py - tüm sistemin loglama altyapısı
 
 ## Test Tools 
+
+2025-05-12: Eklendi: test_agent_communication.py - Ajan iletişim modüllerinin temel test scripti
+2025-05-12: Eklendi: test_agentic_graph.py - LangGraph workflow test scripti
 
 2025-05-11: Eklendi: test_acp.py - Ajan İletişim Protokolü testi
 2025-05-11: Eklendi: test_workflow.py - İş akışı testi
@@ -157,3 +164,4 @@
 2025-05-03: Eklendi: Ajan-ajan iletişim protokolü tanımlandı ve mesaj aktarım sistemi oluşturuldu
 2025-05-02: Eklendi: CLI arayüzü tanımlandı ve temel görev başlatma komutları oluşturuldu
 2025-05-01: Eklendi: Temel proje yapısı oluşturuldu, klasör yapısı ve ana bileşenler tanımlandı
+

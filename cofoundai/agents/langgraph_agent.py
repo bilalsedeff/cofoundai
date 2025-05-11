@@ -111,7 +111,7 @@ class LangGraphAgent(BaseAgent):
             self.langgraph_agent = create_react_agent(
                 langchain_llm,
                 self.tools,
-                system=self.system_prompt,
+                system_prompt=self.system_prompt,
                 name=self.name
             )
             logger.info(f"Initialized LangGraph agent: {self.name}")
@@ -151,6 +151,11 @@ class LangGraphAgent(BaseAgent):
             else:
                 # Default dummy LLM for testing
                 class DummyLLM(BaseChatModel):
+                    @property
+                    def _llm_type(self) -> str:
+                        """Return type of llm."""
+                        return "dummy"
+                    
                     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
                         return AIMessage(content="This is a dummy response for testing.")
                     
@@ -162,6 +167,11 @@ class LangGraphAgent(BaseAgent):
             logger.error(f"Failed to import necessary LangChain package: {str(e)}")
             # Return a dummy LLM as fallback
             class DummyLLM(BaseChatModel):
+                @property
+                def _llm_type(self) -> str:
+                    """Return type of llm."""
+                    return "dummy"
+                
                 def _generate(self, messages, stop=None, run_manager=None, **kwargs):
                     return AIMessage(content="This is a dummy response for testing.")
                 
