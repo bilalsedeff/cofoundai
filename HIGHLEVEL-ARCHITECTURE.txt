@@ -95,224 +95,137 @@ logs/                           # Loglar
 - YAML yapılandırma şemaları iyileştirildi ve esnek yapı desteği eklendi.
 - İş akışları YAML dosyası, ana bölüm (main) altına taşınarak standardize edildi.
 
-# CoFound.ai High-Level Architecture
+# CoFound.ai High-Level System Architecture
 
-CoFound.ai is a multi-agent PaaS (Platform as a Service) system that orchestrates 
-specialized AI agents working together as a software development team.
+## Katmanlı Mimari Yapısı
 
-## System Layers
+CoFound.ai bir çoklu-ajan (multi-agent) yazılım geliştirme sistemidir. Sistem, aşağıdaki katmanlardan oluşmaktadır:
 
-The platform architecture follows a layered approach for better modularity and separation of concerns:
+### 1. Kullanıcı Arayüzü Katmanı
+- **CLI Arayüzü**: Kullanıcıların komut satırından isteklerini iletmelerini sağlar
+- **Gösterge Paneli**: (Gelecek) İş akışı durumunu ve ajanları izleme arayüzü
+- **İstek İşleme**: Kullanıcı girdisini işleyen modüller
 
-1. **User Interface Layer**
-   - CLI (Command Line Interface) - Primary interaction point for users
-   - Future: Web UI and API endpoints
+### 2. İş Akışı Katmanı
+- **Orkestrasyon Motoru**: Aşağıdaki bileşenleri içerir:
+  - **LangGraph StateGraph**: İş akışı durumlarını ve geçişlerini yönetir
+  - **AgenticGraph**: Dinamik ajan yönlendirmesini ve transferini sağlar
+  - **Handoff Mekanizması**: Ajanlar arası görev transferi için tools desteği
+  - **Durum İzleme**: Aktif ajanı, önceki ajanı ve iş akışı durumunu takip eder
+- **İş Akışı Tanımları**: YAML formatında tanımlanan iş akışı türleri
 
-2. **API & Service Layer**
-   - REST API endpoints
-   - Authentication and authorization
-   - Rate limiting and request validation
+### 3. Ajan Katmanı
+- **Agent İletişim Protokolü (ACP)**: Ajanlar arası standart iletişim formatı
+- **Ajanlar**: Uzmanlaşmış yazılım geliştirme ajanları:
+  - **Planner**: Proje planlaması ve görev ayrıştırması
+  - **Architect**: Sistem mimarisi ve komponent tasarımı
+  - **Developer**: Kod geliştirme ve implementasyon
+  - **Tester**: Test yazımı ve kalite kontrolü
+  - **Reviewer**: Kod inceleme ve geliştirme önerileri
+  - **Documentor**: Teknik dokümantasyon yazımı
+- **Base Agent**: Tüm ajanlarda ortak işlevselliği sağlayan temel sınıf
+- **LangGraph Agent Wrapper**: LangGraph ile entegrasyon için sarmalayıcı
 
-3. **Business Logic Layer**
-   - Workflow definitions
-   - Project management
-   - Task scheduling and orchestration
-   - Decision making
+### 4. Hafıza Katmanı
+- **Kısa Dönemli Hafıza**: Aktif oturum durumunu tutan hafıza
+- **Uzun Dönemli Hafıza**: Vektör veritabanı yoluyla tutarlı hafıza
+- **Proje Bağlamı**: Geliştirme sürecine özgü bağlam verileri
 
-4. **Agent Orchestration Layer**
-   - LangGraph-based workflow engine
-   - Agent state management
-   - Message routing
-   - Supervisor patterns
+### 5. İletişim Katmanı
+- **Message Sınıfı**: Ajanlar arası mesajlaşma standardı
+- **Command Sınıfı**: Ajanlar arası komut yapısı
+- **Handoff Tools**: Ajanlar arası iletişimde araç olarak kullanılan transferler
+- **State Yönetimi**: İş akışı durumunu güncelleyen ve ileten mekanizmalar
 
-5. **Agent Layer**
-   - Specialized agent implementations:
-     - Planner Agent
-     - Architect Agent
-     - Developer Agent
-     - Tester Agent
-     - Reviewer Agent
-     - Documentor Agent
+### 6. İzleme ve Loglama Katmanı
+- **Yapılandırılmış Logger**: Tüm sistem bileşenlerinin standart loglama mekanizması
+- **JSONLogger**: Yapılandırılmış JSON formatında loglama
+- **Workflow Logger**: İş akışına özel loglama
+- **Agent Logger**: Ajanlara özel loglama
+- **Log Analyzer**: Log kayıtlarını analiz eden ve raporlayan araç
+- **Thread Tracking**: Thread ID ile iş akışı adımlarını takip etme
 
-6. **Memory Layer**
-   - Short-term memory (conversation history)
-   - Long-term memory (vector database)
-   - Project context storage
-   - Snapshot system
+### 7. Araçlar Katmanı
+- **Kod Yürütme**: Üretilen kodu test etmek için araçlar
+- **Sürüm Kontrolü**: Git entegrasyonu
+- **Dosya Yönetimi**: Dosya okuma, yazma, güncelleme işlemleri
 
-7. **Tools Layer**
-   - FileManager for file operations
-   - VersionControl for project-specific Git operations
-   - CodeGenerator for code writing and editing
-   - Context7Adapter for accessing documentation
-   - More specialized tools for agents
+### 8. Konfigürasyon Katmanı
+- **System Config**: Sistem çapında konfigürasyon
+- **Workflow Config**: İş akışı tanımları
+- **Agent Config**: Ajan düzeyinde konfigürasyon
+- **LLM Config**: Dil modeli ayarları ve yapılandırmaları
 
-8. **Integration Layer**
-   - LLM service integration
-   - Vector database connectors
-   - Version control system integration 
-   - Monitoring and analytics integrations
+## İş Akışı ve Ajan Etkileşimi
 
-9. **Infrastructure Layer**
-   - Configuration management
-   - Logging and monitoring
-   - Resource provisioning
-   - Distributed deployment (future)
+CoFound.ai'nin çalışma süreci aşağıdaki gibidir:
 
-## Agent Communication Protocol (ACP)
+1. **İstek Alımı**: Kullanıcıdan yazılım geliştirme isteği alınır
+2. **İş Akışı Başlatma**: Uygun iş akışı seçilir ve başlatılır
+3. **Proje Planlama**: Planner ajan, isteği analiz eder ve görevlere ayırır
+4. **Mimari Tasarım**: Architect ajan, sistem mimarisini tasarlar
+5. **Kodlama**: Developer ajan, kodu geliştirir
+6. **Test**: Tester ajan, kodu test eder
+7. **İnceleme**: Reviewer ajan, kodu inceler ve geliştirme önerileri sunar
+8. **Dokümantasyon**: Documentor ajan, teknik dokümantasyon hazırlar
+9. **Sonuç Teslimi**: Geliştirilen yazılım kullanıcıya teslim edilir
 
-Agents communicate through a standardized message protocol:
+## Agentic Graph Orkestrasyon 
 
-1. **Message Structure**
-   - JSON-based message format
-   - Support for multi-modal content (text, code, images)
-   - Structured metadata
+CoFound.ai'nin orkestrasyon mekanizması, esnek ve dinamik bir graf yapısına sahiptir:
 
-2. **Message Routing**
-   - Direct agent-to-agent communication
-   - Broadcast messages
-   - Addressed messages with specific recipients
-   - Request-response patterns
+1. **Dinamik Ajan Yönlendirme**: Her ajan, kendi uzmanlık alanına göre görevi çözer veya başka bir ajana devreder
+2. **Handoff Tools**: Ajanlar, görevleri başka ajanlara devretmek için özel araçlar kullanır
+3. **State Takibi**: Sistem, aktif ajanı, önceki ajanı ve iş akışının durumunu sürekli takip eder
+4. **Koşullu Geçişler**: LangGraph conditional edges ile duruma bağlı olarak farklı ajanlara geçiş yapılır
+5. **Streaming İzleme**: İş akışı, gerçek zamanlı olarak izlenebilir ve raporlanabilir
 
-## LangGraph Integration
+## LLM Entegrasyonu ve Test Modu
 
-CoFound.ai uses LangGraph as the foundation for its multi-agent orchestration:
+Sistem, iki modda çalışabilir:
 
-1. **Workflow Definitions**
-   - YAML-based workflow configuration
-   - Agent states and transitions
-   - Conditional routing
-   - Error handling and recovery
+1. **Üretim Modu**: Gerçek LLM çağrıları ile çalışır
+2. **Test Modu**: LLM çağrıları yapmadan, önceden tanımlanmış yanıtlarla çalışır
 
-2. **State Management**
-   - Graph-based state tracking
-   - Message state
-   - Agent-specific state
-   - Global context
+Test modunda, sistem gerçek LLM maliyeti olmadan geliştirilebilir ve test edilebilir.
 
-3. **Supervision Patterns**
-   - Hierarchical supervision
-   - Collaborative decision making
-   - Task delegation
-   - Progress monitoring
+## Kalıcı Depolama ve İzlenebilirlik
 
-4. **Execution Models**
-   - Synchronous execution
-   - Streaming responses
-   - Checkpoint-based resumption
-   - Human-in-the-loop interruptions
+Sistem, aşağıdaki verileri kalıcı olarak depolar:
 
-## Memory System
+1. **İş Akışı Durumu**: Her adımda iş akışının durumu kaydedilir
+2. **Ajanlar Arası Mesajlar**: Tüm ajan etkileşimleri loglanır
+3. **Artifacts**: Üretilen kod, dokümantasyon ve diğer eserler
+4. **Log Kayıtları**: Tüm sistem log kayıtları yapılandırılmış formatta tutulur
 
-The memory system is divided into three main components:
+## Çıktı Formatları
 
-1. **Short-Term Memory**
-   - Conversation history
-   - Working memory
-   - Current session state
-   - Token-limited, recency-focused
+Kullanıcıya aşağıdaki formatlarda çıktı sunulur:
 
-2. **Vector Memory**
-   - FAISS-based vector storage
-   - Semantic search capabilities
-   - Long-term context storage
-   - Similarity-based retrieval
+1. **Kod**: Geliştirilen yazılımın kaynak kodu
+2. **Dokümantasyon**: Teknik dokümantasyon
+3. **Test Sonuçları**: Yazılımın test sonuçları
+4. **Uygulama**: Çalıştırılabilir uygulama
 
-3. **Project Context**
-   - Requirements
-   - Architecture decisions
-   - File structure
-   - Design patterns
-   - Persistent JSON-based storage
+## Teknoloji Yığını
 
-## Project-Specific Version Control
+Sistem, aşağıdaki teknolojileri kullanır:
 
-Each user project has its own isolated version control environment:
+1. **Python**: Ana programlama dili
+2. **LangChain**: LLM uygulamaları oluşturma framework'ü
+3. **LangGraph**: Ajan orkestrasyon ve iş akışı motoru
+4. **Vector DB**: Uzun dönemli hafıza için vektör veritabanı
+5. **YAML**: Konfigürasyon ve iş akışı tanımlamaları için
+6. **JSON**: Yapılandırılmış veri ve log formatı
+7. **Git**: Sürüm kontrolü
 
-1. **Project Repositories**
-   - Isolated Git repositories per project
-   - Unique project identifiers
-   - Independent workspace directories
+## Gelecek Geliştirmeler
 
-2. **Snapshot System**
-   - Point-in-time captures of project state
-   - Metadata tracking
-   - Restoration capabilities
-   - Branching support
-
-3. **Change Tracking**
-   - Commit history
-   - Code diffs
-   - Branch management
-   - Rollback capabilities
-
-## CLI Workflow
-
-The primary workflow for users follows this pattern:
-
-1. User initiates a project via CLI
-2. System initializes project workspace and Git repository
-3. Planner agent breaks down the requirements
-4. Agents collaborate through the LangGraph workflow
-5. Progress is tracked and reported back to the user
-6. User can review, approve, or modify the results
-7. System maintains project state for future sessions
-
-## Testing and Logging
-
-1. **Test-Driven Development**
-   - Unit tests for core components
-   - Integration tests for agent interactions
-   - End-to-end tests for workflows
-   - Test mode for agent operations without LLM calls
-
-2. **Comprehensive Logging**
-   - Structured JSON logs
-   - Agent activity tracking
-   - Message flow monitoring
-   - Performance metrics
-   - Error diagnostics
-
-## Deployment Model
-
-Current deployment is local, with plans for:
-
-1. **Self-Hosted**
-   - Docker-based deployment
-   - Configuration via environment variables
-   - Resource management
-   - Data persistence
-
-2. **Future: Cloud-Hosted**
-   - Multi-tenant architecture
-   - Serverless functions
-   - Managed services
-   - Horizontal scaling
-
-## Exception Handling
-
-1. **Error Recovery**
-   - LangGraph-based retry mechanisms
-   - Fallback strategies
-   - Checkpoint-based resumption
-   - User intervention for critical errors
-
-2. **Validation**
-   - Input validation
-   - Output validation
-   - Schema enforcement
-   - Consistency checks
-
-## Security Considerations
-
-1. **Data Security**
-   - Isolated project workspaces
-   - Minimal permissions
-   - No external data sharing
-   - Local-first approach
-
-2. **Code Execution Safety**
-   - Sandboxed environments
-   - Limited scope for tool operations
-   - Validation before execution
-   - Audit trails
+1. **Web Arayüzü**: Web tabanlı kullanıcı arayüzü
+2. **Gerçek Zamanlı İzleme**: İş akışını gerçek zamanlı izleme paneli
+3. **Ekip Modu**: Birden fazla kullanıcının aynı projede çalışabilmesi
+4. **Özelleştirilebilir Ajanlar**: Kullanıcıların özel ajanlar tanımlayabilmesi
+5. **Otomatik Ölçeklendirme**: İş yüküne göre ölçeklenebilen sistem
+6. **Çoklu Dil Desteği**: Farklı programlama dilleriyle çalışabilme
+7. **Kullanım Analitiği**: Sistem kullanımı ve performans analitiği
+8. **Ayrıntılı İzleme Arayüzü**: Graph yürütme durumunu görselleştirme

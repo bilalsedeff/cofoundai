@@ -1,5 +1,83 @@
 # CoFound.ai Project Changelog
 
+## Platform Core
+
+2025-05-12: Geliştirme: cofoundai/orchestration/agentic_graph.py - Gelişmiş loglama, hata yakalama ve durum izleme özellikleri eklendi
+2025-05-12: İyileştirme: Multi-agent workflow iyileştirildi, serbest graph yapısı ile handoff mekanizması güçlendirildi
+2025-05-12: İyileştirme: Ajanlar arası geçişler ve tool kullanımı dinamik olarak kontrol edilebilir hale geldi
+
+2025-05-11: Eklendi: cofoundai/orchestration/agentic_graph.py - LangGraph ile dinamik orkestrasyon
+2025-05-11: Test Edildi: demo_cofoundai_cli.py - LLM entegrasyonu olmadan tam ajan iş akışı başarıyla çalıştı
+2025-05-11: Eklendi: JSON formatlı loglama sistemi geliştirildi, her ajan ve workflow için izlenebilirlik eklendi
+2025-05-11: İyileştirme: LLM entegrasyonu hazır hale getirildi, test modu ile gerçek LLM çağrıları olmadan çalışma
+2025-05-11: Eklendi: demo_cofoundai_cli.py - CoFound.ai CLI demo without LLM integration
+2025-05-11: Eklendi: Projeler ve sonuçlar için kalıcı depolama altyapısı
+2025-05-11: Created initial project proposal
+
+## Agent Subsystem
+
+2025-05-12: İyileştirme: Tüm ajanlar için handoff toolları genişletildi, dynamic agent yönlendirme eklendi
+2025-05-12: Geliştirme: Ajan iletişim protokolü, hesap makinesi örneği dışında genel yazılım geliştirme süreçlerine uyarlandı
+
+2025-05-11: Eklendi: PlannerAgent, ArchitectAgent, DeveloperAgent, TesterAgent, ReviewerAgent, DocumentorAgent
+2025-05-11: Geliştirme: BaseAgent.process() metoduna LLM-free test modu desteği eklendi
+
+## Workflow & Orchestration
+
+2025-05-12: Geliştirme: Dinamik ajan yönlendirme mekanizması eklendi, her ajan bir sonraki adımı seçebiliyor
+2025-05-12: Geliştirme: Workflow'a status, active_agent, previous_agent alanları eklendi, izlenebilirlik arttırıldı
+2025-05-12: İyileştirme: LLM entegrasyonu olmadan da ajan geçişlerini yapabilen test modülü geliştirildi
+
+2025-05-11: Eklendi: config/workflows.yaml - develop_app, prototype, code_review iş akışları
+2025-05-11: Eklendi: LangGraphWorkflow - graf yapısı oluşturma ve durumu yönetme
+
+## Communication & Messaging
+
+2025-05-12: Geliştirme: Ajan handoff tool sistemi geliştirildi, ajanlar arası geçiş yapabilen toollar eklendi
+2025-05-12: İyileştirme: Message ve Command sınıfları agentic_graph ile entegre edildi
+
+2025-05-11: Eklendi: Message sınıfı - ajan iletişimi için ortak format
+2025-05-11: Eklendi: Command sınıfı - ajan komutları için standart yapı
+
+## Monitoring & Logging
+
+2025-05-12: Geliştirme: JSONLogger sistemi orkestrasyon ile entegre edildi, graph içindeki tüm etkileşimler loglanıyor
+2025-05-12: Eklendi: Her ajan için ayrı log dosyaları, her workflow için thread_id ile izlenebilirlik eklendi
+2025-05-12: Geliştirme: LogAnalyzer sistemi, CLI demo ile entegre edildi
+
+2025-05-11: Eklendi: utils/logger.py - tüm sistemin loglama altyapısı
+
+## Test Tools 
+
+2025-05-11: Eklendi: test_acp.py - Ajan İletişim Protokolü testi
+2025-05-11: Eklendi: test_workflow.py - İş akışı testi
+2025-05-11: Eklendi: test_version_control.py, test_file_manager.py
+
+## Demo & Visualization
+
+2025-05-12: İyileştirme: CLI demo arayüzü, ajanlar arası geçişleri ve etkileşimleri görselleştiriyor
+2025-05-12: Geliştirme: Streaming modu, gerçek zamanlı workflow ilerlemesini gösteriyor
+
+2025-05-11: Eklendi: Visualization scripts - workflow graph visualization
+
+2025-05-11: Dynamic Agent Communication Architecture
+2025-05-11: Implemented modular LLM interface for easy integration of various LLM providers
+2025-05-11: Added dynamic agent communication mechanism using Command pattern
+2025-05-11: Created LangGraph-compatible agent implementation with handoff tools
+2025-05-11: Implemented flexible dynamic graph orchestration
+2025-05-11: Added visualization tool for workflows
+2025-05-11: Enabled agents to communicate freely with each other using ACP protocol
+2025-05-11: Made LLM integration scalable with support for test mode fallback         2025-05-11: 
+2025-05-11: Initial Setup
+2025-05-11: Created project structure with layered architecture
+2025-05-11: Implemented basic agent definitions and communication protocol
+2025-05-11: Set up configuration management with YAML
+2025-05-11: Created LangGraph static workflows
+2025-05-11: Added testing framework for workflows
+2025-05-11: Project Initiation
+2025-05-11: Defined high-level architecture
+2025-05-11: Selected technology stack
+2025-05-11: Created initial project proposal
 2025-05-11: Düzeltildi: cofoundai/config/__init__.py - load_workflow_config fonksiyonu güncellendi, 'main' anahtarı yapısı destekleniyor
 2025-05-11: Test Edildi: demo_cofoundai_cli.py - LLM entegrasyonu olmadan tam ajan iş akışı başarıyla çalıştı
 2025-05-11: Eklendi: run_demo.bat, run_demo.sh - Demo çalıştırma betikleri (Windows, Linux/Mac için)
