@@ -1,231 +1,318 @@
-# CoFound.ai Yüksek Seviye Mimari Dökümantasyonu
-
-## Genel Klasör/Dosya Yapısı
-
-```
-cofoundai/                      # Ana paket
-  ├── agents/                   # Ajan tanımları ve davranışları
-  ├── cli/                      # Komut satırı arabirimi
-  ├── communication/            # Ajanlar arası iletişim
-  ├── config/                   # Konfigürasyon dosyaları
-  │   ├── schema/               # JSON şemaları
-  ├── core/                     # Çekirdek sistem bileşenleri
-  ├── memory/                   # Hafıza sistemleri
-  ├── orchestration/            # Ajan orkestrasyon ve koordinasyon
-  ├── tests/                    # Test dosyaları
-  ├── tools/                    # Ajan araçları
-  └── utils/                    # Yardımcı fonksiyonlar
-logs/                           # Loglar
-  ├── system/                   # Sistem logları
-  └── workflows/                # İş akışı logları
-```
-
-## Modül Detayları
-
-### cofoundai/agents/ - Ajan Tanımları ve Davranışları
-- **planner.py**: Proje planlama ve görev ayrıştırma ajanı
-- **architect.py**: Sistem mimarisi tasarlama ajanı
-- **developer.py**: Kod geliştirme ajanı
-- **tester.py**: Kod testi ve kalite kontrol ajanı
-- **reviewer.py**: Kod inceleme ve geliştirme ajanı
-- **documentor.py**: Proje dokümantasyon ajanı
-
-### cofoundai/cli/ - Komut Satırı Arabirimi
-- **main.py**: Ana CLI giriş noktası
-- **commands.py**: CLI komutları ve işlevselliği
-- **output_formatter.py**: Çıktı biçimlendirme
-
-### cofoundai/communication/ - Ajan İletişimi
-- **message_bus.py**: Mesaj iletim sistemi
-- **protocol.py**: İletişim protokolü tanımları
-- **schemas.py**: Mesaj şemaları
-
-### cofoundai/config/ - Konfigürasyon Dosyaları
-- **agent_config.yaml**: Ajan konfigürasyonları
-- **system_config.yaml**: Sistem konfigürasyonları
-- **workflows.yaml**: İş akışı tanımları (LangGraph entegrasyonu)
-- **schema/**: JSON şema dosyaları
-  - **workflows_schema.json**: İş akışı yapılandırma dosyasının şeması
-
-### cofoundai/core/ - Çekirdek Sistem Bileşenleri
-- **llm_interface.py**: LLM API entegrasyonu
-- **config_manager.py**: Konfigürasyon yönetimi
-- **system.py**: Sistem yönetimi
-- **base_agent.py**: Temel ajan sınıfı
-
-### cofoundai/memory/ - Hafıza Sistemleri
-- **short_term.py**: Kısa süreli hafıza
-- **long_term.py**: Uzun süreli hafıza (vektör veritabanı)
-- **project_context.py**: Proje bağlamı
-
-### cofoundai/orchestration/ - Ajan Orkestrasyon ve Koordinasyon
-- **orchestrator.py**: Ana orkestrasyon motoru
-- **workflow.py**: İş akışı tanımları
-- **task_manager.py**: Görev dağıtımı ve takibi
-- **langgraph_workflow.py**: LangGraph iş akışı yönetimi
-
-### cofoundai/tests/ - Test Dosyaları
-- **unit/**: Birim testleri
-- **integration/**: Entegrasyon testleri
-- **fixtures/**: Test fikstürleri
-
-### cofoundai/tools/ - Ajan Araçları
-- **code_execution.py**: Kod yürütme aracı
-- **testing_tools.py**: Test araçları
-- **version_control.py**: Sürüm kontrol aracı
-- **file_manager.py**: Dosya yönetimi
-
-### cofoundai/utils/ - Yardımcı Fonksiyonlar
-- **logger.py**: Loglama modülü
-- **prompt_templates.py**: Prompt şablonları
-- **helpers.py**: Yardımcı fonksiyonlar
-
-### logs/ - Log Dosyaları
-- **system/**: Sistem logları
-- **workflows/**: İş akışı logları
-
-## Tamamlanan Çalışmalar
-
-- LangGraph entegrasyonu için gerekli iş akışı yapıları oluşturuldu.
-- JSON Schema doğrulama sistemi kuruldu ve uygulandı.
-- Tüm ajan sınıfları (PlannerAgent, ArchitectAgent, DeveloperAgent, TesterAgent, ReviewerAgent, DocumentorAgent) oluşturuldu.
-- İş akışı yönetimi için LangGraph entegrasyonu tamamlandı.
-- Loglama sistemi kuruldu, hem sisteme hem de iş akışlarına özel loglar üretiliyor.
-- YAML yapılandırma dosyaları oluşturuldu ve doğrulama süreçleri tamamlandı.
-- YAML yapılandırma şemaları iyileştirildi ve esnek yapı desteği eklendi.
-- İş akışları YAML dosyası, ana bölüm (main) altına taşınarak standardize edildi.
-
 # CoFound.ai High-Level System Architecture
 
-## Katmanlı Mimari Yapısı
+## Overview
 
-CoFound.ai bir çoklu-ajan (multi-agent) yazılım geliştirme sistemidir. Sistem, aşağıdaki katmanlardan oluşmaktadır:
+CoFound.ai is a multi-agent software development system designed to automate the development process through specialized AI agents. The system orchestrates agents that work together like a development team, handling everything from planning and architecture to coding, testing, and documentation.
 
-### 1. Kullanıcı Arayüzü Katmanı
-- **CLI Arayüzü**: Kullanıcıların komut satırından isteklerini iletmelerini sağlar
-- **Gösterge Paneli**: (Gelecek) İş akışı durumunu ve ajanları izleme arayüzü
-- **İstek İşleme**: Kullanıcı girdisini işleyen modüller
+## Folder Structure and Organization
 
-### 2. İş Akışı Katmanı
-- **Orkestrasyon Motoru**: Aşağıdaki bileşenleri içerir:
-  - **LangGraph StateGraph**: İş akışı durumlarını ve geçişlerini yönetir
-  - **AgenticGraph**: Dinamik ajan yönlendirmesini ve transferini sağlar
-  - **Handoff Mekanizması**: Ajanlar arası görev transferi için tools desteği
-  - **Durum İzleme**: Aktif ajanı, önceki ajanı ve iş akışı durumunu takip eder
-- **İş Akışı Tanımları**: YAML formatında tanımlanan iş akışı türleri
+```
+cofoundai/                      # Main package
+  ├── agents/                   # Agent definitions and behaviors
+  │   ├── planner.py            # Project planning agent
+  │   ├── architect.py          # Architecture design agent
+  │   ├── developer.py          # Code development agent
+  │   ├── tester.py             # Testing agent
+  │   ├── reviewer.py           # Code review agent
+  │   ├── documentor.py         # Documentation agent
+  │   └── langgraph_agent.py    # LangGraph compatible agent implementation
+  │
+  ├── cli/                      # Command line interface
+  │   ├── main.py               # Main CLI entry point
+  │   ├── commands.py           # CLI commands and functionality
+  │   └── output_formatter.py   # Output formatting
+  │
+  ├── communication/            # Inter-agent communication
+  │   ├── message.py            # Message object definition
+  │   ├── agent_command.py      # Command protocol definitions
+  │   └── protocol.py           # Communication protocols
+  │
+  ├── config/                   # Configuration files
+  │   ├── schema/               # JSON schemas
+  │   │   └── workflows_schema.json # Schema for workflow configuration
+  │   ├── agent_config.yaml     # Agent configurations
+  │   ├── system_config.yaml    # System configurations
+  │   └── workflows.yaml        # Workflow definitions (LangGraph integration)
+  │
+  ├── core/                     # Core system components
+  │   ├── llm_interface.py      # LLM API integration
+  │   ├── config_manager.py     # Configuration management
+  │   ├── system.py             # System management
+  │   └── base_agent.py         # Base agent class
+  │
+  ├── memory/                   # Memory systems
+  │   ├── short_term.py         # Short-term memory
+  │   ├── long_term.py          # Long-term memory (vector database)
+  │   ├── project_context.py    # Project context
+  │   └── vector_store.py       # Vector DB interface
+  │
+  ├── orchestration/            # Agent orchestration and coordination
+  │   ├── orchestrator.py       # Main orchestration engine
+  │   ├── langgraph_workflow.py # LangGraph workflow management
+  │   ├── agentic_graph.py      # Dynamic agent graph for routing
+  │   ├── dynamic_graph.py      # Extended graph functionality
+  │   └── supervisor.py         # Workflow supervision and monitoring
+  │
+  ├── tests/                    # Test files
+  │   ├── unit/                 # Unit tests
+  │   ├── integration/          # Integration tests
+  │   └── fixtures/             # Test fixtures
+  │
+  ├── tools/                    # Agent tools
+  │   ├── code_generator.py     # Code generation tool
+  │   ├── file_manager.py       # File management
+  │   ├── version_control.py    # Version control (Git) tool
+  │   └── context7_adapter.py   # Documentation access tool
+  │
+  └── utils/                    # Helper functions
+      ├── logger.py             # Logging module with JSON formatting
+      ├── prompt_templates.py   # Prompt templates
+      └── helpers.py            # Helper functions
+│
+logs/                           # Logs
+  ├── agents/                   # Agent-specific logs
+  │   ├── architect/            # Architect agent logs
+  │   ├── developer/            # Developer agent logs
+  │   ├── documentor/           # Documentor agent logs
+  │   ├── planner/              # Planner agent logs
+  │   ├── reviewer/             # Reviewer agent logs
+  │   └── tester/               # Tester agent logs
+  │
+  ├── system/                   # System logs
+  └── workflows/                # Workflow logs by project ID
+      └── workflow_*            # Workflow-specific log directories
+│
+projects/                       # User projects
+  └── proj_*                    # Project-specific directories with artifacts
+```
 
-### 3. Ajan Katmanı
-- **Agent İletişim Protokolü (ACP)**: Ajanlar arası standart iletişim formatı
-- **Ajanlar**: Uzmanlaşmış yazılım geliştirme ajanları:
-  - **Planner**: Proje planlaması ve görev ayrıştırması
-  - **Architect**: Sistem mimarisi ve komponent tasarımı
-  - **Developer**: Kod geliştirme ve implementasyon
-  - **Tester**: Test yazımı ve kalite kontrolü
-  - **Reviewer**: Kod inceleme ve geliştirme önerileri
-  - **Documentor**: Teknik dokümantasyon yazımı
-- **Base Agent**: Tüm ajanlarda ortak işlevselliği sağlayan temel sınıf
-- **LangGraph Agent Wrapper**: LangGraph ile entegrasyon için sarmalayıcı
+## Module Details
 
-### 4. Hafıza Katmanı
-- **Kısa Dönemli Hafıza**: Aktif oturum durumunu tutan hafıza
-- **Uzun Dönemli Hafıza**: Vektör veritabanı yoluyla tutarlı hafıza
-- **Proje Bağlamı**: Geliştirme sürecine özgü bağlam verileri
+### cofoundai/agents/ - Agent Definitions and Behaviors
 
-### 5. İletişim Katmanı
-- **Message Sınıfı**: Ajanlar arası mesajlaşma standardı
-- **Command Sınıfı**: Ajanlar arası komut yapısı
-- **Handoff Tools**: Ajanlar arası iletişimde araç olarak kullanılan transferler
-- **State Yönetimi**: İş akışı durumunu güncelleyen ve ileten mekanizmalar
+This module contains specialized AI agents that handle different aspects of the software development process:
 
-### 6. İzleme ve Loglama Katmanı
-- **Yapılandırılmış Logger**: Tüm sistem bileşenlerinin standart loglama mekanizması
-- **JSONLogger**: Yapılandırılmış JSON formatında loglama
-- **Workflow Logger**: İş akışına özel loglama
-- **Agent Logger**: Ajanlara özel loglama
-- **Log Analyzer**: Log kayıtlarını analiz eden ve raporlayan araç
-- **Thread Tracking**: Thread ID ile iş akışı adımlarını takip etme
+- **planner.py**: Project planning and task breakdown agent that analyzes requirements and creates project plans
+- **architect.py**: System architecture design agent that creates component diagrams and technology stack recommendations
+- **developer.py**: Code development agent that writes, refactors, and debugs code
+- **tester.py**: Code testing and quality control agent that writes and executes tests
+- **reviewer.py**: Code review and improvement agent that identifies issues and suggests optimizations
+- **documentor.py**: Project documentation agent that creates technical documentation and guides
+- **langgraph_agent.py**: Base implementation for LangGraph-compatible agents with workflow integration
 
-### 7. Araçlar Katmanı
-- **Kod Yürütme**: Üretilen kodu test etmek için araçlar
-- **Sürüm Kontrolü**: Git entegrasyonu
-- **Dosya Yönetimi**: Dosya okuma, yazma, güncelleme işlemleri
+### cofoundai/cli/ - Command Line Interface
 
-### 8. Konfigürasyon Katmanı
-- **System Config**: Sistem çapında konfigürasyon
-- **Workflow Config**: İş akışı tanımları
-- **Agent Config**: Ajan düzeyinde konfigürasyon
-- **LLM Config**: Dil modeli ayarları ve yapılandırmaları
+This module provides the command-line interface for interacting with the system:
 
-## İş Akışı ve Ajan Etkileşimi
+- **main.py**: Main CLI entry point that parses arguments and initiates workflows
+- **commands.py**: Implementation of CLI commands for different operations
+- **output_formatter.py**: Formats output for CLI display with colors and formatting
 
-CoFound.ai'nin çalışma süreci aşağıdaki gibidir:
+### cofoundai/communication/ - Agent Communication
 
-1. **İstek Alımı**: Kullanıcıdan yazılım geliştirme isteği alınır
-2. **İş Akışı Başlatma**: Uygun iş akışı seçilir ve başlatılır
-3. **Proje Planlama**: Planner ajan, isteği analiz eder ve görevlere ayırır
-4. **Mimari Tasarım**: Architect ajan, sistem mimarisini tasarlar
-5. **Kodlama**: Developer ajan, kodu geliştirir
-6. **Test**: Tester ajan, kodu test eder
-7. **İnceleme**: Reviewer ajan, kodu inceler ve geliştirme önerileri sunar
-8. **Dokümantasyon**: Documentor ajan, teknik dokümantasyon hazırlar
-9. **Sonuç Teslimi**: Geliştirilen yazılım kullanıcıya teslim edilir
+This module defines the communication protocol between agents:
 
-## Agentic Graph Orkestrasyon 
+- **message.py**: Message class for standardized agent communication
+- **agent_command.py**: Command structures used by agents to trigger actions and transitions
+- **protocol.py**: Definitions of communication protocols and standards
 
-CoFound.ai'nin orkestrasyon mekanizması, esnek ve dinamik bir graf yapısına sahiptir:
+### cofoundai/config/ - Configuration Files
 
-1. **Dinamik Ajan Yönlendirme**: Her ajan, kendi uzmanlık alanına göre görevi çözer veya başka bir ajana devreder
-2. **Handoff Tools**: Ajanlar, görevleri başka ajanlara devretmek için özel araçlar kullanır
-3. **State Takibi**: Sistem, aktif ajanı, önceki ajanı ve iş akışının durumunu sürekli takip eder
-4. **Koşullu Geçişler**: LangGraph conditional edges ile duruma bağlı olarak farklı ajanlara geçiş yapılır
-5. **Streaming İzleme**: İş akışı, gerçek zamanlı olarak izlenebilir ve raporlanabilir
+This module contains configuration files and schemas:
 
-## LLM Entegrasyonu ve Test Modu
+- **agent_config.yaml**: Configuration settings for different agent types
+- **system_config.yaml**: System-wide configuration including LLM settings
+- **workflows.yaml**: Workflow definitions specifying agent interactions and transitions
+- **schema/workflows_schema.json**: JSON schema for validating workflow configurations
 
-Sistem, iki modda çalışabilir:
+### cofoundai/core/ - Core System Components
 
-1. **Üretim Modu**: Gerçek LLM çağrıları ile çalışır
-2. **Test Modu**: LLM çağrıları yapmadan, önceden tanımlanmış yanıtlarla çalışır
+This module contains core functionality:
 
-Test modunda, sistem gerçek LLM maliyeti olmadan geliştirilebilir ve test edilebilir.
+- **llm_interface.py**: Interface for interacting with Language Models via different providers
+- **config_manager.py**: Manages loading and validating configuration
+- **system.py**: Handles system initialization and management
+- **base_agent.py**: Base class that all agents inherit from
 
-## Kalıcı Depolama ve İzlenebilirlik
+### cofoundai/memory/ - Memory Systems
 
-Sistem, aşağıdaki verileri kalıcı olarak depolar:
+This module implements memory capabilities for agents:
 
-1. **İş Akışı Durumu**: Her adımda iş akışının durumu kaydedilir
-2. **Ajanlar Arası Mesajlar**: Tüm ajan etkileşimleri loglanır
-3. **Artifacts**: Üretilen kod, dokümantasyon ve diğer eserler
-4. **Log Kayıtları**: Tüm sistem log kayıtları yapılandırılmış formatta tutulur
+- **short_term.py**: Short-term memory for current context within a session
+- **long_term.py**: Long-term memory using vector databases for persistent knowledge
+- **project_context.py**: Stores and manages context specific to a project
+- **vector_store.py**: Abstraction over vector database implementations
 
-## Çıktı Formatları
+### cofoundai/orchestration/ - Agent Orchestration and Coordination
 
-Kullanıcıya aşağıdaki formatlarda çıktı sunulur:
+This module manages multi-agent workflows:
 
-1. **Kod**: Geliştirilen yazılımın kaynak kodu
-2. **Dokümantasyon**: Teknik dokümantasyon
-3. **Test Sonuçları**: Yazılımın test sonuçları
-4. **Uygulama**: Çalıştırılabilir uygulama
+- **orchestrator.py**: Coordinates multiple agents and manages workflow execution
+- **langgraph_workflow.py**: Integration with LangGraph for state-based workflow management
+- **agentic_graph.py**: Implements dynamic agent routing through a graph structure
+- **dynamic_graph.py**: Extended capabilities for dynamic graph modifications
+- **supervisor.py**: Monitors and supervises workflow execution
 
-## Teknoloji Yığını
+### cofoundai/tests/ - Test Files
 
-Sistem, aşağıdaki teknolojileri kullanır:
+This module contains test infrastructure:
 
-1. **Python**: Ana programlama dili
-2. **LangChain**: LLM uygulamaları oluşturma framework'ü
-3. **LangGraph**: Ajan orkestrasyon ve iş akışı motoru
-4. **Vector DB**: Uzun dönemli hafıza için vektör veritabanı
-5. **YAML**: Konfigürasyon ve iş akışı tanımlamaları için
-6. **JSON**: Yapılandırılmış veri ve log formatı
-7. **Git**: Sürüm kontrolü
+- **unit/**: Unit tests for individual components
+- **integration/**: Tests for integrated components working together
+- **fixtures/**: Test data and mock objects for testing
 
-## Gelecek Geliştirmeler
+### cofoundai/tools/ - Agent Tools
 
-1. **Web Arayüzü**: Web tabanlı kullanıcı arayüzü
-2. **Gerçek Zamanlı İzleme**: İş akışını gerçek zamanlı izleme paneli
-3. **Ekip Modu**: Birden fazla kullanıcının aynı projede çalışabilmesi
-4. **Özelleştirilebilir Ajanlar**: Kullanıcıların özel ajanlar tanımlayabilmesi
-5. **Otomatik Ölçeklendirme**: İş yüküne göre ölçeklenebilen sistem
-6. **Çoklu Dil Desteği**: Farklı programlama dilleriyle çalışabilme
-7. **Kullanım Analitiği**: Sistem kullanımı ve performans analitiği
-8. **Ayrıntılı İzleme Arayüzü**: Graph yürütme durumunu görselleştirme
+This module provides tools that agents can use:
+
+- **code_generator.py**: Tool for generating and modifying code
+- **file_manager.py**: Tool for file operations (read, write, modify)
+- **version_control.py**: Git-based version control tool
+- **context7_adapter.py**: Tool for accessing external documentation
+
+### cofoundai/utils/ - Helper Functions
+
+This module contains utility functions:
+
+- **logger.py**: Structured logging with JSON formatting and thread tracking
+- **prompt_templates.py**: Templates for agent interactions with LLMs
+- **helpers.py**: General utility functions
+
+### logs/ - Log Files
+
+This directory stores log files:
+
+- **agents/**: Agent-specific logs organized by agent type
+- **system/**: System-wide logs
+- **workflows/**: Logs organized by workflow ID
+
+## Layered Architecture
+
+CoFound.ai implements a layered architecture that separates concerns and allows for modular development:
+
+### 1. User Interface Layer
+- **CLI Interface**: Command-line interface for user requests and interaction
+- **Dashboard**: (Future) Web interface for monitoring workflow status and agents
+- **Request Processing**: Components that handle and validate user requests
+
+### 2. Workflow Layer
+- **Orchestration Engine**: Core components that manage workflows:
+  - **LangGraph StateGraph**: State machine with transitions between agents
+  - **AgenticGraph**: Dynamic routing based on agent decisions
+  - **Handoff Mechanism**: Tools that enable agents to transfer control
+  - **State Tracking**: Monitoring of workflow state and agent activity
+- **Workflow Definitions**: YAML configuration of different workflow types
+
+### 3. Agent Layer
+- **Agent Communication Protocol (ACP)**: Standardized message format for agent interactions
+- **Specialized Agents**: Task-specific agents with distinct roles:
+  - **Planner**: Requirement analysis and task planning
+  - **Architect**: System design and technical decisions
+  - **Developer**: Code implementation and refinement
+  - **Tester**: Test creation and execution
+  - **Reviewer**: Code review and improvement suggestions
+  - **Documentor**: Documentation creation and maintenance
+- **Base Agent**: Common functionality shared by all agents
+- **LangGraph Integration**: Wrapper that adapts agents to LangGraph workflows
+
+### 4. Memory Layer
+- **Short-Term Memory**: Temporary context for current session
+- **Long-Term Memory**: Persistent knowledge using vector databases
+- **Project Context**: Project-specific information and history
+
+### 5. Communication Layer
+- **Message System**: Structured message passing between agents
+- **Command Structure**: Action commands that trigger state changes
+- **State Management**: Mechanisms to manage and persist state
+
+### 6. Monitoring and Logging Layer
+- **Structured Logging**: JSON-formatted logs with consistent structure
+- **Agent-Specific Logs**: Separate logs for each agent type
+- **Workflow Logs**: Process-level logging for each workflow
+- **Log Analysis**: Tools to analyze and visualize log data
+
+### 7. Tools Layer
+- **Code Generation**: Tools for creating and modifying code
+- **Version Control**: Git-based version tracking
+- **File Operations**: Reading, writing, and updating files
+- **Documentation Access**: Tools to access external documentation
+
+### 8. Configuration Layer
+- **System Settings**: Global configuration
+- **Agent Configuration**: Agent-specific settings
+- **Workflow Definition**: Process and transition definitions
+- **LLM Settings**: Language model configuration and API keys
+
+## Workflow and Agent Interaction
+
+The CoFound.ai development process follows this general workflow:
+
+1. **Request Processing**: User submits a software development request via CLI
+2. **Workflow Selection**: System selects appropriate workflow type
+3. **Planning Phase**: Planner agent breaks down the request into tasks
+4. **Architecture Phase**: Architect agent designs system components and relationships
+5. **Development Phase**: Developer agent implements code based on design
+6. **Testing Phase**: Tester agent creates and runs tests
+7. **Review Phase**: Reviewer agent evaluates code quality and suggests improvements
+8. **Documentation Phase**: Documentor agent creates user and technical documentation
+9. **Delivery**: System provides completed software artifacts to user
+
+## Agentic Graph Orchestration
+
+The core innovation of CoFound.ai is its flexible agent orchestration system:
+
+1. **Dynamic Agent Selection**: Agents can decide when to hand off to other agents
+2. **Tool-Based Routing**: Agents use special tools to transfer control
+3. **State Persistence**: All workflow state is tracked and persisted
+4. **Conditional Transitions**: Graph edges can have conditions for transitions
+5. **Real-Time Monitoring**: Streaming updates during workflow execution
+
+## LLM Integration and Test Mode
+
+The system supports two primary operation modes:
+
+1. **Production Mode**: Uses real LLM API calls for agent processing
+   - Integration with multiple LLM providers (OpenAI, Anthropic, etc.)
+   - Full agent capabilities with dynamic responses
+   - Requires API keys and incurs usage costs
+
+2. **Test Mode**: Operates without LLM API calls
+   - Uses predefined responses for deterministic behavior
+   - All agent classes support a `test_mode` parameter
+   - Enables development and testing without API costs
+   - Useful for integration testing and demonstrations
+
+## Technology Stack
+
+CoFound.ai leverages these key technologies:
+
+1. **Python**: Primary programming language
+2. **LangChain**: Framework for LLM application development
+3. **LangGraph**: Agent orchestration and workflow management
+4. **Vector Databases**: Storage for semantic memory (ChromaDB, etc.)
+5. **YAML**: Configuration and workflow definition format
+6. **JSON Schema**: Validation of configuration files
+7. **Git**: Version control for code artifacts
+
+## Completed Features
+
+- ✅ LangGraph workflow integration
+- ✅ Agent Communication Protocol (ACP)
+- ✅ Dynamic agent routing with graph structure
+- ✅ Structured logging with JSON format
+- ✅ Configuration validation with JSON Schema
+- ✅ Test mode for LLM-free operation
+- ✅ Command-line interface
+- ✅ Basic workflow visualization
+- ✅ File and version control tools
+
+## Future Enhancements
+
+1. **Web Interface**: Browser-based UI for workflow monitoring
+2. **Expanded Agent Capabilities**: More specialized agents for different tasks
+3. **Multi-User Support**: Collaborative development with multiple users
+4. **Enhanced Memory**: Improved vector database integration
+5. **CI/CD Integration**: Pipeline integration for automated workflows
+6. **Metrics Dashboard**: Performance and usage statistics
+7. **Custom Agent Creation**: User-defined agent capabilities
+8. **Multi-Language Support**: Beyond Python to JavaScript, Go, etc.
