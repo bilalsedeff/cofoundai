@@ -16,17 +16,19 @@ class PlannerAgent(BaseAgent):
     AI agent that plans and coordinates the software development process.
     """
 
-    def __init__(self, config: Dict[str, Any]):
+    def __init__(self, config: Dict[str, Any], test_mode: bool = False):
         """
         Initialize the planner agent.
         
         Args:
             config: Dictionary containing the agent's configuration settings
+            test_mode: Whether to run in test mode with simulated responses
         """
         super().__init__(config)
         self.name = config.get("name", "Planner")
         self.description = config.get("description", "Agent that plans and coordinates software development tasks")
         self.current_plan = None
+        self.test_mode = test_mode
         
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
