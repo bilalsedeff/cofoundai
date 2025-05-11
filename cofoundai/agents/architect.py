@@ -21,16 +21,18 @@ class ArchitectAgent(BaseAgent):
     - Creating data models
     """
     
-    def __init__(self, name: str = "Architect"):
+    def __init__(self, config: Dict[str, Any]):
         """
         Initialize the architect agent.
         
         Args:
-            name: Agent name
+            config: Dictionary containing the agent's configuration settings
         """
-        super().__init__(name)
-        self.logger = get_agent_logger(name)
-        self.logger.info(f"Architect agent initialized: {name}")
+        super().__init__(config)
+        self.name = config.get("name", "Architect")
+        self.description = config.get("description", "Agent that designs system architecture")
+        self.logger = get_agent_logger(self.name)
+        self.logger.info(f"Architect agent initialized: {self.name}")
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """

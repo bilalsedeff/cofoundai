@@ -8,6 +8,7 @@ import logging
 from typing import Dict, Any, List, Optional
 
 from cofoundai.core.base_agent import BaseAgent
+from cofoundai.communication.message import Message
 from cofoundai.utils.logger import get_agent_logger
 
 class ReviewerAgent(BaseAgent):
@@ -21,16 +22,18 @@ class ReviewerAgent(BaseAgent):
     - Verifying compliance with standards
     """
     
-    def __init__(self, name: str = "Reviewer"):
+    def __init__(self, config: Dict[str, Any]):
         """
         Initialize the reviewer agent.
         
         Args:
-            name: Agent name
+            config: Dictionary containing the agent's configuration settings
         """
-        super().__init__(name)
-        self.logger = get_agent_logger(name)
-        self.logger.info(f"Reviewer agent initialized: {name}")
+        super().__init__(config)
+        self.name = config.get("name", "Reviewer")
+        self.description = config.get("description", "Agent that performs code review and quality assurance")
+        self.logger = get_agent_logger(self.name)
+        self.logger.info(f"Reviewer agent initialized: {self.name}")
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -42,7 +45,7 @@ class ReviewerAgent(BaseAgent):
         Returns:
             Output data including review results
         """
-        self.logger.info("Processing code review request", input=input_data)
+        self.logger.info("Processing code review request", extra={"input": str(input_data)[:200]})
         
         # Extract data
         code_files = input_data.get("code_files", {})
@@ -54,8 +57,10 @@ class ReviewerAgent(BaseAgent):
         # Log the review process
         self.logger.info(
             "Performing code review",
-            code_files_count=len(code_files),
-            standards_count=len(coding_standards)
+            extra={
+                "code_files_count": len(code_files),
+                "standards_count": len(coding_standards)
+            }
         )
         
         # Creating mock review results
@@ -85,13 +90,53 @@ class ReviewerAgent(BaseAgent):
         
         self.logger.info(
             "Code review completed", 
-            quality_score=review_results["summary"]["quality_score"],
-            issues_count=review_results["summary"]["issues_count"],
-            recommendations_count=review_results["summary"]["recommendations_count"]
+            extra={
+                "quality_score": review_results["summary"]["quality_score"],
+                "issues_count": review_results["summary"]["issues_count"],
+                "recommendations_count": review_results["summary"]["recommendations_count"]
+            }
         )
         
         return {
             "status": "success",
             "review_results": review_results,
             "message": "Code review completed with findings"
-        } 
+        }
+        
+    def process_message(self, message: Message) -> Message:
+        """
+        Process an incoming message and generate an appropriate response.
+        
+        Args:
+            message: The message object to process
+            
+        Returns:
+            Response message
+        """
+        content = message.content.lower()
+        metadata = message.metadata or {}
+        
+        if "review" in content or "code quality" in content:
+            # Extract code from metadata
+            code_files = metadata.get("code_files", {})
+            coding_standards = metadata.get("coding_standards", [])
+            
+            # Create input data for process function
+            input_data = {
+                "code_files": code_files,
+                "coding_standards": coding_standards
+            }
+            
+            # Process the code review request
+            result = self.process(input_data)
+            
+            # Create and return response message
+            return Message(
+                sender=self.name,
+                recipient=message.sender,
+                content=result["message"],
+                metadata={"review_results": result["review_results"]}
+            )
+        else:
+            # Default to super implementation
+            return super().process_message(message) 

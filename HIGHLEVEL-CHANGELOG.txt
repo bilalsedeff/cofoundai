@@ -1,43 +1,63 @@
 # CoFound.ai Project Changelog
 
-2025-05-08: Created initial project directory structure with core modules
-2025-05-08: Created base README.md file with project overview and structure
-2025-05-08: Created __init__ files for all packages
-2025-05-08: Implemented core BaseAgent abstract class
-2025-05-08: Implemented Message class for agent communication
-2025-05-08: Created PlannerAgent class for project planning and task allocation
-2025-05-08: Created DeveloperAgent class for code generation and debugging
-2025-05-08: Implemented Orchestrator class for agent coordination
-2025-05-08: Converted all project code and documentation to English
-2025-05-08: Created CodeGenerator tool for the developer agent
-2025-05-08: Implemented CLI main entry point for the application
-2025-05-08: Created requirements.txt with project dependencies
-2025-05-08: Created workflow configuration file with predefined agent workflows
-2025-05-08: Created system configuration file with agent and LLM settings
-2025-05-08: Created main README.md with project documentation and usage instructions
-2025-05-08: Added MIT license file
-2025-05-08: Integrated LangGraph framework for workflow orchestration
-2025-05-08: Created comprehensive logging system with JSON formatting and analysis tools
-2025-05-08: Added JSON schema for validating workflow YAML configuration
-2025-05-08: Enhanced CLI with demo mode for LangGraph workflow testing
-2025-05-08: Created YAML linting configuration for code quality
-2025-05-08: Implemented agent workflow mechanism with state management
-2025-05-08: Added LogAnalyzer for log visualization and debugging
-2025-05-08: Fixed YAML linting errors in workflow configuration by updating schema and format
-2025-05-08: Standardized all code and comments to English language for consistency
-2025-05-08: Updated LangGraphWorkflow to work with new workflows array structure
-2025-05-08: Enhanced CLI commands to work with workflow IDs from the new YAML structure
-2025-05-08: Created missing agent classes (ArchitectAgent, TesterAgent, ReviewerAgent, DocumentorAgent) 
-2025-05-08: Updated YAML linting configuration to disable schema validation for custom properties
-2025-05-08: Added Python script for YAML validation against JSON schema
-2025-05-08: Completed end-to-end validation of LangGraph integration with all agent types
-2025-05-09: Fixed persistent YAML validation errors by reformatting workflows.yaml and updating schema
-2025-05-09: Enhanced JSON schema with additionalProperties validation for better error detection
-2025-05-09: Ensured consistent null value representation across all YAML configurations
-2025-05-09: Modified JSON schema to support both nested and flat workflow structure formats
-2025-05-09: Created HIGHLEVEL-ARCHITECTURE.txt for project-wide structural documentation
-2025-05-09: Updated workflows_schema.json to use $ref for better code reuse and maintainability
-2025-05-09: Standardized workflows.yaml formatting by moving workflows under "main" key as required by schema
+2025-05-22: Eklendi: Context7 entegrasyonu için context7_adapter.py modülü oluşturuldu
+2025-05-22: Eklendi: test_context7.py test dosyası, Context7 adaptörünün temel işlevlerini test etmek için
+2025-05-22: Eklendi: test_acp.py dosyası, LLM modelleri olmadan ajanlar arası iletişim protokolünün (ACP) testi için
+2025-05-22: Güncellendi: LangGraphWorkflow sınıfı, yapıcı metoduna agents parametresi eklenerek ajanların otomatik kaydedilmesi sağlandı
+2025-05-22: Düzeltildi: Loosely-coupled ajanlar için LangGraph workflow entegrasyonu yapıldı ve test modunu destekleyen bir test dosyası oluşturuldu
+2025-05-11: Eklendi: Workflow şema görselleştirme scriptleri (visualize_develop_app.py, visualize_prototype.py, visualize_code_review.py), LangGraph iş akışlarını Mermaid diagramları olarak görselleştirmek için
+2025-05-10: Düzeltildi: CLI'da langgraph paketi kontrolü gerektiren hard-coded mesaj, paketlerin başarıyla yüklendiğini gösteren mesajla değiştirildi
 2025-05-09: Resolved conflict between different YAML validation systems (linter vs JSON schema)
 2025-05-09: Updated yamllint configuration to ignore specific schema properties needed for workflow functionality
 2025-05-09: Prioritized JSON schema validation over linter rules for critical workflow configuration
+2025-05-09: Standardized workflows.yaml formatting by moving workflows under "main" key as required by schema
+2025-05-09: Updated workflows_schema.json to use $ref for better code reuse and maintainability
+2025-05-09: Created HIGHLEVEL-ARCHITECTURE.txt for project-wide structural documentation
+2025-05-09: Modified JSON schema to support both nested and flat workflow structure formats
+2025-05-09: Ensured consistent null value representation across all YAML configurations
+2025-05-09: Enhanced JSON schema with additionalProperties validation for better error detection
+2025-05-09: Fixed persistent YAML validation errors by reformatting workflows.yaml and updating schema
+2025-05-08: Completed end-to-end validation of LangGraph integration with all agent types
+2025-05-08: Added Python script for YAML validation against JSON schema
+2025-05-08: Updated YAML linting configuration to disable schema validation for custom properties
+2025-05-08: Created missing agent classes (ArchitectAgent, TesterAgent, ReviewerAgent, DocumentorAgent) 
+2025-05-08: Enhanced CLI commands to work with workflow IDs from the new YAML structure
+2025-05-08: Updated LangGraphWorkflow to work with new workflows array structure
+2025-05-08: Standardized all code and comments to English language for consistency
+2025-05-08: Fixed YAML linting errors in workflow configuration by updating schema and format
+2025-05-08: Added LogAnalyzer for log visualization and debugging
+2025-05-08: Implemented agent workflow mechanism with state management
+2025-05-08: Created YAML linting configuration for code quality
+2025-05-08: Enhanced CLI with demo mode for LangGraph workflow testing
+2025-05-08: Added JSON schema for validating workflow YAML configuration
+2025-05-08: Created comprehensive logging system with JSON formatting and analysis tools
+2025-05-08: Integrated LangGraph framework for workflow orchestration
+2025-05-08: Added MIT license file
+2025-05-08: Created main README.md with project documentation and usage instructions
+2025-05-08: Created system configuration file with agent and LLM settings
+2025-05-08: Created workflow configuration file with predefined agent workflows
+2025-05-08: Created requirements.txt with project dependencies
+2025-05-08: Implemented CLI main entry point for the application
+2025-05-08: Created CodeGenerator tool for the developer agent
+2025-05-08: Converted all project code and documentation to English
+2025-05-08: Implemented Orchestrator class for agent coordination
+2025-05-08: Created DeveloperAgent class for code generation and debugging
+2025-05-08: Created PlannerAgent class for project planning and task allocation
+2025-05-08: Implemented Message class for agent communication
+2025-05-08: Implemented core BaseAgent abstract class
+2025-05-08: Created __init__ files for all packages
+2025-05-08: Created base README.md file with project overview and structure
+2025-05-08: Created initial project directory structure with core modules
+2025-05-20: Ajanlar için loosely-coupled çalışma düzeni geliştirildi. BaseAgent ve diğer tüm Ajanlar LangGraph workflow entegrasyonu için düzenlendi.
+2025-05-14: BaseAgent ve tüm ajanlar (Planner, Architect, Developer, Tester, Reviewer, Documentor) arasındaki uyumsuzluklar giderildi. Tüm ajan sınıfları için process_message ve process metodları standartlaştırıldı.
+2025-05-12: LangGraph workflow entegrasyonu için temel yapı düzenlendi. Şimdilik, LLM entegrasyonu olmadan ajanların iletişimi test edilebilir hale getirildi.
+2025-05-10: Eklendi: LangGraph ile test amaçlı workflow entegrasyonu tanımlandı. Geliştirme sürecinin izlenmesi için tanılama ve test modu eklendi.
+2025-05-09: Eklendi: Belgeleme ajanı için temel kod yapısı oluşturuldu. README.md oluşturma ve API dokümantasyon yetenekleri dahil edildi
+2025-05-08: Eklendi: Gözden geçirme ajanı için arayüz tanımlandı. Kod kalite değerlendirmesi ve öneriler sunma yeteneği eklendi
+2025-05-07: Eklendi: Test ajanı sınıfı tanımlandı. Birim test ve entegrasyon testi çerçevesi oluşturuldu
+2025-05-06: Eklendi: Geliştirici ajanı için kod üretimi yetenekleri eklendi. Mevcut kodu yeniden düzenleme ve hata ayıklama fonksiyonları dahil edildi
+2025-05-05: Eklendi: Mimar ajanı için veri modelleri ve sistem mimarisi tanımlama yetenekleri eklendi
+2025-05-04: Eklendi: Planlayıcı ajanı temel alt görevlere bölme ve planlama yetenekleri eklendi
+2025-05-03: Eklendi: Ajan-ajan iletişim protokolü tanımlandı ve mesaj aktarım sistemi oluşturuldu
+2025-05-02: Eklendi: CLI arayüzü tanımlandı ve temel görev başlatma komutları oluşturuldu
+2025-05-01: Eklendi: Temel proje yapısı oluşturuldu, klasör yapısı ve ana bileşenler tanımlandı

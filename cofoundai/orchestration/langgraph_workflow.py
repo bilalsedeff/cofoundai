@@ -1,103 +1,64 @@
 """
 CoFound.ai LangGraph Workflow Engine
 
-This module defines the LangGraph-based workflow engine for CoFound.ai.
-LangGraph is used to manage complex agent workflows and states.
+This module defines the LangGraph workflow engine for agent orchestration.
+Handles state management and workflow graph construction.
 """
 
 import logging
-from typing import Dict, List, Any, Optional, Callable, Set
-import json
-from pathlib import Path
-
-# LangGraph imports
-from langgraph.graph import StateGraph, END
+from typing import Dict, Any, Callable, List, Optional, Type
 
 from cofoundai.core.base_agent import BaseAgent
-from cofoundai.utils.logger import workflow_logger
+from cofoundai.utils.logger import get_workflow_logger
 
 
 class LangGraphWorkflow:
     """
-    LangGraph-based workflow engine.
-    
-    This class defines and manages state machine-based workflows using the
-    LangGraph library. Workflows can be created from configuration in YAML files.
+    LangGraph-based workflow manager for coordinating agent interactions.
     """
     
-    def __init__(self, name: str, config: Dict[str, Any], agents: Dict[str, BaseAgent] = None):
+    def __init__(self, name: str, config: Dict[str, Any], agents: Optional[Dict[str, BaseAgent]] = None):
         """
-        Initialize a LangGraph workflow.
+        Initialize the LangGraph workflow.
         
         Args:
-            name: Workflow name
-            config: Workflow configuration
-            agents: Collection of agents to use in the workflow
+            name: Name of the workflow
+            config: Workflow configuration settings
+            agents: Optional dictionary of agent names to agent objects to automatically register
         """
         self.name = name
         self.config = config
-        self.agents = agents or {}
-        self.logger = workflow_logger
-        self.graph = None
-        self._initialize_graph()
+        self.agents: Dict[str, BaseAgent] = {}
+        self.state_map: Dict[str, Callable] = {}
+        self.logger = get_workflow_logger(f"workflow.{name}")
+        self.test_mode = config.get("test_mode", False)
         
-    def _initialize_graph(self) -> None:
+        # Auto-register agents if provided
+        if agents:
+            for agent_name, agent in agents.items():
+                self.register_agent(agent)
+            self.logger.info(f"Auto-registered {len(agents)} agents")
+        
+    def register_agent(self, agent: BaseAgent, state_name: Optional[str] = None) -> None:
         """
-        Initialize the LangGraph state graph according to configuration.
+        Register an agent with the workflow.
+        
+        Args:
+            agent: Agent to register
+            state_name: Optional state name for the agent (defaults to agent name)
         """
-        self.logger.info(f"Initializing LangGraph workflow: {self.name}")
+        agent_name = agent.name
+        self.agents[agent_name] = agent
         
-        # Define workflow state (shared state between agents)
-        workflow_state = {
-            "messages": [],
-            "current_phase": None,
-            "completed_phases": [],
-            "artifacts": {},
-            "metadata": {},
-            "error": None
-        }
-        
-        # Create state graph
-        builder = StateGraph(workflow_state)
-        
-        # Define states and transitions
-        if "langgraph" in self.config:
-            lg_config = self.config["langgraph"]
-            states = {state["name"]: state for state in lg_config.get("states", [])}
+        # If no state name is provided, use the agent name
+        if state_name is None:
+            state_name = agent_name
             
-            # Add node for each state
-            for state_name, state_info in states.items():
-                agent_name = state_info.get("agent")
-                if agent_name in self.agents:
-                    # Add a node using real agent function
-                    builder.add_node(state_name, self._create_state_handler(agent_name, state_info))
-                else:
-                    # If agent doesn't exist, add a placeholder function (for logging)
-                    self.logger.warning(f"Agent not found: {agent_name}, using placeholder")
-                    builder.add_node(state_name, self._create_placeholder_handler(state_name, state_info))
-            
-            # Add transitions
-            for transition in lg_config.get("transitions", []):
-                from_state = transition.get("from")
-                to_state = transition.get("to")
-                
-                if to_state is None:
-                    builder.add_edge(from_state, END)
-                    self.logger.debug(f"Added transition: {from_state} -> END")
-                else:
-                    builder.add_edge(from_state, to_state)
-                    self.logger.debug(f"Added transition: {from_state} -> {to_state}")
-            
-            # Determine entry point (first state)
-            if lg_config.get("states"):
-                entry_state = lg_config["states"][0]["name"]
-                builder.set_entry_point(entry_state)
-                self.logger.info(f"Entry point set: {entry_state}")
+        # Create state handler for this agent
+        self.state_map[state_name] = self._create_state_handler(agent_name, {})
         
-        # Compile graph
-        self.graph = builder.compile()
-        self.logger.info(f"LangGraph workflow compiled: {self.name}")
-    
+        self.logger.info(f"Agent registered: {agent_name} as state: {state_name}")
+
     def _create_state_handler(self, agent_name: str, state_info: Dict[str, Any]) -> Callable:
         """
         Creates a function for a specific state.
@@ -119,177 +80,157 @@ class LangGraphWorkflow:
             Returns:
                 Updated workflow state
             """
-            self.logger.info(f"Processing workflow state: {agent_name} - {state_info.get('name')}")
+            self.logger.info(f"Executing state: {agent_name}")
+            self.logger.debug(f"Input state: {state}")
             
-            # Update state
-            state["current_phase"] = state_info.get("name")
-            
+            # Get the agent
+            agent = self.agents.get(agent_name)
+            if not agent:
+                self.logger.error(f"Agent not found: {agent_name}")
+                return {
+                    **state,
+                    "error": f"Agent not found: {agent_name}",
+                    "status": "error"
+                }
+                
             try:
-                # Call actual agent function (currently simulated)
-                agent = self.agents.get(agent_name)
-                if agent:
-                    # At this point, LLM call would be made in agent's process_input method
-                    # For now, we're just logging
-                    self.logger.info(f"Calling agent: {agent_name}")
-                    
-                    # When agent is called, we'll add a message to the state
-                    message = {
-                        "from": agent_name,
-                        "content": f"Completed [{state_info.get('name')}] operation",
-                        "timestamp": "__timestamp__",  # Real timestamp will be added
-                        "metadata": {
-                            "phase": state_info.get("name"),
-                            "description": state_info.get("description", "")
-                        }
-                    }
-                    state["messages"].append(message)
-                    
-                    # Update completed phases
-                    if state_info.get("name") not in state["completed_phases"]:
-                        state["completed_phases"].append(state_info.get("name"))
+                # Process the current state data with the agent
+                result = agent.process(state)
+                
+                # Update state with agent's result
+                updated_state = {
+                    **state,
+                    "previous_results": {
+                        **(state.get("previous_results", {})),
+                        agent_name: result
+                    },
+                    "current_agent": agent_name,
+                    "status": result.get("status", "success")
+                }
+                
+                # Store the raw result as well
+                updated_state[agent_name] = result
+                
+                self.logger.info(f"State {agent_name} completed: {result.get('status', 'success')}")
+                self.logger.debug(f"Output state: {updated_state}")
+                
+                return updated_state
+                
             except Exception as e:
-                # Record error state
-                error_msg = f"Error while processing state: {str(e)}"
-                self.logger.error(error_msg)
-                state["error"] = error_msg
-            
-            return state
-            
+                self.logger.error(f"Error in state {agent_name}: {str(e)}")
+                return {
+                    **state,
+                    "error": str(e),
+                    "current_agent": agent_name,
+                    "status": "error"
+                }
+                
         return state_handler
-    
-    def _create_placeholder_handler(self, state_name: str, state_info: Dict[str, Any]) -> Callable:
-        """
-        Creates a placeholder function to use when an agent doesn't exist.
         
-        Args:
-            state_name: State name
-            state_info: Information about the state
-            
-        Returns:
-            Placeholder state handling function
+    def build_graph(self) -> Any:
         """
-        def placeholder_handler(state: Dict[str, Any]) -> Dict[str, Any]:
+        Build the LangGraph workflow graph.
+        
+        In test mode, returns a simple callable function that simulates the graph execution.
+        
+        Returns:
+            Workflow graph object (or simulation function in test mode)
+        """
+        if self.test_mode:
+            return self._build_test_graph()
+            
+        try:
+            # This would normally import and use LangGraph
+            # For prototype testing without LLM, we're using a simpler approach
+            
+            from langchain.agents import AgentType, initialize_agent, Tool
+            from langchain.chains import LLMChain
+            
+            # Create a simple graph for testing - this is a placeholder
+            # In a real implementation, this would create the actual LangGraph workflow
+            
+            self.logger.info(f"Building workflow graph: {self.name}")
+            
+            return self._build_test_graph()  # Fallback to test graph for now
+                
+        except ImportError:
+            self.logger.warning("LangGraph not available, using test mode fallback")
+            return self._build_test_graph()
+            
+    def _build_test_graph(self):
+        """
+        Build a simple function that simulates LangGraph execution for testing.
+        
+        Returns:
+            Function that executes the workflow
+        """
+        def execute_workflow(initial_state: Dict[str, Any]) -> Dict[str, Any]:
             """
-            Placeholder state handling function.
+            Execute the workflow in a linear fashion for testing.
             
             Args:
-                state: Current workflow state
+                initial_state: Initial state for the workflow
                 
             Returns:
-                Updated workflow state
+                Final workflow state
             """
-            self.logger.warning(f"Placeholder function called: {state_name}")
+            self.logger.info(f"Executing test workflow: {self.name}")
             
-            # Update state
-            state["current_phase"] = state_name
+            # Start with the initial state
+            current_state = initial_state.copy()
+            current_state["status"] = "starting"
+            current_state["previous_results"] = {}
             
-            # Add a placeholder message
-            message = {
-                "from": "system",
-                "content": f"Placeholder function executed for [{state_name}].",
-                "timestamp": "__timestamp__",
-                "metadata": {
-                    "phase": state_name,
-                    "description": state_info.get("description", "No description"),
-                    "placeholder": True
-                }
-            }
-            state["messages"].append(message)
+            # Get the agent execution order from config or use all agents in registration order
+            agent_order = self.config.get("test_agent_order", list(self.agents.keys()))
             
-            # Update completed phases
-            if state_name not in state["completed_phases"]:
-                state["completed_phases"].append(state_name)
+            for agent_name in agent_order:
+                # Log the transition
+                self.logger.info(f"Transitioning to agent: {agent_name}")
                 
-            return state
+                # Execute the state handler for this agent
+                if agent_name in self.state_map:
+                    try:
+                        current_state = self.state_map[agent_name](current_state)
+                        
+                        # Check for error status
+                        if current_state.get("status") == "error":
+                            self.logger.error(f"Workflow stopped due to error in {agent_name}")
+                            break
+                            
+                    except Exception as e:
+                        self.logger.error(f"Error during {agent_name} execution: {str(e)}")
+                        current_state["status"] = "error"
+                        current_state["error"] = str(e)
+                        break
+                else:
+                    self.logger.warning(f"State handler not found for agent: {agent_name}")
             
-        return placeholder_handler
-    
-    def run(self, input_data: Dict[str, Any] = None) -> Dict[str, Any]:
+            # Mark workflow as complete
+            if current_state.get("status") != "error":
+                current_state["status"] = "complete"
+                
+            self.logger.info(f"Workflow completed with status: {current_state.get('status')}")
+            return current_state
+            
+        return execute_workflow
+        
+    def run(self, initial_state: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Run the workflow.
+        Run the workflow with the given initial state.
         
         Args:
-            input_data: Input data for the workflow
+            initial_state: Initial state for the workflow
             
         Returns:
-            Final state of the workflow
+            Final workflow state
         """
-        if self.graph is None:
-            self.logger.error("Workflow graph not yet initialized")
-            return {"error": "Workflow graph not initialized"}
-        
         self.logger.info(f"Running workflow: {self.name}")
         
-        # Prepare initial state
-        initial_state = {
-            "messages": [],
-            "current_phase": None,
-            "completed_phases": [],
-            "artifacts": {},
-            "metadata": {},
-            "input": input_data or {}
-        }
+        # Build the graph (or get the testing function)
+        graph = self.build_graph()
         
-        try:
-            # Run the graph
-            for state in self.graph.stream(initial_state):
-                # Log for each intermediate state
-                phase = state["current_phase"]
-                self.logger.info(f"Workflow state updated: {phase}")
-                self.logger.debug(f"Current state: {json.dumps(state, indent=2)}")
-            
-            # Get final state
-            final_state = state
-            self.logger.info(f"Workflow completed: {self.name}")
-            self.logger.info(f"Completed phases: {', '.join(final_state['completed_phases'])}")
-            
-            return final_state
-        except Exception as e:
-            error_msg = f"Error while running workflow: {str(e)}"
-            self.logger.error(error_msg)
-            return {
-                "error": error_msg,
-                "state": "error"
-            }
-    
-    @classmethod
-    def from_config_file(cls, config_file: str, agents: Dict[str, BaseAgent] = None):
-        """
-        Creates a workflow instance from a configuration file.
+        # Run the workflow
+        result = graph(initial_state)
         
-        Args:
-            config_file: Path to YAML configuration file
-            agents: Collection of agents to use in the workflow
-            
-        Returns:
-            LangGraphWorkflow instance
-        """
-        import yaml
-        
-        try:
-            with open(config_file, 'r', encoding='utf-8') as f:
-                config = yaml.safe_load(f)
-                
-            # Find main configuration block
-            main_config = config.get("main", {})
-            
-            # Get workflows list
-            workflows_list = main_config.get("workflows", [])
-            
-            if not workflows_list:
-                workflow_logger.error("No workflows found in configuration file")
-                return None
-                
-            # Create workflow instance for the first workflow in the list
-            first_workflow = workflows_list[0]
-            workflow_id = first_workflow.get("id")
-            
-            if not workflow_id:
-                workflow_logger.error("Workflow ID not found in configuration")
-                return None
-                
-            return cls(workflow_id, first_workflow, agents)
-            
-        except Exception as e:
-            workflow_logger.error(f"Error loading configuration file: {str(e)}")
-            return None 
+        return result 

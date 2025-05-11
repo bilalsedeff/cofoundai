@@ -1,0 +1,2 @@
+{"timestamp": 1746965463.6477742, "formatted_time": "2025-05-11 15:11:03", "logger": "workflow", "level": "INFO", "data": {"message": "Initializing LangGraph workflow: develop_app"}}
+{"timestamp": 1746965563.458051, "formatted_time": "2025-05-11 15:12:43", "logger": "workflow", "level": "INFO", "data": {"message": "Initializing LangGraph workflow: prototype"}}

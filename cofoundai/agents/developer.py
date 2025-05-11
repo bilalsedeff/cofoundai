@@ -24,11 +24,63 @@ class DeveloperAgent(BaseAgent):
             config: Dictionary containing the agent's configuration settings
         """
         super().__init__(config)
-        self.name = "Developer"
-        self.description = "Agent that performs code development tasks"
+        self.name = config.get("name", "Developer")
+        self.description = config.get("description", "Agent that performs code development tasks")
         self.code_generator = CodeGenerator(config.get("code_generator", {}))
         self.current_task = None
         self.current_context = {}
+    
+    def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Process input data and develop code.
+        
+        Args:
+            input_data: Input data including task description and context
+            
+        Returns:
+            Output data including generated code
+        """
+        # Extract task information
+        project_description = input_data.get("project_description", "")
+        architecture = input_data.get("previous_results", {}).get("Architecture", {}).get("architecture", {})
+        
+        # Use architecture to determine the appropriate language and framework
+        language = "python"
+        framework = "fastapi"
+        
+        # Try to determine language and framework from architecture if available
+        if architecture and "components" in architecture:
+            for component in architecture.get("components", []):
+                if component.get("type") == "API" or component.get("name") == "Backend":
+                    if "technologies" in component:
+                        for tech in component["technologies"]:
+                            if tech.lower() in ["python", "javascript", "typescript", "java", "go"]:
+                                language = tech.lower()
+                            if tech.lower() in ["fastapi", "flask", "django", "express", "spring"]:
+                                framework = tech.lower()
+        
+        # Create context for code generation
+        context = {
+            "language": language,
+            "framework": framework,
+            "architecture": architecture,
+            "project_description": project_description
+        }
+        
+        # Generate code for the project
+        task_description = f"Create a basic {framework} application for: {project_description}"
+        code_result = self.write_code(task_description, context)
+        
+        return {
+            "status": "success",
+            "message": f"Code developed for {framework} application",
+            "code_files": {
+                code_result["file_path"]: code_result["code"]
+            },
+            "language": language,
+            "framework": framework,
+            "dependencies": code_result.get("metadata", {}).get("dependencies", [])
+        }
         
     def write_code(self, task_description: str, context: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -190,8 +242,5 @@ class DeveloperAgent(BaseAgent):
             )
             
         else:
-            return Message(
-                sender=self.name,
-                recipient=message.sender,
-                content="Developer agent: Please specify a code writing, revision, or debugging request."
-            ) 
+            # Default to super implementation which will call process()
+            return super().process_message(message) 
