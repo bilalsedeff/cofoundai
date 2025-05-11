@@ -26,3 +26,10 @@
 {"timestamp": 1747002957.6413794, "formatted_time": "2025-05-12 01:35:57", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Transitioning to agent: agent2"}}
 {"timestamp": 1747002957.6418834, "formatted_time": "2025-05-12 01:35:57", "logger": "workflow.test_workflow", "level": "WARNING", "data": {"message": "State handler not found for agent: agent2"}}
 {"timestamp": 1747002957.6423628, "formatted_time": "2025-05-12 01:35:57", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Workflow completed with status: complete"}}
+{"timestamp": 1747003219.406588, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Running workflow: test_workflow"}}
+{"timestamp": 1747003219.4070697, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Executing test workflow: test_workflow"}}
+{"timestamp": 1747003219.4073083, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Transitioning to agent: agent1"}}
+{"timestamp": 1747003219.407555, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "WARNING", "data": {"message": "State handler not found for agent: agent1"}}
+{"timestamp": 1747003219.4077487, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Transitioning to agent: agent2"}}
+{"timestamp": 1747003219.4079213, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "WARNING", "data": {"message": "State handler not found for agent: agent2"}}
+{"timestamp": 1747003219.40817, "formatted_time": "2025-05-12 01:40:19", "logger": "workflow.test_workflow", "level": "INFO", "data": {"message": "Workflow completed with status: complete"}}
