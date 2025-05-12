@@ -1,5 +1,16 @@
 # CoFound.ai Project Changelog
 
+## LangGraph API Compatibility Update (2024-05-12)
+
+- Fixed: agen tic_graph.py - Updated tool decorator implementation to work with latest langchain-core API
+- Fixed: orchestration/agentic_graph.py - Implemented simplified graph structure for LangGraph compatibility
+- Fixed: Updated requirements.txt - Consolidated and fixed dependency versions
+- Fixed: All demo BAT files now successfully run with Python module imports working
+- Added: Support for multiple agent types in agentic_graph.py that don't have LangGraph compatibility
+- Improvement: Better type checking and fallback mechanisms for different agent API implementations
+- Improvement: More resilient error handling in agent tool registration
+- Fixed: requirements.txt - Removed duplicated dependencies with conflicting versions
+
 ## Agent Protocol Integration (2024-05-13)
 
 - Added: communication/protocol.py - Agent Protocol (AP) compliant protocol adapter implementation
@@ -10,6 +21,15 @@
 - Feature: Agent Protocol API endpoints for Agents, Runs, Threads and Store
 - Feature: Seamless integration of LangGraph workflows with Agent Protocol
 - Feature: Existing CoFound.ai message format to AP message format conversion
+
+## Project Structure Reorganization (2024-05-12)
+
+- Restructured: Moved test files to cofoundai/tests/unit/ and cofoundai/tests/integration/
+- Restructured: Moved visualization tools to scripts/ directory
+- Restructured: Moved demo files to demos/ directory
+- Restructured: Moved HIGHLEVEL documentation to docs/ directory
+- Updated: Demo files to handle updated directory structure
+- Fixed: All .bat files to use full paths with environment variables
 
 ## Platform Core
 
