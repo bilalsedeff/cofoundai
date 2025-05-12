@@ -1,5 +1,16 @@
 # CoFound.ai Project Changelog
 
+## Agent Protocol Integration (2024-05-13)
+
+- Added: communication/protocol.py - Agent Protocol (AP) compliant protocol adapter implementation
+- Added: api/app.py & api/__init__.py - FastAPI based AP API server 
+- Updated: orchestration/langgraph_workflow.py - Added register_as_agent method for AP integration
+- Added: test_agent_protocol.py - Tests for Agent Protocol integration
+- Updated: requirements.txt - Added FastAPI, Uvicorn, Starlette for API support
+- Feature: Agent Protocol API endpoints for Agents, Runs, Threads and Store
+- Feature: Seamless integration of LangGraph workflows with Agent Protocol
+- Feature: Existing CoFound.ai message format to AP message format conversion
+
 ## Platform Core
 
 2025-05-12: Updated: cofoundai/agents/*.py - Added test_mode parameter to all agent constructors

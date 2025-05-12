@@ -1,0 +1,14 @@
+# Virtual Environment folders
+clean_venv/
+venv_py38_backup/
+venv_py39/
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+
+# Pytest
+.pytest_cache/
+
