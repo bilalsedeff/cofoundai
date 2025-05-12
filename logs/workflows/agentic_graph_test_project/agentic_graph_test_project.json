@@ -1,5 +1,0 @@
-{"timestamp": 1747002450.112775, "formatted_time": "2025-05-12 01:27:30", "logger": "agentic_graph_test_project", "level": "WARNING", "data": {"message": "Cannot build graph, no agents registered"}}
-{"timestamp": 1747002450.1134894, "formatted_time": "2025-05-12 01:27:30", "logger": "agentic_graph_test_project", "level": "INFO", "data": {"message": "Graph initialized", "project_id": "test_project", "agent_count": 0}}
-{"timestamp": 1747002450.1139946, "formatted_time": "2025-05-12 01:27:30", "logger": "agentic_graph_test_project", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Planner", "tools": []}}
-{"timestamp": 1747002450.1150277, "formatted_time": "2025-05-12 01:27:30", "logger": "agentic_graph_test_project", "level": "WARNING", "data": {"message": "Agent missing LangGraph implementation", "agent": "Planner"}}
-{"timestamp": 1747002450.1156263, "formatted_time": "2025-05-12 01:27:30", "logger": "agentic_graph_test_project", "level": "DEBUG", "data": {"message": "Added conditional edges", "agent": "Planner"}}
