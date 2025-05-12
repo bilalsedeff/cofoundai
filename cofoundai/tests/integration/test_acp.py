@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-CoFound.ai - Ajan İletişim Protokolü (ACP) Testi
+CoFound.ai - Agent Communication Protocol (ACP) Test
 
-Bu script, LLM API çağrıları yapmadan ajanların birbirleriyle iletişim kurmasını test eder.
-Tüm ajanların process() metodunun senkronize olduğunu ve workflow içinde doğru şekilde
-veri akışının sağlandığını kontrol eder.
+This script tests agent-to-agent communication without making LLM API calls.
+It verifies that all agents' process() methods are synchronized and data flow
+is handled correctly within the workflow.
 """
 
 import sys
@@ -17,7 +17,7 @@ import logging
 import os
 import shutil
 
-# CoFound.ai modüllerini import et
+# Import CoFound.ai modules
 from cofoundai.core.base_agent import BaseAgent
 from cofoundai.agents.planner import PlannerAgent
 from cofoundai.agents.architect import ArchitectAgent
@@ -30,27 +30,27 @@ from cofoundai.utils.logger import system_logger, get_workflow_logger
 from cofoundai.tools import FileManager, VersionControl, Context7Adapter
 
 def setup_logging():
-    """Test için loglama yapılandırması."""
-    # Konsola ayrıntılı log yazdırmak için handler oluştur
+    """Test logging configuration."""
+    # Create handler to print detailed logs to console
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.INFO)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     console_handler.setFormatter(formatter)
     
-    # Root logger'a ekle
+    # Add to root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     root_logger.addHandler(console_handler)
 
 def load_workflow_config(workflow_id):
     """
-    Workflow yapılandırmasını yükle.
+    Load workflow configuration.
     
     Args:
         workflow_id: Workflow ID'si
         
     Returns:
-        Workflow yapılandırması veya None
+        Workflow configuration or None
     """
     config_path = Path("cofoundai/config/workflows.yaml")
     
@@ -59,30 +59,30 @@ def load_workflow_config(workflow_id):
             config = yaml.safe_load(f)
             
         if not config or "main" not in config or "workflows" not in config["main"]:
-            print("Hata: Geçerli workflow yapılandırması bulunamadı!")
+            print("Error: Valid workflow configuration not found!")
             return None
             
-        # ID'ye göre workflow'u bul
+        # Find workflow by ID
         for workflow in config["main"]["workflows"]:
             if workflow.get("id") == workflow_id:
                 return workflow
                 
-        print(f"Hata: '{workflow_id}' ID'li workflow bulunamadı!")
+        print(f"Error: Workflow with ID '{workflow_id}' not found!")
         return None
     except Exception as e:
-        print(f"Yapılandırma dosyası yüklenirken hata: {e}")
+        print(f"Error: Failed to load configuration file: {e}")
         return None
 
 def initialize_tools():
     """
-    Test için araçları başlat.
+    Initialize tools for testing.
     
     Returns:
-        Araç adı -> araç objesi eşleştirmesi içeren sözlük
+        Dictionary with tool name -> tool object mapping
     """
-    # Geçici çalışma dizini oluştur
+    # Create temporary workspace directory
     workspace_dir = tempfile.mkdtemp(prefix="cofoundai_workspace_")
-    print(f"Geçici çalışma dizini oluşturuldu: {workspace_dir}")
+    print(f"Temporary workspace directory created: {workspace_dir}")
     
     # Araçları oluştur
     file_manager = FileManager(workspace_dir=workspace_dir)
@@ -93,23 +93,23 @@ def initialize_tools():
         "FileManager": file_manager,
         "VersionControl": version_control,
         "Context7Adapter": context7_adapter,
-        "workspace_dir": workspace_dir  # Temizlik için dizini sakla
+        "workspace_dir": workspace_dir  # Save directory for cleanup
     }
     
-    print(f"Araçlar başlatıldı: {', '.join([k for k in tools.keys() if k != 'workspace_dir'])}")
+    print(f"Tools initialized: {', '.join([k for k in tools.keys() if k != 'workspace_dir'])}")
     return tools
 
 def initialize_agents(tools):
     """
-    Test için tüm ajanları başlat.
+    Initialize all agents for testing.
     
     Args:
-        tools: Kullanılacak araçlar sözlüğü
+        tools: Dictionary of tools to use
         
     Returns:
-        Ajan adı -> ajan objesi eşleştirmesi içeren sözlük
+        Dictionary with agent name -> agent object mapping
     """
-    # Temel konfigürasyonlar
+    # Basic configurations
     planner_config = {"name": "Planner", "description": "Project planning and task breakdown"}
     architect_config = {"name": "Architect", "description": "System architecture design"}
     developer_config = {"name": "Developer", "description": "Code implementation"}
@@ -117,7 +117,7 @@ def initialize_agents(tools):
     reviewer_config = {"name": "Reviewer", "description": "Code review and improvements"}
     documentor_config = {"name": "Documentor", "description": "Project documentation"}
     
-    # Her ajana araçları ekle
+    # Add tools to each agent
     for config in [planner_config, architect_config, developer_config, 
                   tester_config, reviewer_config, documentor_config]:
         config["tools"] = {
@@ -126,7 +126,7 @@ def initialize_agents(tools):
             "context7_adapter": tools["Context7Adapter"]
         }
     
-    # Ajanları oluştur
+    # Create agents
     agents = {
         "Planner": PlannerAgent(planner_config),
         "Architect": ArchitectAgent(architect_config),
@@ -136,113 +136,113 @@ def initialize_agents(tools):
         "Documentor": DocumentorAgent(documentor_config)
     }
     
-    print(f"Ajanlar başlatıldı: {', '.join(agents.keys())}")
+    print(f"Agents initialized: {', '.join(agents.keys())}")
     return agents
 
 def main():
-    """Ana test fonksiyonu."""
-    print("CoFound.ai Ajan İletişim Protokolü (ACP) Testi")
+    """Main test function."""
+    print("CoFound.ai Agent Communication Protocol (ACP) Test")
     print("==============================================\n")
     
-    # Loglama yapılandırması
+    # Logging configuration
     setup_logging()
     
-    # Araçları başlat
+    # Initialize tools
     tools = initialize_tools()
     
-    # Ajanları başlat (araçlarla)
+    # Initialize agents (with tools)
     agents = initialize_agents(tools)
     
-    # Test edilecek workflow ID'si
+    # Test workflow ID
     workflow_id = "develop_app"
     print(f"Workflow ID: {workflow_id}\n")
     
-    # Workflow yapılandırmasını yükle
+    # Load workflow configuration
     workflow_config = load_workflow_config(workflow_id)
     if not workflow_config:
         cleanup(tools)
         return 1
         
-    # Test modu aktif et (LLM çağrıları yapmasın)
+    # Enable test mode (no LLM calls)
     workflow_config["test_mode"] = True
     
-    print("Workflow bilgileri:")
-    print(f"  İsim: {workflow_config.get('name')}")
-    print(f"  Açıklama: {workflow_config.get('description')}")
-    print(f"  Faz sayısı: {len(workflow_config.get('phases', []))}\n")
+    print("Workflow information:")
+    print(f"  Name: {workflow_config.get('name')}")
+    print(f"  Description: {workflow_config.get('description')}")
+    print(f"  Phase count: {len(workflow_config.get('phases', []))}\n")
     
-    # LangGraph workflow oluştur
+    # Create LangGraph workflow
     workflow = LangGraphWorkflow(workflow_id, workflow_config, agents)
     
-    # Git reposunu başlat
+    # Initialize Git repository
     tools["VersionControl"].init_repository("TodoApp")
-    print("Git reposu başlatıldı: TodoApp\n")
+    print("Git repository initialized: TodoApp\n")
     
     # Test girdisi
     input_data = {
         "project_description": "Todo list API with FastAPI backend, SQLite database, and basic CRUD operations",
         "workflow_id": workflow_id,
-        "workspace_dir": tools["workspace_dir"]  # Çalışma dizinini ekle
+        "workspace_dir": tools["workspace_dir"]  # Add workspace directory
     }
     
-    print(f"Test girdisi: {input_data['project_description']}\n")
-    print("Workflow çalıştırılıyor...")
+    print(f"Test input: {input_data['project_description']}\n")
+    print("Running workflow...")
     
     try:
-        # Workflow'u çalıştır
+        # Run workflow
         result = workflow.run(input_data)
         
-        # Sonuçları yazdır
-        print("\nWorkflow tamamlandı!")
-        print(f"Sonuç durumu: {result.get('status', 'bilinmiyor')}")
+        # Print results
+        print("\nWorkflow completed!")
+        print(f"Result status: {result.get('status', 'unknown')}")
         
-        # Her ajanın işlediği durumu göster
-        print("\nAjan çıktıları:")
+        # Show status of each agent
+        print("\nAgent outputs:")
         for agent_name in agents.keys():
             if agent_name in result:
-                status = result[agent_name].get("status", "bilinmiyor")
-                message = result[agent_name].get("message", "Mesaj yok")
+                status = result[agent_name].get("status", "unknown")
+                message = result[agent_name].get("message", "No message")
                 print(f"  {agent_name}: {status} - {message}")
         
-        # Üretilen dosyaları listele
+        # List generated files
         workspace_dir = tools["workspace_dir"]
-        print(f"\nÜretilen dosyalar ({workspace_dir}):")
+        print(f"\nGenerated files ({workspace_dir}):")
         for root, dirs, files in os.walk(workspace_dir):
             for file in files:
                 if not file.startswith('.git'):
                     rel_path = os.path.relpath(os.path.join(root, file), workspace_dir)
                     print(f"  {rel_path}")
     
-        # İsteğe bağlı olarak tüm sonuçları göster
-        print("\nAyrıntılı sonuçları görmek için --verbose parametresi ekleyin.")
+        # Optionally show all results
+        print("\nTo see detailed results, add the --verbose parameter.")
         if "--verbose" in sys.argv:
-            print("\nAyrıntılı sonuçlar:")
+            print("\nDetailed results:")
             print(json.dumps(result, indent=2))
         
         return 0
     except Exception as e:
-        print(f"Workflow çalıştırılırken hata: {e}")
+        print(f"Error running workflow: {e}")
         import traceback
         traceback.print_exc()
         return 1
     finally:
-        # Temizlik yap
+        # Clean up
         cleanup(tools)
 
 def cleanup(tools):
     """
-    Test sonrası temizlik.
+    Cleanup after tests.
     
     Args:
-        tools: Temizlenecek araçlar sözlüğü
+        tools: Dictionary of tools to clean up
     """
     try:
         workspace_dir = tools.get("workspace_dir")
         if workspace_dir and os.path.exists(workspace_dir):
-            print(f"\nTemizlik yapılıyor: {workspace_dir} siliniyor...")
+            print(f"\nCleaning up: {workspace_dir} being deleted...")
             shutil.rmtree(workspace_dir, ignore_errors=True)
     except Exception as e:
-        print(f"Temizlik yapılırken hata: {e}")
+        print(f"Error cleaning up: {e}")
 
 if __name__ == "__main__":
     sys.exit(main()) 
