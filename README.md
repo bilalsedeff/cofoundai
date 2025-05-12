@@ -1,3 +1,9 @@
+
+![WhatsApp Image 2025-05-03 at 23 41 29_1700ef67](https://github.com/user-attachments/assets/d2fe88e8-dd01-4435-904b-96693c83000d)
+
+
+
+
 # CoFound.ai - Multi-Agent Software Development System
 
 CoFound.ai is a CLI-based multi-agent system that automates software development processes using LangGraph orchestration. The system coordinates multiple specialized AI agents that work together like a software development team to build applications based on user requirements.
