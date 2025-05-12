@@ -1,0 +1,48 @@
+{
+  "messages": [
+    {
+      "type": "HumanMessage",
+      "content": "Create a simple calculator application",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    },
+    {
+      "type": "AIMessage",
+      "content": "[Documentor processed message but can't respond in LangGraph format]",
+      "additional_kwargs": {}
+    }
+  ],
+  "project_description": "Create a simple calculator application",
+  "active_agent": null,
+  "previous_agent": null,
+  "artifacts": {},
+  "metadata": {
+    "created_at": "2025-05-12T23:00:29.709196",
+    "thread_id": "thread_proj_1747080029_019c7c78"
+  },
+  "status": "in_progress"
+}

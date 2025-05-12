@@ -1,0 +1,58 @@
+# IDE ve Editör klasörleri
+.cursor/
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Python sanal ortamları
+venv/
+venv_py38_backup/
+venv_py39/
+clean_venv/
+env/
+ENV/
+.env
+.venv
+env.bak/
+venv.bak/
+
+# Python derleme dosyaları
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Log dosyaları
+logs/
+*.log
+
+# Ortam değişkenleri
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Geçici dosyalar
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db

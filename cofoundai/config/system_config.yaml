@@ -1,0 +1,78 @@
+# CoFound.ai System Configuration
+
+# General system settings
+system:
+  name: "CoFound.ai"
+  version: "0.1.0"
+  log_level: "INFO"
+  data_dir: "./data"
+  max_threads: 4
+
+# LLM provider settings
+llm:
+  provider: "openai"  # Options: openai, anthropic, local
+  model: "gpt-4"
+  temperature: 0.2
+  max_tokens: 4000
+  timeout: 60  # seconds
+  retry_attempts: 3
+  fallback_model: "gpt-3.5-turbo"
+  
+# Agent settings
+agents:
+  planner:
+    role: "Planner"
+    model: "gpt-4"
+    temperature: 0.2
+    system_prompt: "You are a software project planner responsible for breaking down user requirements into tasks and creating development plans."
+    
+  architect:
+    role: "Architect"
+    model: "gpt-4"
+    temperature: 0.1
+    system_prompt: "You are a software architect responsible for designing system architecture, component interactions, and data models."
+    
+  developer:
+    role: "Developer"
+    model: "gpt-4"
+    temperature: 0.2
+    system_prompt: "You are a software developer responsible for writing clean, efficient, and well-documented code based on specifications."
+    
+  tester:
+    role: "Tester"
+    model: "gpt-4"
+    temperature: 0.2
+    system_prompt: "You are a software tester responsible for creating and executing tests to ensure code quality and functionality."
+    
+  reviewer:
+    role: "Reviewer"
+    model: "gpt-4"
+    temperature: 0.1
+    system_prompt: "You are a code reviewer responsible for analyzing code quality, identifying issues, and suggesting improvements."
+    
+  documentor:
+    role: "Documentor"
+    model: "gpt-4"
+    temperature: 0.3
+    system_prompt: "You are a technical writer responsible for creating clear and comprehensive documentation for code and systems."
+
+# Memory settings
+memory:
+  short_term:
+    type: "in_memory"
+    max_items: 100
+    
+  long_term:
+    type: "vector_db"
+    provider: "chroma"  # Options: chroma, pinecone, pgvector
+    collection: "cofoundai"
+    embedding_model: "text-embedding-ada-002"
+    
+  project_context:
+    max_size: 10000  # tokens
+    
+# Communication settings
+communication:
+  message_format: "json"
+  message_queue_size: 100
+  broadcast_enabled: true 
