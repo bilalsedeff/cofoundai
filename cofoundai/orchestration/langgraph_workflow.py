@@ -61,6 +61,12 @@ class LangGraphWorkflow:
         self.workdir = self.config.get("workdir", os.getcwd())
         self.checkpointer = MemorySaver()
         
+        # Agents varsa, config'den al ve ekle
+        if "agents" in self.config and isinstance(self.config["agents"], dict):
+            for agent_name, agent in self.config["agents"].items():
+                if isinstance(agent, BaseAgent):
+                    self.add_agent(agent, agent_name)
+        
         # Workflow initialization
         logger.info(f"Initialized workflow: {name}")
     
@@ -93,49 +99,86 @@ class LangGraphWorkflow:
         # Create state graph 
         workflow = StateGraph(MessagesState)
         
+        # Keep track of valid nodes
+        valid_nodes = []
+        
         # Add all agent nodes
         for name, agent in self.agents.items():
-            if isinstance(agent, LangGraphAgent) and agent.langgraph_agent:
-                workflow.add_node(name, agent.langgraph_agent)
-                logger.debug(f"Added {name} node to graph")
-            else:
-                logger.warning(f"Agent {name} does not have LangGraph implementation")
+            try:
+                if isinstance(agent, LangGraphAgent) and agent.langgraph_agent:
+                    workflow.add_node(name, agent.langgraph_agent)
+                    valid_nodes.append(name)
+                    logger.debug(f"Added {name} node to graph")
+                else:
+                    # Dummy node function for non-LangGraph agents
+                    def create_dummy_node(agent_name):
+                        def dummy_node_func(state):
+                            # Just pass through the state with a placeholder message
+                            if "messages" in state and len(state["messages"]) > 0:
+                                state["messages"].append(AIMessage(
+                                    content=f"[{agent_name} processed message but can't respond in LangGraph format]"
+                                ))
+                            return state
+                        return dummy_node_func
+                    
+                    # Add dummy node
+                    workflow.add_node(name, create_dummy_node(name))
+                    valid_nodes.append(name)
+                    logger.debug(f"Added dummy node for {name}")
+            except Exception as e:
+                logger.error(f"Error adding node for agent {name}: {str(e)}")
+                # Not adding this node to valid_nodes
         
-        # Add edges
-        # If no specific routing logic, create simple linear flow
-        ordered_agents = list(self.agents.keys())
-        
-        if len(ordered_agents) > 1:
-            for i in range(len(ordered_agents) - 1):
-                current = ordered_agents[i]
-                next_agent = ordered_agents[i + 1]
-                workflow.add_edge(current, next_agent)
-                logger.debug(f"Added edge: {current} -> {next_agent}")
+        # Add edges, but only between valid nodes
+        if len(valid_nodes) > 1:
+            for i in range(len(valid_nodes) - 1):
+                current = valid_nodes[i]
+                next_agent = valid_nodes[i + 1]
+                try:
+                    workflow.add_edge(current, next_agent)
+                    logger.debug(f"Added edge: {current} -> {next_agent}")
+                except Exception as e:
+                    logger.error(f"Error adding edge from {current} to {next_agent}: {str(e)}")
                 
             # Add edge from last to END
-            workflow.add_edge(ordered_agents[-1], END)
-            logger.debug(f"Added edge: {ordered_agents[-1]} -> END")
-        elif len(ordered_agents) == 1:
+            try:
+                workflow.add_edge(valid_nodes[-1], END)
+                logger.debug(f"Added edge: {valid_nodes[-1]} -> END")
+            except Exception as e:
+                logger.error(f"Error adding edge from {valid_nodes[-1]} to END: {str(e)}")
+                
+        elif len(valid_nodes) == 1:
             # Only one agent, connect directly to END
-            workflow.add_edge(ordered_agents[0], END)
-            logger.debug(f"Added edge: {ordered_agents[0]} -> END")
+            try:
+                workflow.add_edge(valid_nodes[0], END)
+                logger.debug(f"Added edge: {valid_nodes[0]} -> END")
+            except Exception as e:
+                logger.error(f"Error adding edge from {valid_nodes[0]} to END: {str(e)}")
             
-        # Set entry point
-        if entry_point:
+        # Set entry point, but only if it's a valid node
+        if entry_point in valid_nodes:
             workflow.set_entry_point(entry_point)
-        elif ordered_agents:
-            workflow.set_entry_point(ordered_agents[0])
-            logger.debug(f"Set entry point to: {ordered_agents[0]}")
+            logger.debug(f"Set entry point to: {entry_point}")
+        elif valid_nodes:
+            workflow.set_entry_point(valid_nodes[0])
+            logger.debug(f"Set entry point to: {valid_nodes[0]}")
+        else:
+            logger.error("No valid nodes found, cannot set entry point")
+            return None
             
         # Compile graph
-        graph = workflow.compile()
-        
-        # Store for later use
-        self.graph_builder = workflow
-        self.graph = graph
-        
-        logger.info(f"Built graph for workflow: {self.name}")
-        return graph
+        try:
+            graph = workflow.compile()
+            
+            # Store for later use
+            self.graph_builder = workflow
+            self.graph = graph
+            
+            logger.info(f"Built graph for workflow: {self.name}")
+            return graph
+        except Exception as e:
+            logger.error(f"Error compiling graph: {str(e)}")
+            return None
     
     def run(self, input_data: Any) -> Dict[str, Any]:
         """

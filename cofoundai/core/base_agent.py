@@ -11,6 +11,10 @@ from cofoundai.communication.message import Message
 import json
 from datetime import datetime
 
+# Import the LLM interface and config loader
+from cofoundai.core.llm_interface import LLMFactory, LLMResponse, BaseLLM
+from cofoundai.core.config_loader import config_loader
+
 
 class BaseAgent(ABC):
     """
@@ -30,6 +34,60 @@ class BaseAgent(ABC):
         self.memory = []  # Stores past interactions
         self.status = "idle"  # Agent status (idle, busy, error)
         self.tools = {}  # Dictionary to store registered tools
+        
+        # Check if dummy test mode is enabled
+        self.use_dummy_test = self.config.get("use_dummy_test", False)
+        
+        # Initialize LLM (if needed)
+        self._llm = None
+    
+    def get_llm(self) -> BaseLLM:
+        """
+        Get the LLM instance for this agent.
+        
+        Returns:
+            LLM instance (created on first use)
+        """
+        if self._llm is None:
+            # Get LLM configuration
+            provider = self.config.get("llm_provider", config_loader.get_llm_provider())
+            model_name = self.config.get("model_name", None)  # Will use default model if None
+            
+            # Create LLM instance
+            self._llm = LLMFactory.create_llm(
+                provider=provider,
+                model_name=model_name,
+                use_dummy=self.use_dummy_test
+            )
+            
+        return self._llm
+    
+    def ask_llm(
+        self, 
+        prompt: str, 
+        system_message: Optional[str] = None,
+        messages: Optional[List[Dict[str, str]]] = None,
+        temperature: Optional[float] = None
+    ) -> LLMResponse:
+        """
+        Ask the LLM a question.
+        
+        Args:
+            prompt: The prompt to send to the LLM
+            system_message: Optional system message
+            messages: Optional chat history
+            temperature: Optional temperature setting
+            
+        Returns:
+            LLM response
+        """
+        llm = self.get_llm()
+        return llm.generate(
+            prompt=prompt,
+            system_message=system_message,
+            messages=messages,
+            temperature=temperature
+        )
     
     def process_message(self, message: Message) -> Message:
         """
@@ -209,6 +267,10 @@ class BaseAgent(ABC):
         """
         self.config.update(new_config)
         
+        # If the config update includes LLM settings, reset LLM
+        if any(key in new_config for key in ["llm_provider", "model_name", "use_dummy_test"]):
+            self._llm = None
+            
     def __str__(self) -> str:
         """
         Return a string representation of the agent.
