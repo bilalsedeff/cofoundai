@@ -1,8 +1,9 @@
 """
-CoFound.ai - CLI-Based Multi-Agent Software Development System
+CoFound.ai main package
 
-This package contains a multi-agent system where AI agents collaborate
-to develop software based on user requirements.
+This package provides a multi-agent system for collaborative software development.
+It includes agent definitions, orchestration mechanisms, communication protocols,
+and tools for building, testing, and documenting software.
 """
 
 __version__ = "0.1.0" 
