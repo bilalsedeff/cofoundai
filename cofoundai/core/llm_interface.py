@@ -12,6 +12,9 @@ import json
 import logging
 from datetime import datetime
 
+# Import the config loader
+from cofoundai.core.config_loader import config_loader
+
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -155,10 +158,12 @@ class AnthropicLLM(BaseLLM):
         """Initialize the Anthropic LLM interface."""
         super().__init__(config)
         self.model_name = config.get("model_name", "claude-3-sonnet-20240229")
-        self.api_key = config.get("api_key") or os.environ.get("ANTHROPIC_API_KEY")
+        
+        # Get API key from config or from config_loader
+        self.api_key = config.get("api_key") or config_loader.get_env("ANTHROPIC_API_KEY")
         
         if not self.api_key:
-            logger.warning("Anthropic API key not found. Set ANTHROPIC_API_KEY environment variable.")
+            logger.warning("Anthropic API key not found. Set ANTHROPIC_API_KEY in .env file or environment.")
     
     def generate(
         self, 
@@ -229,10 +234,12 @@ class OpenAILLM(BaseLLM):
         """Initialize the OpenAI LLM interface."""
         super().__init__(config)
         self.model_name = config.get("model_name", "gpt-4-turbo")
-        self.api_key = config.get("api_key") or os.environ.get("OPENAI_API_KEY")
+        
+        # Get API key from config or from config_loader
+        self.api_key = config.get("api_key") or config_loader.get_env("OPENAI_API_KEY")
         
         if not self.api_key:
-            logger.warning("OpenAI API key not found. Set OPENAI_API_KEY environment variable.")
+            logger.warning("OpenAI API key not found. Set OPENAI_API_KEY in .env file or environment.")
     
     def generate(
         self, 
@@ -301,9 +308,10 @@ class LLMFactory:
     
     @staticmethod
     def create_llm(
-        provider: str = "test",
+        provider: Optional[str] = None,
         model_name: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None
+        config: Optional[Dict[str, Any]] = None,
+        use_dummy: bool = False
     ) -> BaseLLM:
         """
         Create an LLM instance.
@@ -312,6 +320,7 @@ class LLMFactory:
             provider: LLM provider (test, anthropic, openai)
             model_name: Name of the model to use
             config: Additional configuration
+            use_dummy: Force using test/dummy LLM
             
         Returns:
             LLM instance
@@ -320,13 +329,29 @@ class LLMFactory:
         if model_name:
             config["model_name"] = model_name
             
+        # If dummy testing is forced, use TestLLM
+        if use_dummy or config_loader.is_dummy_test_mode():
+            logger.info("Using dummy/test LLM as specified in configuration or CLI")
+            return TestLLM(config)
+        
+        # Use provider from parameter, fallback to config or environment
+        provider = provider or config_loader.get_llm_provider()
         provider = provider.lower()
         
         if provider == "test":
             return TestLLM(config)
         elif provider == "anthropic":
-            return AnthropicLLM(config)
+            # Merge config with any config from config_loader
+            anthropic_config = config_loader.get_llm_config()
+            if config:
+                anthropic_config.update(config)
+            return AnthropicLLM(anthropic_config)
         elif provider == "openai":
-            return OpenAILLM(config)
+            # Merge config with any config from config_loader
+            openai_config = config_loader.get_llm_config()
+            if config:
+                openai_config.update(config)
+            return OpenAILLM(openai_config)
         else:
-            raise ValueError(f"Unsupported LLM provider: {provider}") 
+            logger.warning(f"Unsupported LLM provider: {provider}, falling back to test mode")
+            return TestLLM(config) 

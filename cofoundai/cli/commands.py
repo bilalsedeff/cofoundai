@@ -12,6 +12,7 @@ import json
 import logging
 from typing import Dict, Any, List, Optional
 from pathlib import Path
+import getpass
 
 from cofoundai.utils.logger import system_logger, workflow_logger, get_agent_logger
 from cofoundai.orchestration.langgraph_workflow import LangGraphWorkflow
@@ -22,6 +23,7 @@ from cofoundai.agents.architect import ArchitectAgent
 from cofoundai.agents.tester import TesterAgent
 from cofoundai.agents.reviewer import ReviewerAgent
 from cofoundai.agents.documentor import DocumentorAgent
+from cofoundai.core.config_loader import config_loader
 
 
 def load_workflow_config(config_path: str) -> Dict[str, Any]:
@@ -44,20 +46,135 @@ def load_workflow_config(config_path: str) -> Dict[str, Any]:
         return {}
 
 
-def initialize_agents() -> Dict[str, BaseAgent]:
+def setup_env_file() -> bool:
+    """
+    Check if .env file exists and set it up if needed.
+    
+    Returns:
+        True if setup was successful or wasn't needed, False otherwise
+    """
+    # Determine project root
+    project_root = Path(__file__).parent.parent.parent
+    env_path = project_root / ".env"
+    env_example_path = project_root / ".env.example"
+    
+    if env_path.exists():
+        # .env dosyası zaten var, bir şey yapmaya gerek yok
+        system_logger.info(".env file already exists, using existing configuration")
+        return True
+    
+    # .env dosyası yoksa yeni oluşturalım
+    print("\nEnvironment configuration not found. Let's set it up now.")
+    
+    try:
+        # .env.example dosyasının içeriğini al (varsa)
+        env_content = {}
+        if env_example_path.exists():
+            with open(env_example_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith('#') and '=' in line:
+                        key, value = line.split('=', 1)
+                        env_content[key.strip()] = value.strip().strip('"').strip("'")
+        
+        # Kullanıcıdan LLM provider bilgisini al
+        print("\nWhich LLM provider would you like to use?")
+        print("1. OpenAI (GPT-4, GPT-3.5-Turbo)")
+        print("2. Anthropic (Claude)")
+        print("3. Test mode (No real LLM calls)")
+        
+        provider_choice = input("Enter your choice (1-3) [3]: ").strip() or "3"
+        
+        if provider_choice == "1":
+            provider = "openai"
+            model = input("Enter the model to use [gpt-4]: ").strip() or "gpt-4"
+            
+            # OpenAI API key'i gizli şekilde al
+            api_key = getpass.getpass("Enter your OpenAI API key: ").strip()
+            if not api_key:
+                print("No API key provided. Falling back to test mode.")
+                provider = "test"
+            
+            env_content["LLM_PROVIDER"] = provider
+            env_content["OPENAI_MODEL"] = model
+            if api_key:
+                env_content["OPENAI_API_KEY"] = api_key
+                
+        elif provider_choice == "2":
+            provider = "anthropic"
+            model = input("Enter the model to use [claude-3-sonnet-20240229]: ").strip() or "claude-3-sonnet-20240229"
+            
+            # Anthropic API key'i gizli şekilde al
+            api_key = getpass.getpass("Enter your Anthropic API key: ").strip()
+            if not api_key:
+                print("No API key provided. Falling back to test mode.")
+                provider = "test"
+            
+            env_content["LLM_PROVIDER"] = provider
+            env_content["ANTHROPIC_MODEL"] = model
+            if api_key:
+                env_content["ANTHROPIC_API_KEY"] = api_key
+        else:
+            # Test modu
+            provider = "test"
+            env_content["LLM_PROVIDER"] = "test"
+        
+        # Dummy test modu için kullanıcıya sor
+        if provider != "test":  # Test modu seçilmemişse
+            dummy_mode = input("Enable dummy test mode by default? This will use mock responses instead of real API calls. (yes/no) [no]: ").lower().strip() or "no"
+            env_content["DUMMY_TEST_MODE"] = "true" if dummy_mode.startswith("y") else "false"
+        else:
+            # Test provider seçilmişse dummy mode zaten aktif olmalı
+            env_content["DUMMY_TEST_MODE"] = "true"
+        
+        # Dosyayı oluştur
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.write("# CoFound.ai Environment Configuration\n")
+            f.write("# Created by CoFound.ai CLI\n\n")
+            
+            for key, value in env_content.items():
+                if key in ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"]:
+                    if value:  # API key varsa yaz
+                        f.write(f"{key}={value}\n")
+                else:
+                    f.write(f"{key}={value}\n")
+                    
+        print(f"\n.env file has been created at: {env_path}")
+        print("You can edit this file later to update your configuration.")
+        
+        # config_loader'ı yenile
+        config_loader._load_env()
+        
+        return True
+        
+    except Exception as e:
+        system_logger.error(f"Error setting up environment configuration: {str(e)}")
+        print(f"Error setting up environment configuration: {str(e)}")
+        print("You can manually create a .env file based on .env.example to set up your configuration.")
+        return False
+
+
+def initialize_agents(use_dummy_test: bool = False) -> Dict[str, BaseAgent]:
     """
     Initialize and configure agents.
     
+    Args:
+        use_dummy_test: Whether to use dummy test mode
+        
     Returns:
         Dictionary containing agent names and objects
     """
+    # Override use_dummy_test with env setting if it's set to true
+    if config_loader.get_bool_env("DUMMY_TEST_MODE", False):
+        use_dummy_test = True
+    
     # Create empty configuration dictionaries for each agent
-    planner_config = {"name": "Planner", "description": "Project planning and task breakdown"}
-    architect_config = {"name": "Architect", "description": "System architecture design"}
-    developer_config = {"name": "Developer", "description": "Code implementation"}
-    tester_config = {"name": "Tester", "description": "Code testing and quality assurance"}
-    reviewer_config = {"name": "Reviewer", "description": "Code review and improvements"}
-    documentor_config = {"name": "Documentor", "description": "Project documentation"}
+    planner_config = {"name": "Planner", "description": "Project planning and task breakdown", "use_dummy_test": use_dummy_test}
+    architect_config = {"name": "Architect", "description": "System architecture design", "use_dummy_test": use_dummy_test}
+    developer_config = {"name": "Developer", "description": "Code implementation", "use_dummy_test": use_dummy_test}
+    tester_config = {"name": "Tester", "description": "Code testing and quality assurance", "use_dummy_test": use_dummy_test}
+    reviewer_config = {"name": "Reviewer", "description": "Code review and improvements", "use_dummy_test": use_dummy_test}
+    documentor_config = {"name": "Documentor", "description": "Project documentation", "use_dummy_test": use_dummy_test}
     
     # Initialize agents with their respective configurations
     agents = {
@@ -70,26 +187,33 @@ def initialize_agents() -> Dict[str, BaseAgent]:
     }
     
     system_logger.info(f"Agents initialized: {', '.join(agents.keys())}")
+    if use_dummy_test:
+        system_logger.info("Agents initialized in DUMMY TEST MODE - no real LLM calls will be made")
     return agents
 
 
-def run_workflow(workflow_id: str, project_description: str) -> Dict[str, Any]:
+def run_workflow(workflow_id: str, project_description: str, use_dummy_test: bool = False) -> Dict[str, Any]:
     """
     Run the specified workflow.
     
     Args:
         workflow_id: ID of the workflow to run
         project_description: Project description
+        use_dummy_test: Whether to use dummy test mode
         
     Returns:
         Workflow results
     """
+    # Override use_dummy_test with env setting if it's set to true
+    if config_loader.get_bool_env("DUMMY_TEST_MODE", False):
+        use_dummy_test = True
+    
     # Determine default configuration file path
     config_dir = Path(__file__).parent.parent / "config"
     workflow_config_path = config_dir / "workflows.yaml"
     
     # Initialize agents
-    agents = initialize_agents()
+    agents = initialize_agents(use_dummy_test)
     
     # Find the workflow with the specified ID
     config = load_workflow_config(str(workflow_config_path))
@@ -109,8 +233,13 @@ def run_workflow(workflow_id: str, project_description: str) -> Dict[str, Any]:
         system_logger.error(f"Workflow not found: {workflow_id}")
         return {"error": f"Workflow not found: {workflow_id}"}
     
+    # Add agents to workflow_config
+    if workflow_config is None:
+        workflow_config = {}
+    workflow_config["agents"] = agents
+    
     # Create and run the workflow
-    workflow = LangGraphWorkflow(workflow_id, workflow_config, agents)
+    workflow = LangGraphWorkflow(workflow_id, workflow_config)
     
     if not workflow:
         system_logger.error(f"Could not create workflow: {workflow_id}")
@@ -139,8 +268,23 @@ def start_project_command(args: argparse.Namespace) -> int:
     Returns:
         Exit code (0: success, 1: error)
     """
+    # Önce .env dosyasını kuralım (gerekiyorsa)
+    if not setup_env_file():
+        # Kurulum başarısız oldu, ancak yine de devam etmek isteyebilir
+        proceed = input("Environment setup failed. Would you like to continue anyway? (yes/no) [no]: ").lower().strip() or "no"
+        if not proceed.startswith("y"):
+            print("Operation canceled.")
+            return 1
+
     project_description = args.description
     workflow_id = args.workflow or "develop_app"
+    
+    # CLI'dan gelen dummy-test parametresi
+    use_dummy_test = args.dummy_test
+    
+    # .env dosyasında DUMMY_TEST_MODE=true ise o da test modunu aktif edecek
+    if config_loader.get_bool_env("DUMMY_TEST_MODE", False):
+        use_dummy_test = True
     
     if not project_description:
         system_logger.error("Project description is required")
@@ -150,9 +294,13 @@ def start_project_command(args: argparse.Namespace) -> int:
     print(f"Starting project: {project_description}")
     print(f"Workflow: {workflow_id}")
     
+    if use_dummy_test:
+        print("RUNNING IN DUMMY TEST MODE - No actual LLM API calls will be made")
+        print("This is useful for testing workflow structure without API costs")
+    
     try:
         # Run the workflow
-        result = run_workflow(workflow_id, project_description)
+        result = run_workflow(workflow_id, project_description, use_dummy_test)
         
         if "error" in result:
             print(f"Error: {result['error']}")
@@ -183,6 +331,7 @@ def demo_langgraph_command(args: argparse.Namespace) -> int:
         Exit code (0: success, 1: error)
     """
     workflow_id = args.workflow or "develop_app"
+    use_dummy_test = True  # Demo always uses dummy test mode
     
     print(f"Starting LangGraph demo: {workflow_id}")
     print("This demo simulates the workflow structure without making LLM calls")
@@ -193,7 +342,7 @@ def demo_langgraph_command(args: argparse.Namespace) -> int:
     
     try:
         # Run the workflow
-        result = run_workflow(workflow_id, project_description)
+        result = run_workflow(workflow_id, project_description, use_dummy_test)
         
         if "error" in result:
             print(f"Error: {result['error']}")
@@ -323,4 +472,64 @@ def view_logs_command(args: argparse.Namespace) -> int:
     except Exception as e:
         system_logger.error(f"Error viewing logs: {str(e)}")
         print(f"Error: {str(e)}")
-        return 1 
+        return 1
+
+
+def show_environment_command(args: argparse.Namespace) -> int:
+    """
+    Show environment and configuration details.
+    
+    Args:
+        args: Command arguments
+        
+    Returns:
+        Exit code (0: success, 1: error)
+    """
+    print("\nCoFound.ai Environment and Configuration")
+    print("=======================================")
+    
+    # Show project root
+    project_root = Path(__file__).parent.parent.parent
+    print(f"Project root: {project_root}")
+    
+    # Check if .env file exists
+    env_file = project_root / ".env"
+    if env_file.exists():
+        print(f".env file: Present at {env_file}")
+    else:
+        print(f".env file: Not found (you can create one based on .env.example)")
+    
+    # Show active LLM settings
+    print("\nLLM Configuration:")
+    print(f"  Provider: {config_loader.get_llm_provider()}")
+    print(f"  Dummy test mode: {config_loader.is_dummy_test_mode()}")
+    
+    # Show OpenAI status
+    openai_key = config_loader.get_env("OPENAI_API_KEY", "")
+    openai_model = config_loader.get_env("OPENAI_MODEL", "gpt-4")
+    print("\nOpenAI:")
+    if openai_key:
+        print(f"  API Key: Configured (starts with {openai_key[:4]}...)")
+    else:
+        print("  API Key: Not configured")
+    print(f"  Model: {openai_model}")
+    
+    # Show Anthropic status
+    anthropic_key = config_loader.get_env("ANTHROPIC_API_KEY", "")
+    anthropic_model = config_loader.get_env("ANTHROPIC_MODEL", "claude-3-sonnet-20240229")
+    print("\nAnthropic:")
+    if anthropic_key:
+        print(f"  API Key: Configured (starts with {anthropic_key[:4]}...)")
+    else:
+        print("  API Key: Not configured")
+    print(f"  Model: {anthropic_model}")
+    
+    print("\nLog Directories:")
+    for log_dir in ["logs/system", "logs/agents", "logs/workflows"]:
+        log_path = project_root / log_dir
+        if log_path.exists():
+            print(f"  {log_dir}: Present")
+        else:
+            print(f"  {log_dir}: Not found")
+    
+    return 0 

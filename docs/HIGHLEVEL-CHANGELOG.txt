@@ -1,5 +1,27 @@
 # CoFound.ai Project Changelog
 
+## CLI Environment Setup Update (2024-05-13)
+
+- Added: Interactive .env file setup through CLI start command
+- Added: User-friendly prompts for API key configuration
+- Added: Automatic detection of missing configuration files
+- Added: Secure API key input with masked entry
+- Enhanced: CLI honors DUMMY_TEST_MODE from .env file automatically
+- Improved: No need to specify --dummy-test when DUMMY_TEST_MODE=true in .env
+- Fixed: Consistent environment handling throughout the application
+- Fixed: setup_env_file fonksiyonunda provider değişkeninin test modu (seçenek 3) için tanımlanmaması sorunu çözüldü (2024-05-13)
+
+## LLM API Integration Update (2024-05-12)
+
+- Added: Environment variable support for LLM API credentials (.env file)
+- Added: Configuration loader system for managing environment variables and settings
+- Added: LLM integration with support for OpenAI, Anthropic, and test/dummy modes
+- Added: --dummy-test parameter to CLI commands for avoiding real API calls
+- Added: "env" CLI command for viewing environment and configuration status
+- Enhanced: BaseAgent with proper LLM integration and dummy testing support
+- Enhancement: Better error handling for missing API credentials
+- Fixed: LLM initialization to properly handle config changes and environment variables
+
 ## LangGraph API Compatibility Update (2024-05-12)
 
 - Fixed: agen tic_graph.py - Updated tool decorator implementation to work with latest langchain-core API
@@ -10,8 +32,10 @@
 - Improvement: Better type checking and fallback mechanisms for different agent API implementations
 - Improvement: More resilient error handling in agent tool registration
 - Fixed: requirements.txt - Removed duplicated dependencies with conflicting versions
-- Fixed: demos/demo_test_agents.bat - Enhanced with better path handling, environment checks, and error reporting
-- Fixed: communication/protocol.py - Corrected async generator implementation to fix "return with value in async generator" error
+- Fixed: demos/demo_test_agents.bat - Enhanced path resolution and virtual environment activation
+- Fixed: communication/protocol.py - Fixed async generator issue with StreamingResponse
+- Fixed: langgraph_workflow.py - Fixed constructor parameter handling and graph node validation
+- Fixed: CLI start command now properly handles dummy test mode
 
 ## Agent Protocol Integration (2024-05-12)
 

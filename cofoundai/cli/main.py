@@ -25,6 +25,10 @@ def main():
         description="CoFound.ai CLI - Multi-Agent AI System for Software Development"
     )
     
+    # Global options
+    parser.add_argument("--dummy-test", action="store_true", 
+                      help="Run in dummy test mode without making actual LLM API calls")
+    
     subparsers = parser.add_subparsers(dest="command", help="Commands")
     
     # Start project command
@@ -32,11 +36,15 @@ def main():
     start_parser.add_argument("description", help="Description of the project")
     start_parser.add_argument("--workflow", help="Workflow to use", default="develop_app")
     start_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
+    start_parser.add_argument("--dummy-test", action="store_true", 
+                            help="Run in dummy test mode without making actual LLM API calls")
     
     # Demo LangGraph command
     demo_parser = subparsers.add_parser("demo", help="Run LangGraph demonstration without LLM calls")
     demo_parser.add_argument("--workflow", help="Workflow to use", default="develop_app")
     demo_parser.add_argument("--description", help="Optional project description")
+    demo_parser.add_argument("--dummy-test", action="store_true", 
+                           help="Run in dummy test mode without making actual LLM API calls")
     
     # List workflows command
     list_parser = subparsers.add_parser("list", help="List available workflows")
@@ -50,6 +58,9 @@ def main():
     
     # Hello World command for testing
     hello_parser = subparsers.add_parser("hello", help="Test command - prints Hello World")
+    
+    # Environment command - show configuration and environment
+    env_parser = subparsers.add_parser("env", help="Show environment and configuration")
     
     args = parser.parse_args()
     
@@ -71,6 +82,10 @@ def main():
         return list_workflows_command(args)
     elif args.command == "logs":
         return view_logs_command(args)
+    elif args.command == "env":
+        # Import and use env command
+        from cofoundai.cli.commands import show_environment_command
+        return show_environment_command(args)
     
     return 0
 
