@@ -55,35 +55,24 @@ def test_agentic_graph():
         
         print(f"Workflow result: {result.get('status', 'unknown')}")
         
+        # Use assert instead of return
+        assert workflow.name == "test_workflow", "Workflow name should be 'test_workflow'"
+        assert isinstance(result, dict), "Workflow result should be a dictionary"
+        
         print("\nAgentic Graph test successful!")
-        return {
-            "success": True,
-            "message": "Agentic Graph test completed successfully",
-            "details": {
-                "workflow": workflow.name,
-                "status": result.get("status", "unknown")
-            }
-        }
         
     except Exception as e:
         print(f"ERROR: Error during test: {str(e)}")
         traceback.print_exc()
-        return {
-            "success": False,
-            "message": f"Test failed: {str(e)}",
-            "error": str(e)
-        }
+        # Fail the test
+        assert False, f"Test failed: {str(e)}"
 
 if __name__ == "__main__":
     print("Starting CoFound.ai Agentic Graph test...")
     
     try:
-        result = test_agentic_graph()
-        
-        if result["success"]:
-            print(f"\nTEST SUCCESSFUL: {result['message']}")
-        else:
-            print(f"\nTEST FAILED: {result['message']}")
+        test_agentic_graph()
+        print("\nTEST SUCCESSFUL: Agentic Graph test completed successfully")
     except Exception as e:
         print(f"\nCRITICAL ERROR DURING TEST: {str(e)}")
         traceback.print_exc() 
