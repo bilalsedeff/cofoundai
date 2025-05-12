@@ -1,0 +1,53 @@
+# CoFound.ai YAML Linting Configuration
+# This file contains YAML linter configuration
+# 
+# Yamllint: https://yamllint.readthedocs.io/
+
+extends: default
+
+rules:
+  document-start:
+    present: true
+  line-length:
+    max: 120
+    level: warning
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  braces:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  brackets:
+    min-spaces-inside: 0
+    max-spaces-inside: 1
+  commas:
+    max-spaces-before: 0
+    min-spaces-after: 1
+  colons:
+    max-spaces-before: 0
+    min-spaces-after: 1
+  empty-lines:
+    max: 1
+    max-start: 0
+    max-end: 0
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 2
+  comments-indentation: enable
+  # Disable schema validation for keys to allow custom properties
+  schema: 
+    ignore:
+      - main
+      - workflows
+
+# Custom configurations
+yaml-files:
+  - '*.yaml'
+  - '*.yml'
+  - '.yamllint'
+
+ignore: |
+  node_modules/
+  venv/
+  .venv/
+  .git/ 

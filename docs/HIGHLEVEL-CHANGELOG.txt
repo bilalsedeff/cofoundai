@@ -1,0 +1,204 @@
+# CoFound.ai Project Changelog
+
+## LangGraph API Compatibility Update (2024-05-12)
+
+- Fixed: agen tic_graph.py - Updated tool decorator implementation to work with latest langchain-core API
+- Fixed: orchestration/agentic_graph.py - Implemented simplified graph structure for LangGraph compatibility
+- Fixed: Updated requirements.txt - Consolidated and fixed dependency versions
+- Fixed: All demo BAT files now successfully run with Python module imports working
+- Added: Support for multiple agent types in agentic_graph.py that don't have LangGraph compatibility
+- Improvement: Better type checking and fallback mechanisms for different agent API implementations
+- Improvement: More resilient error handling in agent tool registration
+- Fixed: requirements.txt - Removed duplicated dependencies with conflicting versions
+- Fixed: demos/demo_test_agents.bat - Enhanced with better path handling, environment checks, and error reporting
+- Fixed: communication/protocol.py - Corrected async generator implementation to fix "return with value in async generator" error
+
+## Agent Protocol Integration (2024-05-12)
+
+- Added: communication/protocol.py - Agent Protocol (AP) compliant protocol adapter implementation
+- Added: api/app.py & api/__init__.py - FastAPI based AP API server 
+- Updated: orchestration/langgraph_workflow.py - Added register_as_agent method for AP integration
+- Added: test_agent_protocol.py - Tests for Agent Protocol integration
+- Updated: requirements.txt - Added FastAPI, Uvicorn, Starlette for API support
+- Feature: Agent Protocol API endpoints for Agents, Runs, Threads and Store
+- Feature: Seamless integration of LangGraph workflows with Agent Protocol
+- Feature: Existing CoFound.ai message format to AP message format conversion
+
+## Project Structure Reorganization (2024-05-12)
+
+- Restructured: Moved test files to cofoundai/tests/unit/ and cofoundai/tests/integration/
+- Restructured: Moved visualization tools to scripts/ directory
+- Restructured: Moved demo files to demos/ directory
+- Restructured: Moved HIGHLEVEL documentation to docs/ directory
+- Updated: Demo files to handle updated directory structure
+- Fixed: All .bat files to use full paths with environment variables
+
+## Platform Core
+
+2025-05-12: Updated: cofoundai/agents/*.py - Added test_mode parameter to all agent constructors
+2025-05-12: Updated: test_agent_communication.py - Translated from Turkish to English and improved test structure
+2025-05-12: Updated: test_agentic_graph.py - Translated from Turkish to English and enhanced test workflow
+2025-05-12: Added: demo_test_agents.bat - Created comprehensive test batch file for all agent tests
+2025-05-12: Fixed: cofoundai/orchestration/agentic_graph.py - Fixed "null bytes" error by recreating file in UTF-8 format
+2025-05-12: Fixed: cofoundai/agents/langgraph_agent.py - Added missing _llm_type abstract method in DummyLLM class
+2025-05-12: Tested: test_agent_communication.py - Basic agent communication modules successfully tested
+2025-05-12: Tested: test_agentic_graph.py - LangGraph workflow system successfully ran in test mode
+2025-05-12: Development: DummyLLM implemented with LangGraph compatibility, added infrastructure for testing agents without LLMs
+2025-05-12: Development: cofoundai/orchestration/agentic_graph.py - Added enhanced logging, error handling, and state tracking
+2025-05-12: Improvement: Multi-agent workflow improved, strengthened handoff mechanism with flexible graph structure
+2025-05-12: Improvement: Agent transitions and tool usage made dynamically controllable
+
+2025-05-11: Added: cofoundai/orchestration/agentic_graph.py - Dynamic orchestration with LangGraph
+2025-05-11: Tested: demo_cofoundai_cli.py - Full agent workflow ran successfully without LLM integration
+2025-05-11: Added: JSON formatted logging system developed, added traceability for each agent and workflow
+2025-05-11: Improvement: LLM integration prepared, test mode for operation without real LLM calls
+2025-05-11: Added: demo_cofoundai_cli.py - CoFound.ai CLI demo without LLM integration
+2025-05-11: Added: Persistent storage infrastructure for projects and results
+2025-05-11: Created initial project proposal
+
+## Agent Subsystem
+
+2025-05-12: Improvement: Extended handoff tools for all agents, added dynamic agent routing
+2025-05-12: Development: Agent communication protocol adapted to general software development processes beyond calculator example
+
+2025-05-11: Added: PlannerAgent, ArchitectAgent, DeveloperAgent, TesterAgent, ReviewerAgent, DocumentorAgent
+2025-05-11: Development: Added LLM-free test mode support to BaseAgent.process() method
+
+## Workflow & Orchestration
+
+2025-05-12: Development: Added dynamic agent routing mechanism, each agent can select the next step
+2025-05-12: Development: Added status, active_agent, previous_agent fields to workflow, increased traceability
+2025-05-12: Improvement: Developed test module that can make agent transitions without LLM integration
+
+2025-05-11: Added: config/workflows.yaml - develop_app, prototype, code_review workflows
+2025-05-11: Added: LangGraphWorkflow - creating graph structure and managing state
+
+## Communication & Messaging
+
+2025-05-12: Development: Developed agent handoff tool system, added tools that can transition between agents
+2025-05-12: Improvement: Message and Command classes integrated with agentic_graph
+
+2025-05-11: Added: Message class - common format for agent communication
+2025-05-11: Added: Command class - standard structure for agent commands
+
+## Monitoring & Logging
+
+2025-05-12: Development: JSONLogger system integrated with orchestration, all interactions in the graph are logged
+2025-05-12: Added: Separate log files for each agent, added traceability with thread_id for each workflow
+2025-05-12: Development: LogAnalyzer system integrated with CLI demo
+
+2025-05-11: Added: utils/logger.py - logging infrastructure for the entire system
+
+## Test Tools 
+
+2025-05-12: Added: test_agent_communication.py - Basic test script for agent communication modules
+2025-05-12: Added: test_agentic_graph.py - LangGraph workflow test script
+
+2025-05-11: Added: test_acp.py - Agent Communication Protocol test
+2025-05-11: Added: test_workflow.py - Workflow test
+2025-05-11: Added: test_version_control.py, test_file_manager.py
+
+## Demo & Visualization
+
+2025-05-12: Improvement: CLI demo interface visualizes agent transitions and interactions
+2025-05-12: Development: Streaming mode shows workflow progress in real-time
+
+2025-05-11: Added: Visualization scripts - workflow graph visualization
+
+2025-05-11: Dynamic Agent Communication Architecture
+2025-05-11: Implemented modular LLM interface for easy integration of various LLM providers
+2025-05-11: Added dynamic agent communication mechanism using Command pattern
+2025-05-11: Created LangGraph-compatible agent implementation with handoff tools
+2025-05-11: Implemented flexible dynamic graph orchestration
+2025-05-11: Added visualization tool for workflows
+2025-05-11: Enabled agents to communicate freely with each other using ACP protocol
+2025-05-11: Made LLM integration scalable with support for test mode fallback         2025-05-11: 
+2025-05-11: Initial Setup
+2025-05-11: Created project structure with layered architecture
+2025-05-11: Implemented basic agent definitions and communication protocol
+2025-05-11: Set up configuration management with YAML
+2025-05-11: Created LangGraph static workflows
+2025-05-11: Added testing framework for workflows
+2025-05-11: Project Initiation
+2025-05-11: Defined high-level architecture
+2025-05-11: Selected technology stack
+2025-05-11: Created initial project proposal
+2025-05-11: Fixed: cofoundai/config/__init__.py - updated load_workflow_config function, supports 'main' key structure
+2025-05-11: Tested: demo_cofoundai_cli.py - Full agent workflow ran successfully without LLM integration
+2025-05-11: Added: run_demo.bat, run_demo.sh - Demo execution scripts (for Windows, Linux/Mac)
+2025-05-11: Added: technology_comparison.md - Comparison of LangGraph, CrewAI and LlamaIndex, technology selection strategy
+2025-05-11: Added: demo_cofoundai_cli.py - CoFound.ai CLI demo without LLM integration
+2025-05-11: Updated: test_acp.py - Added and integrated FileManager, VersionControl and Context7Adapter tools
+2025-05-11: Added: test_context7.py - Test script for Context7Adapter tool for documentation access
+2025-05-11: Fixed: cofoundai/tools/context7_adapter.py - Fixed f-string syntax error
+2025-05-11: Added: cofoundai/tools/version_control.py - Git version control tool for agents
+2025-05-11: Added: test_version_control.py - Script testing Git operations with VersionControl tool
+2025-05-11: Added: test_file_manager.py - Script testing file operations with FileManager tool
+2025-05-11: Added: FileManager class - tool for safe file read/write operations for agents
+2025-05-11: Updated: tools/__init__.py - Added FileManager and VersionControl classes to project and exported
+2025-05-11: Updated: HIGHLEVEL-ARCHITECTURE.txt - Added detailed system architecture documentation
+2025-05-11: Added: visualize_prototype.py - Demo script visualizing prototype workflow
+2025-05-11: Added: test_workflow.py - Test simulating LangGraph-based workflow
+2025-05-11: Added: visualize_code_review.py - Script visualizing code review workflow
+2025-05-11: Added: visualize_develop_app.py - Script visualizing application development workflow
+2025-05-11: Added: test_workflow.py - Demo script showing integration of multi-agent workflow with project-specific version control
+2025-05-11: Added: Project-specific version control system - Isolated Git repository management for each user project
+2025-05-11: Updated: VersionControl class - Redesigned to work on a per-project basis and support snapshot system
+2025-05-11: Updated: test_version_control.py - Rewritten to test project-based version control system
+2025-05-11: Updated: HIGHLEVEL-ARCHITECTURE.txt - Added detailed architecture documentation, explained layers, workflow and memory system
+2025-05-10: Fixed: Replaced hard-coded message requiring langgraph package check in CLI with message indicating packages loaded successfully
+2025-05-09: Resolved conflict between different YAML validation systems (linter vs JSON schema)
+2025-05-09: Updated yamllint configuration to ignore specific schema properties needed for workflow functionality
+2025-05-09: Prioritized JSON schema validation over linter rules for critical workflow configuration
+2025-05-09: Standardized workflows.yaml formatting by moving workflows under "main" key as required by schema
+2025-05-09: Updated workflows_schema.json to use $ref for better code reuse and maintainability
+2025-05-09: Created HIGHLEVEL-ARCHITECTURE.txt for project-wide structural documentation
+2025-05-09: Modified JSON schema to support both nested and flat workflow structure formats
+2025-05-09: Ensured consistent null value representation across all YAML configurations
+2025-05-09: Enhanced JSON schema with additionalProperties validation for better error detection
+2025-05-09: Fixed persistent YAML validation errors by reformatting workflows.yaml and updating schema
+2025-05-08: Completed end-to-end validation of LangGraph integration with all agent types
+2025-05-08: Added Python script for YAML validation against JSON schema
+2025-05-08: Updated YAML linting configuration to disable schema validation for custom properties
+2025-05-08: Created missing agent classes (ArchitectAgent, TesterAgent, ReviewerAgent, DocumentorAgent) 
+2025-05-08: Enhanced CLI commands to work with workflow IDs from the new YAML structure
+2025-05-08: Updated LangGraphWorkflow to work with new workflows array structure
+2025-05-08: Standardized all code and comments to English language for consistency
+2025-05-08: Fixed YAML linting errors in workflow configuration by updating schema and format
+2025-05-08: Added LogAnalyzer for log visualization and debugging
+2025-05-08: Implemented agent workflow mechanism with state management
+2025-05-08: Created YAML linting configuration for code quality
+2025-05-08: Enhanced CLI with demo mode for LangGraph workflow testing
+2025-05-08: Added JSON schema for validating workflow YAML configuration
+2025-05-08: Created comprehensive logging system with JSON formatting and analysis tools
+2025-05-08: Integrated LangGraph framework for workflow orchestration
+2025-05-08: Added MIT license file
+2025-05-08: Created main README.md with project documentation and usage instructions
+2025-05-08: Created system configuration file with agent and LLM settings
+2025-05-08: Created workflow configuration file with predefined agent workflows
+2025-05-08: Created requirements.txt with project dependencies
+2025-05-08: Implemented CLI main entry point for the application
+2025-05-08: Created CodeGenerator tool for the developer agent
+2025-05-08: Converted all project code and documentation to English
+2025-05-08: Implemented Orchestrator class for agent coordination
+2025-05-08: Created DeveloperAgent class for code generation and debugging
+2025-05-08: Created PlannerAgent class for project planning and task allocation
+2025-05-08: Implemented Message class for agent communication
+2025-05-08: Implemented core BaseAgent abstract class
+2025-05-08: Created __init__ files for all packages
+2025-05-08: Created base README.md file with project overview and structure
+2025-05-08: Created initial project directory structure with core modules
+2025-05-06: Developed loosely-coupled working arrangement for agents. BaseAgent and all other Agents arranged for LangGraph workflow integration.
+2025-05-06: Resolved incompatibilities between BaseAgent and all agents (Planner, Architect, Developer, Tester, Reviewer, Documentor). Standardized process_message and process methods for all agent classes.
+2025-05-06: Arranged basic structure for LangGraph workflow integration. For now, made agent communication testable without LLM integration.
+2025-05-06: Added: Test-purpose workflow integration defined with LangGraph. Added diagnostics and test mode for monitoring the development process.
+2025-05-06: Added: Basic code structure created for documentation agent. Included README.md creation and API documentation capabilities
+2025-05-06: Added: Interface defined for review agent. Added code quality assessment and suggestion capabilities
+2025-05-06: Added: Test agent class defined. Unit test and integration test framework created
+2025-05-06: Added: Code production capabilities added for developer agent. Included code refactoring and debugging functions
+2025-05-05: Added: Data model and system architecture definition capabilities added for architect agent
+2025-05-04: Added: Added basic subtask breakdown and planning capabilities for planner agent
+2025-05-03: Added: Agent-to-agent communication protocol defined and message transmission system created
+2025-05-02: Added: CLI interface defined and basic task initiation commands created
+2025-05-01: Added: Basic project structure created, folder structure and main components defined
+
