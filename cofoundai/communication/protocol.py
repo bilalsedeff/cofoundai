@@ -1,43 +1,40 @@
 """
-CoFound.ai Agent Protocol Adapter
+Agent Protocol adapter.
 
-Bu modül, LangChain Agent Protocol (AP) ile CoFound.ai arasında 
-bir köprü görevi görerek standartlaştırılmış API entegrasyonu sağlar.
+This module contains the adapter class that allows CoFound.ai to work with the Agent Protocol (AP).
+Agent Protocol is a standard API that allows different agents to communicate with each other and with humans.
 
-AP Özellikleri:
-- Runs API - Ajan çalıştırmaları
-- Threads API - Durum yönetimi
-- Store API - Kalıcı depolama
-- Introspection - Ajan şemaları
 """
 
-from typing import Dict, Any, List, Optional, Union, Literal, TypeVar, Generic, cast
-from pydantic import BaseModel, Field
-import uuid
-from datetime import datetime
 import json
 import logging
+import uuid
 import asyncio
-from fastapi import FastAPI, HTTPException, Depends, Body
+from datetime import datetime
+from typing import Dict, List, Any, Optional, Literal
+
+from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Body
 from fastapi.responses import StreamingResponse
 
 from cofoundai.communication.message import Message, MessageContent
 from cofoundai.communication.agent_command import Command, CommandType, CommandTarget
 from cofoundai.orchestration.agentic_graph import AgenticGraph
+from cofoundai.utils.logger import get_logger
 
-# Logger tanımla
-logger = logging.getLogger(__name__)
+# Logger
+logger = get_logger(__name__)
 
-# Agent Protocol Modelleri
+# Agent Protocol Models
 
 class Content(BaseModel):
-    """Agent Protocol Content modeli."""
+    """Agent Protocol Content model."""
     type: str
     text: Optional[str] = None
     data: Optional[Dict[str, Any]] = None
 
 class APMessage(BaseModel):
-    """Agent Protocol Message modeli."""
+    """Agent Protocol Message model."""
     message_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     thread_id: str
     role: str
@@ -46,24 +43,24 @@ class APMessage(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
 
 class Thread(BaseModel):
-    """Agent Protocol Thread modeli."""
+    """Agent Protocol Thread model."""
     thread_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     metadata: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=datetime.now)
 
 class ThreadState(BaseModel):
-    """Agent Protocol Thread State modeli."""
+    """Agent Protocol Thread State model."""
     thread_id: str
     state: Dict[str, Any]
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
 
 class ThreadPatch(BaseModel):
-    """Agent Protocol Thread Patch modeli."""
+    """Agent Protocol Thread Patch model."""
     metadata: Optional[Dict[str, Any]] = None
     
 class ThreadSearchRequest(BaseModel):
-    """Agent Protocol Thread Search Request modeli."""
+    """Agent Protocol Thread Search Request model."""
     thread_ids: Optional[List[str]] = None
     metadata: Optional[Dict[str, Any]] = None
     created_before: Optional[datetime] = None
@@ -71,7 +68,7 @@ class ThreadSearchRequest(BaseModel):
     limit: Optional[int] = None
 
 class RunCreate(BaseModel):
-    """Agent Protocol Run oluşturma modeli."""
+    """Agent Protocol Run creation model."""
     thread_id: Optional[str] = None
     agent_id: Optional[str] = None
     input: Dict[str, Any]
@@ -80,7 +77,7 @@ class RunCreate(BaseModel):
     config: Optional[Dict[str, Any]] = None
 
 class Run(BaseModel):
-    """Agent Protocol Run modeli."""
+    """Agent Protocol Run model."""
     run_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     thread_id: str
     agent_id: str
@@ -93,7 +90,7 @@ class Run(BaseModel):
     completed_at: Optional[datetime] = None
 
 class RunSearchRequest(BaseModel):
-    """Agent Protocol Run Search Request modeli."""
+    """Agent Protocol Run Search Request model."""
     run_ids: Optional[List[str]] = None
     thread_ids: Optional[List[str]] = None
     agent_ids: Optional[List[str]] = None
@@ -104,7 +101,7 @@ class RunSearchRequest(BaseModel):
     limit: Optional[int] = None
 
 class Item(BaseModel):
-    """Store Item modeli."""
+    """Store Item model."""
     key: str
     namespace: List[str]
     value: Dict[str, Any]
@@ -112,45 +109,45 @@ class Item(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now)
 
 class StorePutRequest(BaseModel):
-    """Store Item ekleme/güncelleme isteği."""
+    """Store Item add/update request."""
     namespace: List[str]
     key: str
     value: Dict[str, Any]
 
 class StoreDeleteRequest(BaseModel):
-    """Store Item silme isteği."""
+    """Store Item delete request."""
     namespace: List[str]
     key: str
 
 class StoreSearchRequest(BaseModel):
-    """Store Item arama isteği."""
+    """Store Item search request."""
     namespace: Optional[List[str]] = None
     query: Optional[str] = None
     
 class SearchItemsResponse(BaseModel):
-    """Store Item arama sonucu."""
+    """Store Item search result."""
     items: List[Item]
 
 class StoreListNamespacesRequest(BaseModel):
-    """Store Namespaces listeleme isteği."""
+    """Store Namespaces list request."""
     pass
 
 class AgentSchema(BaseModel):
-    """Agent şema modeli."""
+    """Agent schema model."""
     name: str
     description: str
     input_schema: Dict[str, Any]
     output_schema: Dict[str, Any]
 
 class RunWaitResponse(BaseModel):
-    """Run bekleme yanıtı."""
+    """Run wait response."""
     run: Run
     messages: List[APMessage] = []
 
-# CoFound.ai ve Agent Protocol arasında dönüşüm fonksiyonları
+# CoFound.ai and Agent Protocol conversion functions
 
 def convert_to_ap_message(message: Message, thread_id: str) -> APMessage:
-    """CoFound.ai Message'ı AP Message'a çevir."""
+    """Convert CoFound.ai Message to AP Message."""
     content = [
         Content(
             type="text",
@@ -167,7 +164,7 @@ def convert_to_ap_message(message: Message, thread_id: str) -> APMessage:
     )
 
 def convert_from_ap_message(ap_message: APMessage) -> Message:
-    """AP Message'ı CoFound.ai Message'a çevir."""
+    """Convert AP Message to CoFound.ai Message."""
     content_text = ""
     content_data = {}
     
@@ -180,7 +177,7 @@ def convert_from_ap_message(ap_message: APMessage) -> Message:
     
     return Message(
         sender=ap_message.role,
-        recipient="system",  # Varsayılan alıcı
+        recipient="system",  # Default recipient
         content=MessageContent(text=content_text, data=content_data),
         metadata=ap_message.metadata or {},
         message_id=ap_message.message_id
@@ -190,18 +187,17 @@ def convert_from_ap_message(ap_message: APMessage) -> Message:
 
 class AgentProtocolAdapter:
     """
-    CoFound.ai'yi Agent Protocol ile uyumlu hale getiren adaptör.
+    Adapter that makes CoFound.ai compatible with the Agent Protocol.
     
-    Bu sınıf, CoFound.ai agentic_graph yapısını Agent Protocol API
-    standartlarına uyumlu hale getirir.
+    This class makes the CoFound.ai agentic_graph structure compatible with the Agent Protocol API standards.
     """
     
     def __init__(self, app: FastAPI = None):
         """
-        Adaptörü başlat.
+        Initialize the adapter.
         
         Args:
-            app: FastAPI uygulaması (opsiyonel)
+            app: FastAPI application (optional)
         """
         self.app = app
         self.graphs: Dict[str, AgenticGraph] = {}
@@ -212,10 +208,10 @@ class AgentProtocolAdapter:
         
         if app:
             self._register_routes()
-            logger.info("Agent Protocol API rotaları kaydedildi")
+            logger.info("Agent Protocol API routes registered")
     
     def _register_routes(self):
-        """API rotalarını kaydet."""
+        """Register API routes."""
         # Agent API
         self.app.get("/agents/{agent_id}")(self.get_agent)
         self.app.get("/agents/{agent_id}/schemas")(self.get_agent_schemas)
@@ -246,25 +242,25 @@ class AgentProtocolAdapter:
     
     def register_agent_graph(self, agent_id: str, graph: AgenticGraph):
         """
-        Agent grafiğini kaydet.
+        Save the agent graph.
         
         Args:
-            agent_id: Ajan ID'si
-            graph: Agentic Graph nesnesi
+            agent_id: Agent ID
+            graph: Agentic Graph object
         """
         self.graphs[agent_id] = graph
-        logger.info(f"Agent ID {agent_id} için graph kaydedildi")
+        logger.info(f"Agent ID {agent_id} graph saved")
         return True
     
     # Agent API implementasyonları
     async def get_agent(self, agent_id: str):
-        """Ajan bilgilerini al."""
+        """Get agent information."""
         if agent_id not in self.graphs:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         
         graph = self.graphs[agent_id]
         
-        # Ajan şemasını oluştur
+        # Create agent schema
         return AgentSchema(
             name=agent_id,
             description=f"Agentic graph for {agent_id}",
@@ -273,11 +269,11 @@ class AgentProtocolAdapter:
         )
     
     async def get_agent_schemas(self, agent_id: str):
-        """Ajan şemalarını al."""
+        """Get agent schemas."""
         if agent_id not in self.graphs:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         
-        # Basit girdi/çıktı şemaları
+        # Simple input/output schemas
         input_schema = {
             "type": "object",
             "properties": {
@@ -308,7 +304,7 @@ class AgentProtocolAdapter:
         }
     
     async def search_agents(self, request: dict = Body(...)):
-        """Ajanları ara."""
+        """Search agents."""
         agent_list = []
         
         for agent_id, graph in self.graphs.items():
@@ -322,12 +318,12 @@ class AgentProtocolAdapter:
     
     # Runs API implementasyonları
     async def create_run(self, run_create: RunCreate):
-        """Yeni bir çalıştırma oluştur."""
+        """Create a new run."""
         agent_id = run_create.agent_id
         if agent_id not in self.graphs:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         
-        # Thread oluştur veya kullan
+        # Create or use thread
         thread_id = run_create.thread_id
         if not thread_id:
             thread = Thread()
@@ -352,43 +348,43 @@ class AgentProtocolAdapter:
         return run
     
     async def _execute_run(self, run: Run):
-        """Run'ı yürüt."""
+        """Execute the run."""
         try:
-            # Durumu güncelle
+            # Update status
             run.status = "running"
             run.started_at = datetime.now()
             
-            # Girdiyi çıkart
+            # Get user input
             user_input = run.input.get("message", "")
             if isinstance(user_input, dict) and "content" in user_input:
                 user_input = user_input["content"]
             
-            # Graph'ı çalıştır
+            # Run the graph
             graph = self.graphs[run.agent_id]
             result = graph.run(user_input)
             
-            # Çıktıyı sakla
+            # Save output
             run.output = result
             run.status = "completed"
             run.completed_at = datetime.now()
             
         except Exception as e:
-            # Hata durumunda
+            # On error
             logger.error(f"Run execution error: {str(e)}")
             run.status = "failed"
             run.output = {"error": str(e)}
             run.completed_at = datetime.now()
     
     async def get_run(self, run_id: str):
-        """Run bilgilerini al."""
+        """Get run information."""
         if run_id not in self.runs:
             raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
         
         return self.runs[run_id]
     
     async def create_and_stream_run(self, run_stream: Dict[str, Any] = Body(...)):
-        """Yeni bir run oluştur ve akış başlat."""
-        # RunCreate nesnesine dönüştür
+        """Create a new run and stream it."""
+        # Convert to RunCreate object
         run_create = RunCreate(
             agent_id=run_stream.get("agent_id"),
             thread_id=run_stream.get("thread_id"),
@@ -397,29 +393,33 @@ class AgentProtocolAdapter:
             stream=True
         )
         
-        # Run oluştur
+        # Create run
         run = await self.create_run(run_create)
         
-        # Akış başlat
-        return await self.stream_run(run.run_id)
+        # Return streaming response - new approach
+        async def stream_gen():
+            async for chunk in self.stream_run(run.run_id):
+                yield chunk
+                
+        return StreamingResponse(stream_gen(), media_type="text/event-stream")
     
     async def create_and_wait_run(self, run_create: RunCreate):
-        """Yeni bir run oluştur ve tamamlanmasını bekle."""
-        # Run oluştur
+        """Create a new run and wait for completion."""
+        # Create run
         run = await self.create_run(run_create)
         
-        # Tamamlanmasını bekle
-        for _ in range(100):  # Maksimum 100 saniye bekle
+        # Wait for completion
+        for _ in range(100):  # Maximum 100 seconds wait
             current_run = self.runs[run.run_id]
             if current_run.status in ["completed", "failed"]:
-                # Mesajları al
-                messages = []  # Gerçek implementasyonda thread'deki mesajları getir
+                # Get messages
+                messages = []  # In real implementation, get messages from the thread
                 
                 return RunWaitResponse(run=current_run, messages=messages)
             
             await asyncio.sleep(1)
         
-        # Zaman aşımı durumu
+        # Timeout status
         run.status = "failed"
         run.output = {"error": "Run timeout"}
         self.runs[run.run_id] = run
@@ -427,64 +427,63 @@ class AgentProtocolAdapter:
         return RunWaitResponse(run=run, messages=[])
     
     async def stream_run(self, run_id: str):
-        """Run çıktısını akış olarak al."""
+        """Get run output as a stream."""
         if run_id not in self.runs:
             raise HTTPException(status_code=404, detail=f"Run {run_id} not found")
         
         run = self.runs[run_id]
         if run.status != "running":
-            # Zaten tamamlanmış veya başarısız olan run
+            # Already completed or failed run
             yield json.dumps({"status": run.status, "output": run.output})
             return
         
-        # Akış formatında yanıt üret
+        # Generate stream response
         graph = self.graphs[run.agent_id]
         user_input = run.input.get("message", "")
         
-        async def stream_generator():
-            try:
-                for chunk in graph.stream(user_input):
-                    # Chunk'ı JSON formatına dönüştür
-                    if isinstance(chunk, dict):
-                        yield json.dumps(chunk) + "\n"
-                    else:
-                        yield json.dumps({"chunk": str(chunk)}) + "\n"
-            except Exception as e:
-                yield json.dumps({"error": str(e)}) + "\n"
-        
-        return StreamingResponse(stream_generator(), media_type="text/event-stream")
+        # Note: This is an asynchronous generator function
+        # Instead of returning StreamingResponse, we run the generator ourselves
+        try:
+            for chunk in graph.stream(user_input):
+                # Convert chunk to JSON format
+                if isinstance(chunk, dict):
+                    yield json.dumps(chunk) + "\n"
+                else:
+                    yield json.dumps({"chunk": str(chunk)}) + "\n"
+        except Exception as e:
+            yield json.dumps({"error": str(e)}) + "\n"
     
     async def search_runs(self, search_request: RunSearchRequest):
-        """Run'ları ara."""
+        """Search runs."""
         filtered_runs = []
         
         for run_id, run in self.runs.items():
             include = True
             
-            # Run ID filtreleme
+            # Filter by run ID
             if search_request.run_ids and run_id not in search_request.run_ids:
                 include = False
                 
-            # Thread ID filtreleme
+            # Filter by thread ID
             if include and search_request.thread_ids and run.thread_id not in search_request.thread_ids:
                 include = False
                 
-            # Agent ID filtreleme
+            # Filter by agent ID
             if include and search_request.agent_ids and run.agent_id not in search_request.agent_ids:
                 include = False
                 
-            # Status filtreleme
+            # Filter by status
             if include and search_request.statuses and run.status not in search_request.statuses:
                 include = False
                 
-            # Oluşturma zamanı filtreleme
+            # Filter by creation time
             if include and search_request.created_after and run.created_at < search_request.created_after:
                 include = False
                 
             if include and search_request.created_before and run.created_at > search_request.created_before:
                 include = False
                 
-            # Metadata filtreleme
+            # Filter by metadata
             if include and search_request.metadata:
                 for key, value in search_request.metadata.items():
                     if not run.metadata or key not in run.metadata or run.metadata[key] != value:
@@ -494,7 +493,7 @@ class AgentProtocolAdapter:
             if include:
                 filtered_runs.append(run)
                 
-        # Limit uygula
+        # Apply limit
         if search_request.limit and len(filtered_runs) > search_request.limit:
             filtered_runs = filtered_runs[:search_request.limit]
                 
@@ -502,25 +501,25 @@ class AgentProtocolAdapter:
     
     # Threads API implementasyonları
     async def create_thread(self, thread: Thread = Body(...)):
-        """Yeni thread oluştur."""
+        """Create a new thread."""
         self.threads[thread.thread_id] = thread
         return thread
     
     async def get_thread(self, thread_id: str):
-        """Thread bilgilerini al."""
+        """Get thread information."""
         if thread_id not in self.threads:
             raise HTTPException(status_code=404, detail=f"Thread {thread_id} not found")
         
         return self.threads[thread_id]
     
     async def patch_thread(self, thread_id: str, thread_patch: ThreadPatch):
-        """Thread bilgilerini güncelle."""
+        """Update thread information."""
         if thread_id not in self.threads:
             raise HTTPException(status_code=404, detail=f"Thread {thread_id} not found")
         
         thread = self.threads[thread_id]
         
-        # Metadata güncelle
+        # Update metadata
         if thread_patch.metadata:
             if not thread.metadata:
                 thread.metadata = {}
@@ -529,15 +528,15 @@ class AgentProtocolAdapter:
         return thread
     
     async def get_thread_state(self, thread_id: str):
-        """Thread durumunu al."""
+        """Get thread state."""
         if thread_id not in self.threads:
             raise HTTPException(status_code=404, detail=f"Thread {thread_id} not found")
         
-        # Thread state varsa getir, yoksa oluştur
+        # If thread state exists, get it, otherwise create it
         if thread_id in self.thread_states:
             return self.thread_states[thread_id]
         
-        # Varsayılan boş durum
+        # Default empty state
         thread_state = ThreadState(
             thread_id=thread_id,
             state={}
@@ -546,35 +545,35 @@ class AgentProtocolAdapter:
         return thread_state
     
     async def create_run_in_thread(self, thread_id: str, run_create: RunCreate):
-        """Thread içinde yeni bir run oluştur."""
+        """Create a new run in a thread."""
         if thread_id not in self.threads:
             raise HTTPException(status_code=404, detail=f"Thread {thread_id} not found")
         
-        # Thread ID'yi ekle
+        # Add thread ID
         run_create.thread_id = thread_id
         
-        # Run oluştur
+        # Create run
         return await self.create_run(run_create)
     
     async def search_threads(self, search_request: ThreadSearchRequest):
-        """Thread'leri ara."""
+        """Search threads."""
         filtered_threads = []
         
         for thread_id, thread in self.threads.items():
             include = True
             
-            # Thread ID filtreleme
+            # Filter by thread ID
             if search_request.thread_ids and thread_id not in search_request.thread_ids:
                 include = False
                 
-            # Oluşturma zamanı filtreleme
+            # Filter by creation time
             if include and search_request.created_after and thread.created_at < search_request.created_after:
                 include = False
                 
             if include and search_request.created_before and thread.created_at > search_request.created_before:
                 include = False
                 
-            # Metadata filtreleme
+            # Filter by metadata
             if include and search_request.metadata:
                 for key, value in search_request.metadata.items():
                     if not thread.metadata or key not in thread.metadata or thread.metadata[key] != value:
@@ -584,7 +583,7 @@ class AgentProtocolAdapter:
             if include:
                 filtered_threads.append(thread)
                 
-        # Limit uygula
+        # Apply limit
         if search_request.limit and len(filtered_threads) > search_request.limit:
             filtered_threads = filtered_threads[:search_request.limit]
                 
@@ -592,13 +591,13 @@ class AgentProtocolAdapter:
     
     # Store API implementasyonları
     async def put_item(self, request: StorePutRequest):
-        """Store'a item ekle."""
+        """Add an item to the store."""
         namespace_key = "/".join(request.namespace)
         
         if namespace_key not in self.store:
             self.store[namespace_key] = {}
         
-        # Item oluştur veya güncelle
+        # Create or update item
         item = Item(
             key=request.key,
             namespace=request.namespace,
@@ -607,14 +606,14 @@ class AgentProtocolAdapter:
         )
         
         if request.key in self.store[namespace_key]:
-            # Varolan itemi güncelle, oluşturma zamanını koru
+            # Update existing item, keep creation time
             item.created_at = self.store[namespace_key][request.key].created_at
         
         self.store[namespace_key][request.key] = item
         return {"status": "success"}
     
     async def get_item(self, key: str, namespace: List[str] = None):
-        """Store'dan item al."""
+        """Get an item from the store."""
         namespace = namespace or []
         namespace_key = "/".join(namespace)
         
@@ -624,7 +623,7 @@ class AgentProtocolAdapter:
         return self.store[namespace_key][key]
     
     async def delete_item(self, request: StoreDeleteRequest):
-        """Store'dan item sil."""
+        """Delete an item from the store."""
         namespace_key = "/".join(request.namespace)
         
         if namespace_key in self.store and request.key in self.store[namespace_key]:
@@ -634,35 +633,35 @@ class AgentProtocolAdapter:
             raise HTTPException(status_code=404, detail=f"Item {request.key} not found in namespace {request.namespace}")
     
     async def search_items(self, request: StoreSearchRequest):
-        """Store'da arama yap."""
+        """Search items in the store."""
         items = []
         namespaces = []
         
         if request.namespace:
-            # Belirli namespace'lerde ara
+            # Search in specific namespaces
             for ns in request.namespace:
                 ns_key = "/".join(ns if isinstance(ns, list) else [ns])
                 if ns_key in self.store:
                     namespaces.append(ns_key)
         else:
-            # Tüm namespace'lerde ara
+            # Search in all namespaces
             namespaces = list(self.store.keys())
         
         for namespace_key in namespaces:
             for key, item in self.store[namespace_key].items():
-                # Basit arama, query varsa key içinde ara
+                # Simple search, if query exists, search in key
                 if not request.query or request.query.lower() in key.lower():
                     items.append(item)
         
         return SearchItemsResponse(items=items)
     
     async def list_namespaces(self, request: StoreListNamespacesRequest):
-        """Namespace'leri listele."""
+        """List namespaces."""
         namespaces = []
         
         for namespace_key in self.store.keys():
             if namespace_key:
-                # namespace_key string'i liste formatına dönüştür
+                # Convert namespace_key string to list format
                 ns_parts = namespace_key.split("/")
                 namespaces.append(ns_parts)
                 
