@@ -59,36 +59,26 @@ def test_agent_communication():
         print(f"Command converted to dictionary: {command_dict}")
         print(f"Converted back from dictionary to command: {command_reconverted}")
         
+        # Use assert instead of return
+        assert message.sender == "human", "Message sender should be 'human'"
+        assert message.recipient == "Planner", "Message recipient should be 'Planner'"
+        assert command.type == CommandType.HANDOFF, "Command should be a HANDOFF type"
+        assert response.is_response_to(message), "Response should be a response to the original message"
+        
         print("\nBasic communication tests successful!")
-        return {
-            "success": True,
-            "message": "Basic communication modules successfully tested",
-            "details": {
-                "message_test": str(message),
-                "command_test": str(command),
-                "response_test": str(response)
-            }
-        }
         
     except Exception as e:
         print(f"ERROR: Error during test: {str(e)}")
         traceback.print_exc()
-        return {
-            "success": False,
-            "message": f"Test failed: {str(e)}",
-            "error": str(e)
-        }
+        # Fail the test
+        assert False, f"Test failed: {str(e)}"
 
 if __name__ == "__main__":
     print("Starting CoFound.ai agent communication test...")
     
     try:
-        result = test_agent_communication()
-        
-        if result["success"]:
-            print(f"\nTEST SUCCESSFUL: {result['message']}")
-        else:
-            print(f"\nTEST FAILED: {result['message']}")
+        test_agent_communication()
+        print("\nTEST SUCCESSFUL: Basic communication modules successfully tested")
     except Exception as e:
         print(f"\nCRITICAL ERROR DURING TEST: {str(e)}")
         traceback.print_exc() 

@@ -10,6 +10,14 @@
 - Improved: No need to specify --dummy-test when DUMMY_TEST_MODE=true in .env
 - Fixed: Consistent environment handling throughout the application
 - Fixed: setup_env_file fonksiyonunda provider değişkeninin test modu (seçenek 3) için tanımlanmaması sorunu çözüldü (2024-05-13)
+- Fixed: Pytest module import issue resolved by adding conftest.py (2024-05-13)
+- Added: Separate test for LLM integration, testing API calls when dummy_test is disabled (2024-05-13)
+- Fixed: Resolved pytest collection warnings for TesterAgent being detected as test class (2024-05-13)
+- Added: Added pytest-asyncio package for async test support (2024-05-13)
+- Added: pytest.ini configuration file for cleaner test execution (2024-05-13)
+- Fixed: Converted async test_agent_protocol to synchronous to fix coroutine warning (2024-05-13)
+- Improved: Added better test fixtures and shared configurations in conftest.py (2024-05-13)
+- Fixed: Removed return values from all test functions, using assert statements instead (2024-05-13)
 
 ## LLM API Integration Update (2024-05-12)
 
