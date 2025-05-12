@@ -11,6 +11,8 @@ import os
 import json
 import time
 import threading
+import sys
+import codecs
 from typing import Dict, Any, Optional, List, Union
 from pathlib import Path
 
@@ -35,6 +37,24 @@ def setup_log_directory(log_dir: str) -> None:
     os.makedirs(log_dir, exist_ok=True)
 
 
+class Utf8ConsoleHandler(logging.StreamHandler):
+    """
+    Custom StreamHandler with UTF-8 encoding for Windows systems.
+    Allows proper handling of non-ASCII characters in logs.
+    """
+    
+    def __init__(self, stream=None):
+        # Use stderr as default stream but try to set its encoding to UTF-8
+        if stream is None:
+            stream = sys.stderr
+        
+        # Try to force UTF-8 encoding on Windows
+        if hasattr(stream, 'buffer'):
+            stream = codecs.getwriter('utf-8')(stream.buffer, 'replace')
+        
+        super().__init__(stream)
+
+
 def get_logger(name: str, log_file: str = None, level: int = logging.INFO) -> logging.Logger:
     """
     Create a named logger.
@@ -57,8 +77,8 @@ def get_logger(name: str, log_file: str = None, level: int = logging.INFO) -> lo
     # Configure log format
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
-    # Add console handler
-    console_handler = logging.StreamHandler()
+    # Add console handler with UTF-8 encoding
+    console_handler = Utf8ConsoleHandler()
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
     
@@ -69,11 +89,12 @@ def get_logger(name: str, log_file: str = None, level: int = logging.INFO) -> lo
         if log_dir:
             setup_log_directory(log_dir)
         
-        # Add rotating file handler
+        # Add rotating file handler with UTF-8 encoding
         file_handler = RotatingFileHandler(
             log_file,
             maxBytes=MAX_LOG_SIZE,
-            backupCount=BACKUP_COUNT
+            backupCount=BACKUP_COUNT,
+            encoding='utf-8'
         )
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
@@ -116,18 +137,19 @@ class JSONLogger:
         # Configure log format
         formatter = logging.Formatter('%(message)s')
         
-        # Add file handler
+        # Add file handler with UTF-8 encoding
         file_handler = RotatingFileHandler(
             self.log_file,
             maxBytes=MAX_LOG_SIZE,
-            backupCount=BACKUP_COUNT
+            backupCount=BACKUP_COUNT,
+            encoding='utf-8'
         )
         file_handler.setFormatter(formatter)
         self.logger.addHandler(file_handler)
         
-        # Add console handler if requested
+        # Add console handler if requested (with UTF-8 encoding)
         if console_output:
-            console_handler = logging.StreamHandler()
+            console_handler = Utf8ConsoleHandler()
             console_handler.setFormatter(formatter)
             self.logger.addHandler(console_handler)
         
@@ -153,7 +175,7 @@ class JSONLogger:
             }
             
             # Write log in JSON format
-            self.logger.info(json.dumps(log_entry))
+            self.logger.info(json.dumps(log_entry, ensure_ascii=False))
     
     def info(self, message: str, **kwargs) -> None:
         """
@@ -269,7 +291,7 @@ class LogAnalyzer:
             if workflow_name:
                 log_file = os.path.join(workflow_dir, f"{workflow_name.lower().replace(' ', '_')}.json")
                 if os.path.exists(log_file):
-                    with open(log_file, 'r') as f:
+                    with open(log_file, 'r', encoding='utf-8') as f:
                         for line in f:
                             try:
                                 logs.append(json.loads(line))
@@ -281,7 +303,7 @@ class LogAnalyzer:
                 for file in os.listdir(workflow_dir):
                     if file.endswith('.json'):
                         log_file = os.path.join(workflow_dir, file)
-                        with open(log_file, 'r') as f:
+                        with open(log_file, 'r', encoding='utf-8') as f:
                             for line in f:
                                 try:
                                     logs.append(json.loads(line))
@@ -317,7 +339,7 @@ class LogAnalyzer:
                     for file in os.listdir(agent_log_dir):
                         if file.endswith('.json'):
                             log_file = os.path.join(agent_log_dir, file)
-                            with open(log_file, 'r') as f:
+                            with open(log_file, 'r', encoding='utf-8') as f:
                                 for line in f:
                                     try:
                                         logs.append(json.loads(line))
@@ -332,7 +354,7 @@ class LogAnalyzer:
                         for file in os.listdir(agent_log_dir):
                             if file.endswith('.json'):
                                 log_file = os.path.join(agent_log_dir, file)
-                                with open(log_file, 'r') as f:
+                                with open(log_file, 'r', encoding='utf-8') as f:
                                     for line in f:
                                         try:
                                             logs.append(json.loads(line))
@@ -358,7 +380,7 @@ class LogAnalyzer:
             return logs
         
         try:
-            with open(system_log_file, 'r') as f:
+            with open(system_log_file, 'r', encoding='utf-8') as f:
                 logs = f.readlines()
         except Exception as e:
             # Just return empty list if we can't read the file
