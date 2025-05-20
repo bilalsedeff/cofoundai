@@ -38,6 +38,9 @@ cofoundai/                      # Main package
   │   ├── llm_interface.py      # LLM API integration
   │   ├── config_manager.py     # Configuration management
   │   ├── system.py             # System management
+  │   ├── base_agent.py         # Base agent class
+  │   ├── extensibility.py      # Interfaces and classes for extensible components and provider types
+  │   ├── component_factory.py  # Factory to instantiate extensible components dynamically
   │   └── base_agent.py         # Base agent class
   │
   ├── memory/                   # Memory systems
@@ -51,6 +54,8 @@ cofoundai/                      # Main package
   │   ├── langgraph_workflow.py # LangGraph workflow management
   │   ├── agentic_graph.py      # Dynamic agent graph for routing
   │   ├── dynamic_graph.py      # Extended graph functionality
+  │   ├── supervisor.py         # Workflow supervision and monitoring
+  │   ├── extensible_orchestrator.py  # Orchestrator integrating extensible components into LangGraph workflows
   │   └── supervisor.py         # Workflow supervision and monitoring
   │
   ├── tests/                    # Test files
@@ -62,6 +67,8 @@ cofoundai/                      # Main package
   │   ├── code_generator.py     # Code generation tool
   │   ├── file_manager.py       # File management
   │   ├── version_control.py    # Version control (Git) tool
+  │   ├── context7_adapter.py   # Documentation access tool
+  │   ├── extensible_tool.py    # Base classes for extensible tool components
   │   └── context7_adapter.py   # Documentation access tool
   │
   └── utils/                    # Helper functions
@@ -99,6 +106,7 @@ This module contains specialized AI agents that handle different aspects of the 
 - **reviewer.py**: Code review and improvement agent that identifies issues and suggests optimizations
 - **documentor.py**: Project documentation agent that creates technical documentation and guides
 - **langgraph_agent.py**: Base implementation for LangGraph-compatible agents with workflow integration
+- **extensible_agent.py**: Base classes for defining extensible agents
 
 ### cofoundai/cli/ - Command Line Interface
 
@@ -115,6 +123,8 @@ This module defines the communication protocol between agents:
 - **message.py**: Message class for standardized agent communication
 - **agent_command.py**: Command structures used by agents to trigger actions and transitions
 - **protocol.py**: Definitions of communication protocols and standards
+- **acp_adapter.py**: ACP protocol adapter for external agent integration
+- **mcp_adapter.py**: MCP protocol adapter for external tools and models
 
 ### cofoundai/config/ - Configuration Files
 
@@ -133,6 +143,8 @@ This module contains core functionality:
 - **config_manager.py**: Manages loading and validating configuration
 - **system.py**: Handles system initialization and management
 - **base_agent.py**: Base class that all agents inherit from
+- **extensibility.py**: Interfaces and classes for extensible components and provider types
+- **component_factory.py**: Factory to instantiate extensible components dynamically
 
 ### cofoundai/memory/ - Memory Systems
 
@@ -152,6 +164,7 @@ This module manages multi-agent workflows:
 - **agentic_graph.py**: Implements dynamic agent routing through a graph structure
 - **dynamic_graph.py**: Extended capabilities for dynamic graph modifications
 - **supervisor.py**: Monitors and supervises workflow execution
+- **extensible_orchestrator.py**: Orchestrator integrating extensible components into LangGraph workflows
 
 ### cofoundai/tests/ - Test Files
 
@@ -169,6 +182,7 @@ This module provides tools that agents can use:
 - **file_manager.py**: Tool for file operations (read, write, modify)
 - **version_control.py**: Git-based version control tool
 - **context7_adapter.py**: Tool for accessing external documentation
+- **extensible_tool.py**: Base classes for extensible tool components
 
 ### cofoundai/utils/ - Helper Functions
 
@@ -237,7 +251,13 @@ CoFound.ai implements a layered architecture that separates concerns and allows 
 - **File Operations**: Reading, writing, and updating files
 - **Documentation Access**: Tools to access external documentation
 
-### 8. Configuration Layer
+### 8. Extensibility Layer
+- **Component Registry**: Interfaces and registry for extensible components (`core/extensibility.py` and `core/component_factory.py`)
+- **Protocol Adapters**: ACP and MCP adapters for agent and tool integration (`communication/acp_adapter.py`, `communication/mcp_adapter.py`)
+- **Extensible Components**: Base classes enabling third-party extensions (`agents/extensible_agent.py`, `tools/extensible_tool.py`)
+- **Extensible Orchestrator**: Workflow orchestration supporting modular components (`orchestration/extensible_orchestrator.py`)
+
+### 9. Configuration Layer
 - **System Settings**: Global configuration
 - **Agent Configuration**: Agent-specific settings
 - **Workflow Definition**: Process and transition definitions

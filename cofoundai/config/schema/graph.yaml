@@ -1,0 +1,120 @@
+# CoFound.ai LangGraph Workflow Configuration
+# 
+# This file contains an example configuration schema for CoFound.ai's LangGraph-based workflow orchestrator.
+
+components_config: "config/schema/components.yaml"
+
+graph:
+  # The entry point of the graph (the first node to run)
+  entry_point: "user_input_router"
+  
+  # Node definitions
+  nodes:
+    # Router node
+    - id: "user_input_router"
+      type: "router"
+      router_type: "message_router"
+      routes:
+        "hava durumu": "weather_tool_node"
+        "hesapla": "calculator_tool_node"
+        "ara": "search_tool_node"
+      default: "openai_agent_node"
+    
+    # LLM agent node
+    - id: "openai_agent_node"
+      type: "agent"
+      agent_id: "openai_agent"
+    
+    # Anthropic agent node (can use tools)
+    - id: "tool_agent_node"
+      type: "agent"
+      agent_id: "tool_agent"
+    
+    # Weather tool node
+    - id: "weather_tool_node"
+      type: "tool"
+      tool_id: "weather_tool"
+      params:
+        location: "$state.messages[-1].content"  # Son mesajdan konum çıkar
+    
+    # Calculator tool node
+    - id: "calculator_tool_node"
+      type: "tool"
+      tool_id: "calculator_tool"
+      params:
+        expression: "$state.messages[-1].content"  # Son mesajdan ifade çıkar
+    
+    # Search tool node
+    - id: "search_tool_node"
+      type: "tool"
+      tool_id: "search_tool"
+      params:
+        query: "$state.messages[-1].content"  # Son mesajdan sorgu çıkar
+    
+    # Tool result handling conditional node
+    - id: "tool_result_condition"
+      type: "conditional"
+      condition_type: "message_type"
+      message_type: "tool_result"
+      message_index: -1  # Son mesajı kontrol et
+    
+    # External agent node
+    - id: "external_agent_node"
+      type: "agent"
+      agent_id: "external_acp_agent"
+    
+    # External model node
+    - id: "external_model_node"
+      type: "agent"
+      agent_id: "external_mcp_model"
+  
+  # Edge (transition) definitions
+  edges:
+    # Router to node connections
+    - source: "user_input_router"
+      target: "openai_agent_node"
+      condition_value: "default"
+    
+    - source: "user_input_router"
+      target: "weather_tool_node"
+      condition_value: "weather_tool_node"
+    
+    - source: "user_input_router"
+      target: "calculator_tool_node"
+      condition_value: "calculator_tool_node"
+    
+    - source: "user_input_router"
+      target: "search_tool_node"
+      condition_value: "search_tool_node"
+    
+    # Tool nodes to conditional node connections
+    - source: "weather_tool_node"
+      target: "tool_result_condition"
+    
+    - source: "calculator_tool_node"
+      target: "tool_result_condition"
+    
+    - source: "search_tool_node"
+      target: "tool_result_condition"
+    
+    # Conditional node to tool agent node connections
+    - source: "tool_result_condition"
+      target: "tool_agent_node"
+      condition_value: "true"  # Tool result exists
+    
+    - source: "tool_result_condition"
+      target: "openai_agent_node"
+      condition_value: "false"  # Tool result does not exist
+    
+    # Agent nodes to END connections
+    - source: "openai_agent_node"
+      target: END  # Flow ends
+    
+    - source: "tool_agent_node"
+      target: END  # Flow ends
+    
+    - source: "external_agent_node"
+      target: END  # Flow ends
+    
+    - source: "external_model_node"
+      target: END  # Flow ends 

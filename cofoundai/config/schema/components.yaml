@@ -1,0 +1,127 @@
+# CoFound.ai Component Configuration Schema
+# 
+# This file contains an example configuration schema for CoFound.ai's extensible component architecture.
+
+components:
+  # Example of an internal (Internal) LLM Agent
+  - type: agent
+    name: openai_agent
+    description: Smart agent working with OpenAI
+    agent_type: llm
+    provider_type: internal
+    model:
+      provider: openai
+      name: gpt-4o
+      temperature: 0.7
+    prompt_template: |
+      User: {message}
+      
+      Geçmiş:
+      {history}
+      
+      Ajan ({agent_name}): 
+    system_message: |
+      You are a smart agent working in the CoFound.ai system.
+      Answer user questions accurately and clearly.
+
+  # Agent that can use tools
+  - type: agent
+    name: tool_agent
+    description: Agent that can use tools
+    agent_type: tool
+    provider_type: internal
+    model:
+      provider: anthropic
+      name: claude-3-5-sonnet
+      temperature: 0.5
+    prompt_template: |
+      User: {message}
+      
+      History:
+      {history}
+      
+      Tools:
+      {tools}
+      
+      Ajan ({agent_name}): 
+    system_message: |
+      You are a smart agent working in the CoFound.ai system.
+      Use tools when needed to respond to the user's request.
+      Call tools in the <tool id="tool_id" params={"param1": "value1"}> format.
+    tools:
+      - id: weather_tool
+      - id: calculator_tool
+      - id: search_tool
+
+  # ACP Agent example
+  - type: agent
+    name: external_acp_agent
+    description: Agent connected via external ACP protocol
+    provider_type: acp
+    acp:
+      base_url: https://api.example.com/agents
+      api_key: ${ACP_API_KEY}
+      version: v1
+
+  # MCP Model example
+  - type: agent
+    name: external_mcp_model
+    description: Agent connected via external MCP protocol
+    provider_type: mcp
+    mcp:
+      endpoint_url: https://api.example.com/mcp
+      api_key: ${MCP_API_KEY}
+      model_id: example-llm-model
+
+  # Function tool example
+  - type: tool
+    name: calculator_tool
+    description: Tool for mathematical calculations
+    tool_type: function
+    provider_type: internal
+    function_module: cofoundai.tools.math_tools
+    function_name: calculate
+
+  # Command line tool example
+  - type: tool
+    name: weather_tool
+    description: Tool for weather information
+    tool_type: command
+    provider_type: internal
+    command_template: curl -s "https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q={location}"
+    working_dir: /tmp
+
+  # REST API tool example
+  - type: tool
+    name: search_tool
+    description: Tool for web search
+    tool_type: rest
+    provider_type: internal
+    endpoint: https://api.search.com/search
+    method: GET
+    headers:
+      Authorization: Bearer ${SEARCH_API_KEY}
+      Content-Type: application/json
+
+  # MCP tool example
+  - type: tool
+    name: external_mcp_function
+    description: Tool connected via external MCP protocol
+    tool_type: function
+    provider_type: mcp
+    mcp:
+      endpoint_url: https://api.example.com/mcp
+      api_key: ${MCP_API_KEY}
+      tool_id: example-function-tool
+      tool_type: function
+
+  # MCP Data Access tool example
+  - type: tool
+    name: external_knowledge_base
+    description: Tool for accessing external knowledge base
+    tool_type: retrieval
+    provider_type: mcp
+    mcp:
+      endpoint_url: https://api.example.com/mcp
+      api_key: ${MCP_API_KEY}
+      tool_id: example-kb-tool 
