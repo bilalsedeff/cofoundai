@@ -1,5 +1,34 @@
 # CoFound.ai Project Changelog
 
+## 2024-05-15 - Hibrit Genişletilebilirlik Mimarisi Eklendi
+
+### Eklenen Özellikler
+- Hibrit genişletilebilirlik mimarisi (Modüler Çekirdek + ACP/MCP Adaptörleri) geliştirildi.
+- Aşağıdaki bileşenler oluşturuldu:
+  - `core/extensibility.py`: Genişletilebilirlik temel arayüzleri ve soyut sınıfları
+  - `communication/acp_adapter.py`: Agent Communication Protocol adaptörü
+  - `communication/mcp_adapter.py`: Model Context Protocol adaptörü
+  - `tools/extensible_tool.py`: Genişletilebilir araç bileşenleri
+  - `agents/extensible_agent.py`: Genişletilebilir ajan bileşenleri
+  - `core/component_factory.py`: Farklı bileşen türlerini oluşturmak için merkezi fabrika
+  - `orchestration/extensible_orchestrator.py`: Genişletilebilir bileşenleri LangGraph ile entegre eden orkestratör
+  - `config/schema/components.yaml`: Örnek bileşen yapılandırma şeması
+  - `config/schema/graph.yaml`: Örnek LangGraph iş akışı yapılandırma şeması
+
+### Teknik Detaylar
+- Genişletilebilirlik mimarisi şu özellikleri destekler:
+  - İç sistemdeki bileşenler (INTERNAL)
+  - ACP üzerinden bağlanan dış ajanlar (ACP)
+  - MCP üzerinden bağlanan dış modeller ve araçlar (MCP)
+  - Özel protokol üzerinden bağlanan bileşenler (CUSTOM)
+- Merkezi bileşen kayıt sistemi ile tüm bileşenler yönetilir
+- YAML/JSON yapılandırması üzerinden bileşen ve iş akışı tanımlama
+- Farklı tipte bileşenler desteklenir:
+  - Ajanlar (LLM tabanlı, araç kullanan, dış ajanlar)
+  - Araçlar (fonksiyon, komut satırı, REST API, dış araçlar)
+  - LangGraph düğümleri (ajan, araç, koşullu, yönlendirici)
+- LangGraph entegrasyonu ile akışta anında genişletilebilirlik 
+
 ## CLI Environment Setup Update (2024-05-13)
 
 - Added: Interactive .env file setup through CLI start command

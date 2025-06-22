@@ -252,7 +252,7 @@ class AgentProtocolAdapter:
         logger.info(f"Agent ID {agent_id} graph saved")
         return True
     
-    # Agent API implementasyonları
+    # Agent API implementations
     async def get_agent(self, agent_id: str):
         """Get agent information."""
         if agent_id not in self.graphs:
@@ -316,7 +316,7 @@ class AgentProtocolAdapter:
             
         return {"agents": agent_list}
     
-    # Runs API implementasyonları
+    # Runs API implementations
     async def create_run(self, run_create: RunCreate):
         """Create a new run."""
         agent_id = run_create.agent_id
@@ -333,7 +333,7 @@ class AgentProtocolAdapter:
             thread = Thread(thread_id=thread_id)
             self.threads[thread_id] = thread
         
-        # Run oluştur
+        # Create run
         run = Run(
             agent_id=agent_id,
             thread_id=thread_id,
@@ -342,7 +342,7 @@ class AgentProtocolAdapter:
         )
         self.runs[run.run_id] = run
         
-        # Asenkron işleme başlat
+        # Start asynchronous processing
         asyncio.create_task(self._execute_run(run))
         
         return run
@@ -499,7 +499,7 @@ class AgentProtocolAdapter:
                 
         return {"runs": filtered_runs}
     
-    # Threads API implementasyonları
+    # Threads API implementations
     async def create_thread(self, thread: Thread = Body(...)):
         """Create a new thread."""
         self.threads[thread.thread_id] = thread
@@ -589,7 +589,7 @@ class AgentProtocolAdapter:
                 
         return {"threads": filtered_threads}
     
-    # Store API implementasyonları
+    # Store API implementations
     async def put_item(self, request: StorePutRequest):
         """Add an item to the store."""
         namespace_key = "/".join(request.namespace)

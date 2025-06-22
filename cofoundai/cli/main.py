@@ -38,6 +38,7 @@ def main():
     start_parser.add_argument("--verbose", "-v", action="store_true", help="Show detailed output")
     start_parser.add_argument("--dummy-test", action="store_true", 
                             help="Run in dummy test mode without making actual LLM API calls")
+    start_parser.add_argument("--extensible", action="store_true", help="Use extensible orchestrator architecture")
     
     # Demo LangGraph command
     demo_parser = subparsers.add_parser("demo", help="Run LangGraph demonstration without LLM calls")
@@ -45,6 +46,7 @@ def main():
     demo_parser.add_argument("--description", help="Optional project description")
     demo_parser.add_argument("--dummy-test", action="store_true", 
                            help="Run in dummy test mode without making actual LLM API calls")
+    demo_parser.add_argument("--extensible", action="store_true", help="Use extensible orchestrator architecture")
     
     # List workflows command
     list_parser = subparsers.add_parser("list", help="List available workflows")
@@ -70,9 +72,9 @@ def main():
     
     # Execute the appropriate command
     if args.command == "hello":
-        print("Merhaba, CoFound.ai dünyasına hoş geldiniz!")
-        print("Bu sistem çoklu ajan tabanlı yazılım geliştirme platformudur.")
-        print("LangGraph ve gerekli paketler başarıyla yüklenmiş. Sistem kullanıma hazır.")
+        print("Welcome to the CoFound.ai world!")
+        print("This is a multi-agent based software development platform.")
+        print("LangGraph and required packages are successfully installed. System is ready to use.")
         return 0
     elif args.command == "start":
         return start_project_command(args)
