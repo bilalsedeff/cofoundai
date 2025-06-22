@@ -1,15 +1,17 @@
 
 # CoFound.ai Google Cloud Infrastructure
+# Production-ready infrastructure with all required services
+
 terraform {
   required_version = ">= 1.0"
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
     google-beta = {
       source  = "hashicorp/google-beta"
-      version = "~> 4.0"
+      version = "~> 5.0"
     }
   }
 }
@@ -38,7 +40,7 @@ variable "environment" {
   default     = "dev"
 }
 
-# Provider Configuration
+# Configure providers
 provider "google" {
   project = var.project_id
   region  = var.region
@@ -51,112 +53,82 @@ provider "google-beta" {
   zone    = var.zone
 }
 
-# Enable APIs
-resource "google_project_service" "apis" {
+# Enable required APIs
+resource "google_project_service" "required_apis" {
   for_each = toset([
     "container.googleapis.com",
-    "sql-component.googleapis.com",
+    "run.googleapis.com",
+    "cloudbuild.googleapis.com",
+    "artifactregistry.googleapis.com",
     "sqladmin.googleapis.com",
     "redis.googleapis.com",
     "pubsub.googleapis.com",
-    "aiplatform.googleapis.com",
+    "storage.googleapis.com",
     "secretmanager.googleapis.com",
-    "cloudresourcemanager.googleapis.com",
-    "compute.googleapis.com",
-    "cloudbuild.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "run.googleapis.com"
+    "aiplatform.googleapis.com",
+    "logging.googleapis.com",
+    "monitoring.googleapis.com",
+    "firestore.googleapis.com"
   ])
 
-  service = each.key
-  project = var.project_id
-
-  disable_dependent_services = true
+  service = each.value
+  disable_on_destroy = false
 }
 
 # VPC Network
-resource "google_compute_network" "vpc" {
+resource "google_compute_network" "cofoundai_vpc" {
   name                    = "cofoundai-vpc-${var.environment}"
   auto_create_subnetworks = false
-  depends_on             = [google_project_service.apis]
+  depends_on              = [google_project_service.required_apis]
 }
 
-resource "google_compute_subnetwork" "subnet" {
+# Subnet
+resource "google_compute_subnetwork" "cofoundai_subnet" {
   name          = "cofoundai-subnet-${var.environment}"
   ip_cidr_range = "10.0.0.0/24"
   region        = var.region
-  network       = google_compute_network.vpc.id
+  network       = google_compute_network.cofoundai_vpc.id
 
-  secondary_ip_range {
-    range_name    = "gke-pods"
-    ip_cidr_range = "10.1.0.0/16"
-  }
-
-  secondary_ip_range {
-    range_name    = "gke-services"
-    ip_cidr_range = "10.2.0.0/16"
-  }
-}
-
-# Cloud NAT for private instances
-resource "google_compute_router" "router" {
-  name    = "cofoundai-router-${var.environment}"
-  region  = var.region
-  network = google_compute_network.vpc.id
-}
-
-resource "google_compute_router_nat" "nat" {
-  name                               = "cofoundai-router-nat-${var.environment}"
-  router                            = google_compute_router.router.name
-  region                            = var.region
-  nat_ip_allocate_option            = "AUTO_ONLY"
-  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_RANGES"
-
-  log_config {
-    enable = true
-    filter = "ERRORS_ONLY"
-  }
+  private_ip_google_access = true
 }
 
 # GKE Cluster
-resource "google_container_cluster" "primary" {
-  name     = "cofoundai-gke-${var.environment}"
+resource "google_container_cluster" "cofoundai_cluster" {
+  name     = "cofoundai-cluster-${var.environment}"
   location = var.region
-
+  
   remove_default_node_pool = true
   initial_node_count       = 1
-
-  network    = google_compute_network.vpc.id
-  subnetwork = google_compute_subnetwork.subnet.id
-
-  networking_mode = "VPC_NATIVE"
-  ip_allocation_policy {
-    cluster_secondary_range_name  = "gke-pods"
-    services_secondary_range_name = "gke-services"
-  }
-
-  private_cluster_config {
-    enable_private_nodes    = true
-    enable_private_endpoint = false
-    master_ipv4_cidr_block  = "172.16.0.0/28"
-  }
+  
+  network    = google_compute_network.cofoundai_vpc.name
+  subnetwork = google_compute_subnetwork.cofoundai_subnet.name
 
   workload_identity_config {
     workload_pool = "${var.project_id}.svc.id.goog"
   }
 
-  depends_on = [google_project_service.apis]
+  addons_config {
+    horizontal_pod_autoscaling {
+      disabled = false
+    }
+    http_load_balancing {
+      disabled = false
+    }
+  }
+
+  depends_on = [google_project_service.required_apis]
 }
 
-resource "google_container_node_pool" "primary_preemptible_nodes" {
-  name       = "main-pool"
+# GKE Node Pool
+resource "google_container_node_pool" "cofoundai_nodes" {
+  name       = "cofoundai-node-pool-${var.environment}"
   location   = var.region
-  cluster    = google_container_cluster.primary.name
+  cluster    = google_container_cluster.cofoundai_cluster.name
   node_count = 2
 
   node_config {
-    preemptible  = true
-    machine_type = "e2-medium"
+    preemptible  = var.environment != "prod"
+    machine_type = var.environment == "prod" ? "e2-standard-4" : "e2-medium"
 
     service_account = google_service_account.gke_service_account.email
     oauth_scopes = [
@@ -170,7 +142,7 @@ resource "google_container_node_pool" "primary_preemptible_nodes" {
 
   autoscaling {
     min_node_count = 1
-    max_node_count = 5
+    max_node_count = var.environment == "prod" ? 10 : 5
   }
 
   management {
@@ -185,51 +157,50 @@ resource "google_service_account" "gke_service_account" {
   display_name = "CoFound.ai GKE Service Account"
 }
 
-resource "google_project_iam_member" "gke_service_account_roles" {
-  for_each = toset([
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/monitoring.viewer",
-    "roles/stackdriver.resourceMetadata.writer"
-  ])
-
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.gke_service_account.email}"
-}
-
 # Cloud SQL Instance
-resource "google_sql_database_instance" "postgres" {
+resource "google_sql_database_instance" "cofoundai_postgres" {
   name             = "cofoundai-postgres-${var.environment}"
-  database_version = "POSTGRES_14"
-  region          = var.region
-  deletion_protection = false
+  database_version = "POSTGRES_15"
+  region           = var.region
 
   settings {
-    tier = "db-f1-micro"
+    tier = var.environment == "prod" ? "db-custom-2-8192" : "db-f1-micro"
     
-    ip_configuration {
-      ipv4_enabled                                  = false
-      private_network                               = google_compute_network.vpc.id
-      enable_private_path_for_google_cloud_services = true
-    }
+    disk_size = var.environment == "prod" ? 100 : 20
+    disk_type = "PD_SSD"
 
     backup_configuration {
-      enabled                        = true
-      start_time                     = "02:00"
-      point_in_time_recovery_enabled = true
-      backup_retention_settings {
-        retained_backups = 7
-      }
+      enabled    = true
+      start_time = "03:00"
     }
 
-    database_flags {
-      name  = "log_checkpoints"
-      value = "on"
+    ip_configuration {
+      ipv4_enabled    = false
+      private_network = google_compute_network.cofoundai_vpc.id
+      require_ssl     = true
     }
   }
 
   depends_on = [google_service_networking_connection.private_vpc_connection]
+}
+
+# Cloud SQL Database
+resource "google_sql_database" "cofoundai_db" {
+  name     = "cofoundai"
+  instance = google_sql_database_instance.cofoundai_postgres.name
+}
+
+# Cloud SQL User
+resource "google_sql_user" "cofoundai_user" {
+  name     = "cofoundai"
+  instance = google_sql_database_instance.cofoundai_postgres.name
+  password = random_password.db_password.result
+}
+
+# Random password for database
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
 }
 
 # Private VPC Connection for Cloud SQL
@@ -238,138 +209,233 @@ resource "google_compute_global_address" "private_ip_address" {
   purpose       = "VPC_PEERING"
   address_type  = "INTERNAL"
   prefix_length = 16
-  network       = google_compute_network.vpc.id
+  network       = google_compute_network.cofoundai_vpc.id
 }
 
 resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.vpc.id
+  network                 = google_compute_network.cofoundai_vpc.id
   service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
 }
 
-# Cloud SQL Database
-resource "google_sql_database" "cofoundai_db" {
-  name     = "cofoundai"
-  instance = google_sql_database_instance.postgres.name
-}
-
-resource "google_sql_user" "db_user" {
-  name     = "cofoundai"
-  instance = google_sql_database_instance.postgres.name
-  password = random_password.db_password.result
-}
-
-resource "random_password" "db_password" {
-  length  = 16
-  special = true
-}
-
-# Memorystore Redis
-resource "google_redis_instance" "cache" {
+# Memorystore Redis Instance
+resource "google_redis_instance" "cofoundai_redis" {
   name           = "cofoundai-redis-${var.environment}"
-  tier           = "BASIC"
-  memory_size_gb = 1
+  memory_size_gb = var.environment == "prod" ? 5 : 1
   region         = var.region
 
-  authorized_network = google_compute_network.vpc.id
-  connect_mode       = "PRIVATE_SERVICE_ACCESS"
+  authorized_network = google_compute_network.cofoundai_vpc.id
+  redis_version      = "REDIS_7_0"
 
-  depends_on = [google_project_service.apis]
+  depends_on = [google_project_service.required_apis]
 }
 
 # Pub/Sub Topics
-resource "google_pubsub_topic" "dream_requested" {
-  name = "dream-requested-${var.environment}"
+resource "google_pubsub_topic" "dream_requests" {
+  name = "dream-requests-${var.environment}"
 }
 
-resource "google_pubsub_topic" "dream_processed" {
-  name = "dream-processed-${var.environment}"
+resource "google_pubsub_topic" "dream_responses" {
+  name = "dream-responses-${var.environment}"
 }
 
-resource "google_pubsub_topic" "blueprint_generated" {
-  name = "blueprint-generated-${var.environment}"
+resource "google_pubsub_topic" "workflow_events" {
+  name = "workflow-events-${var.environment}"
 }
 
 # Pub/Sub Subscriptions
-resource "google_pubsub_subscription" "dream_requested_sub" {
-  name  = "dream-requested-sub-${var.environment}"
-  topic = google_pubsub_topic.dream_requested.name
-
-  ack_deadline_seconds = 20
-
-  retry_policy {
-    minimum_retry_delay = "1s"
-    maximum_retry_delay = "60s"
-  }
-}
-
-resource "google_pubsub_subscription" "dream_processed_sub" {
-  name  = "dream-processed-sub-${var.environment}"
-  topic = google_pubsub_topic.dream_processed.name
+resource "google_pubsub_subscription" "dream_processor" {
+  name  = "dream-processor-${var.environment}"
+  topic = google_pubsub_topic.dream_requests.name
 
   ack_deadline_seconds = 20
 }
 
-# Secret Manager
-resource "google_secret_manager_secret" "db_connection" {
-  secret_id = "db-connection-${var.environment}"
+resource "google_pubsub_subscription" "workflow_monitor" {
+  name  = "workflow-monitor-${var.environment}"
+  topic = google_pubsub_topic.workflow_events.name
 
-  replication {
-    automatic = true
+  ack_deadline_seconds = 60
+}
+
+# Cloud Storage Buckets
+resource "google_storage_bucket" "cofoundai_artifacts" {
+  name     = "cofoundai-artifacts-${var.project_id}-${var.environment}"
+  location = var.region
+
+  uniform_bucket_level_access = true
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle_rule {
+    condition {
+      age = 90
+    }
+    action {
+      type = "Delete"
+    }
   }
 }
 
-resource "google_secret_manager_secret_version" "db_connection" {
-  secret = google_secret_manager_secret.db_connection.id
-  secret_data = jsonencode({
-    host     = google_sql_database_instance.postgres.private_ip_address
-    database = google_sql_database.cofoundai_db.name
-    username = google_sql_user.db_user.name
-    password = google_sql_user.db_user.password
-  })
-}
+resource "google_storage_bucket" "cofoundai_logs" {
+  name     = "cofoundai-logs-${var.project_id}-${var.environment}"
+  location = var.region
 
-resource "google_secret_manager_secret" "redis_connection" {
-  secret_id = "redis-connection-${var.environment}"
+  uniform_bucket_level_access = true
 
-  replication {
-    automatic = true
+  lifecycle_rule {
+    condition {
+      age = 30
+    }
+    action {
+      type = "Delete"
+    }
   }
 }
 
-resource "google_secret_manager_secret_version" "redis_connection" {
-  secret = google_secret_manager_secret.redis_connection.id
-  secret_data = jsonencode({
-    host = google_redis_instance.cache.host
-    port = google_redis_instance.cache.port
-  })
-}
-
-# Artifact Registry
-resource "google_artifact_registry_repository" "cofoundai" {
+# Artifact Registry for Container Images
+resource "google_artifact_registry_repository" "cofoundai_images" {
   location      = var.region
-  repository_id = "cofoundai-${var.environment}"
-  description   = "CoFound.ai Docker images"
+  repository_id = "cofoundai-images-${var.environment}"
+  description   = "CoFound.ai container images"
   format        = "DOCKER"
+}
+
+# Secret Manager for API Keys and Credentials
+resource "google_secret_manager_secret" "openai_api_key" {
+  secret_id = "openai-api-key-${var.environment}"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+}
+
+resource "google_secret_manager_secret" "anthropic_api_key" {
+  secret_id = "anthropic-api-key-${var.environment}"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+}
+
+resource "google_secret_manager_secret" "database_url" {
+  secret_id = "database-url-${var.environment}"
+
+  replication {
+    user_managed {
+      replicas {
+        location = var.region
+      }
+    }
+  }
+}
+
+# Store database URL in Secret Manager
+resource "google_secret_manager_secret_version" "database_url" {
+  secret = google_secret_manager_secret.database_url.id
+  secret_data = "postgresql://${google_sql_user.cofoundai_user.name}:${random_password.db_password.result}@${google_sql_database_instance.cofoundai_postgres.private_ip_address}:5432/${google_sql_database.cofoundai_db.name}"
+}
+
+# IAM Roles for Service Accounts
+resource "google_project_iam_member" "gke_sa_roles" {
+  for_each = toset([
+    "roles/storage.objectViewer",
+    "roles/secretmanager.secretAccessor",
+    "roles/cloudsql.client",
+    "roles/pubsub.publisher",
+    "roles/pubsub.subscriber",
+    "roles/aiplatform.user"
+  ])
+
+  project = var.project_id
+  role    = each.value
+  member  = "serviceAccount:${google_service_account.gke_service_account.email}"
+}
+
+# Cloud Build Trigger for CI/CD
+resource "google_cloudbuild_trigger" "cofoundai_build" {
+  name     = "cofoundai-build-${var.environment}"
+  location = var.region
+
+  github {
+    owner = "your-github-username"  # Update this
+    name  = "cofoundai"             # Update this
+    push {
+      branch = var.environment == "prod" ? "main" : "develop"
+    }
+  }
+
+  build {
+    step {
+      name = "gcr.io/cloud-builders/docker"
+      args = [
+        "build",
+        "-t",
+        "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.cofoundai_images.repository_id}/cofoundai:$COMMIT_SHA",
+        "."
+      ]
+    }
+
+    step {
+      name = "gcr.io/cloud-builders/docker"
+      args = [
+        "push",
+        "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.cofoundai_images.repository_id}/cofoundai:$COMMIT_SHA"
+      ]
+    }
+
+    step {
+      name = "gcr.io/cloud-builders/gke-deploy"
+      args = [
+        "run",
+        "--filename=k8s/",
+        "--image=${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.cofoundai_images.repository_id}/cofoundai:$COMMIT_SHA",
+        "--location=${var.region}",
+        "--cluster=${google_container_cluster.cofoundai_cluster.name}"
+      ]
+    }
+  }
+}
+
+# Firestore Database
+resource "google_firestore_database" "cofoundai_firestore" {
+  project     = var.project_id
+  name        = "(default)"
+  location_id = var.region
+  type        = "FIRESTORE_NATIVE"
 }
 
 # Outputs
 output "cluster_name" {
-  value = google_container_cluster.primary.name
+  value = google_container_cluster.cofoundai_cluster.name
 }
 
-output "cluster_location" {
-  value = google_container_cluster.primary.location
+output "cluster_endpoint" {
+  value = google_container_cluster.cofoundai_cluster.endpoint
 }
 
 output "database_connection_name" {
-  value = google_sql_database_instance.postgres.connection_name
+  value = google_sql_database_instance.cofoundai_postgres.connection_name
 }
 
 output "redis_host" {
-  value = google_redis_instance.cache.host
+  value = google_redis_instance.cofoundai_redis.host
 }
 
 output "artifact_registry_url" {
-  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.cofoundai.repository_id}"
+  value = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.cofoundai_images.repository_id}"
+}
+
+output "storage_bucket_artifacts" {
+  value = google_storage_bucket.cofoundai_artifacts.name
 }

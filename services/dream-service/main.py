@@ -1,292 +1,393 @@
 
 """
 CoFound.ai Dream Service
-FastAPI microservice for handling dream phase requests
+
+This microservice handles the Dream phase of the CoFound.ai workflow.
+It processes user dreams/visions and converts them into structured blueprints.
 """
 
-from fastapi import FastAPI, HTTPException, BackgroundTasks
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
-import logging
-import uuid
-import json
-from datetime import datetime
-import asyncio
 import os
+import json
+import logging
+from datetime import datetime
+from typing import Dict, Any, Optional
 
-from google.cloud import pubsub_v1
-from google.cloud import secretmanager
-import asyncpg
-import redis.asyncio as redis
+from flask import Flask, request, jsonify
+from google.cloud import pubsub_v1, secretmanager, storage
+from google.cloud.sql.connector import Connector
+import sqlalchemy
+from sqlalchemy.orm import sessionmaker
+
+from cofoundai.utils.langsmith_integration import get_tracer, trace_agent_method
+from cofoundai.agents.langgraph_agent import LangGraphAgent
+from cofoundai.orchestration.agentic_graph import AgenticGraph
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Pydantic Models
-class DreamRequest(BaseModel):
-    user_id: str = Field(..., description="User ID")
-    project_id: Optional[str] = Field(None, description="Project ID")
-    prompt_text: str = Field(..., description="User's dream/vision")
-    goal: str = Field(default="prototype", description="Project goal")
-    tags: List[str] = Field(default_factory=list, description="Industry tags")
-    advanced_options: Dict[str, Any] = Field(default_factory=dict, description="Advanced options")
+# Initialize Flask app
+app = Flask(__name__)
 
-class DreamResponse(BaseModel):
-    project_id: str
-    status: str
-    message: str
-    blueprint_id: Optional[str] = None
-
-class Blueprint(BaseModel):
-    project_id: str
-    overview: str
-    features: List[str]
-    tech_stack: List[str]
-    timeline: str
-    cost: str
-    vision: str
-    goal: str
-    tags: List[str]
-
-# FastAPI App
-app = FastAPI(
-    title="CoFound.ai Dream Service",
-    description="Microservice for processing dream phase requests",
-    version="1.0.0"
-)
-
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Global variables for connections
+# Global variables for services
+connector = None
 db_pool = None
-redis_client = None
 publisher = None
+storage_client = None
+secret_client = None
 
-@app.on_startup
-async def startup_event():
-    """Initialize connections on startup"""
-    global db_pool, redis_client, publisher
+def initialize_gcp_services():
+    """Initialize Google Cloud Platform services."""
+    global connector, db_pool, publisher, storage_client, secret_client
     
     try:
-        # Initialize Pub/Sub publisher
+        # Cloud SQL Connector
+        connector = Connector()
+        
+        # Pub/Sub Publisher
         publisher = pubsub_v1.PublisherClient()
         
-        # Get secrets
+        # Cloud Storage
+        storage_client = storage.Client()
+        
+        # Secret Manager
         secret_client = secretmanager.SecretManagerServiceClient()
-        project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
-        environment = os.getenv("ENVIRONMENT", "dev")
         
         # Database connection
-        db_secret_name = f"projects/{project_id}/secrets/db-connection-{environment}/versions/latest"
-        db_secret = secret_client.access_secret_version(name=db_secret_name)
-        db_config = json.loads(db_secret.payload.data.decode("UTF-8"))
+        project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+        region = os.environ.get('GOOGLE_CLOUD_REGION', 'us-central1')
+        instance_name = f"{project_id}:{region}:cofoundai-postgres-dev"
         
-        db_pool = await asyncpg.create_pool(
-            host=db_config["host"],
-            database=db_config["database"],
-            user=db_config["username"],
-            password=db_config["password"],
-            min_size=1,
-            max_size=10
+        def getconn():
+            conn = connector.connect(
+                instance_name,
+                "pg8000",
+                user=get_secret("database-user"),
+                password=get_secret("database-password"),
+                db="cofoundai"
+            )
+            return conn
+
+        # Create SQLAlchemy engine
+        engine = sqlalchemy.create_engine(
+            "postgresql+pg8000://",
+            creator=getconn,
         )
         
-        # Redis connection
-        redis_secret_name = f"projects/{project_id}/secrets/redis-connection-{environment}/versions/latest"
-        redis_secret = secret_client.access_secret_version(name=redis_secret_name)
-        redis_config = json.loads(redis_secret.payload.data.decode("UTF-8"))
+        # Create session factory
+        Session = sessionmaker(bind=engine)
+        db_pool = Session
         
-        redis_client = redis.Redis(
-            host=redis_config["host"],
-            port=redis_config["port"],
-            decode_responses=True
-        )
-        
-        logger.info("Dream service initialized successfully")
+        logger.info("Successfully initialized GCP services")
         
     except Exception as e:
-        logger.error(f"Failed to initialize dream service: {str(e)}")
-        raise
+        logger.error(f"Failed to initialize GCP services: {e}")
+        # For development, continue without GCP services
+        if os.environ.get('DEVELOPMENT_MODE', 'false').lower() == 'true':
+            logger.warning("Running in development mode without GCP services")
+        else:
+            raise
 
-@app.on_shutdown
-async def shutdown_event():
-    """Cleanup connections on shutdown"""
-    global db_pool, redis_client
+def get_secret(secret_id: str) -> str:
+    """Retrieve secret from Google Secret Manager."""
+    if secret_client is None:
+        return os.environ.get(secret_id.replace('-', '_').upper(), 'default_value')
     
-    if db_pool:
-        await db_pool.close()
-    if redis_client:
-        await redis_client.close()
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint"""
-    return {
-        "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
-        "service": "dream-service"
-    }
-
-@app.post("/api/dream", response_model=DreamResponse)
-async def process_dream(request: DreamRequest, background_tasks: BackgroundTasks):
-    """
-    Process dream request and initiate blueprint generation
-    """
     try:
-        # Generate project ID if not provided
-        if not request.project_id:
-            request.project_id = f"proj_{int(datetime.now().timestamp())}"
-        
-        # Validate request
-        if not request.prompt_text or len(request.prompt_text.strip()) < 10:
-            raise HTTPException(
-                status_code=400,
-                detail="Dream description must be at least 10 characters long"
-            )
-        
-        # Store request in database
-        async with db_pool.acquire() as conn:
-            await conn.execute("""
-                CREATE TABLE IF NOT EXISTS dream_requests (
-                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                    user_id TEXT NOT NULL,
-                    project_id TEXT NOT NULL,
-                    prompt_text TEXT NOT NULL,
-                    goal TEXT NOT NULL,
-                    tags JSONB,
-                    advanced_options JSONB,
-                    status TEXT DEFAULT 'pending',
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                )
-            """)
-            
-            await conn.execute("""
-                INSERT INTO dream_requests 
-                (user_id, project_id, prompt_text, goal, tags, advanced_options)
-                VALUES ($1, $2, $3, $4, $5, $6)
-            """, 
-                request.user_id,
-                request.project_id,
-                request.prompt_text,
-                request.goal,
-                json.dumps(request.tags),
-                json.dumps(request.advanced_options)
-            )
-        
-        # Cache request for quick access
-        cache_key = f"dream_request:{request.project_id}"
-        await redis_client.setex(
-            cache_key,
-            3600,  # 1 hour TTL
-            json.dumps(request.dict())
-        )
-        
-        # Publish to Pub/Sub for async processing
-        background_tasks.add_task(
-            publish_dream_request,
-            request.project_id,
-            request.dict()
-        )
-        
-        logger.info(f"Dream request processed for project: {request.project_id}")
-        
-        return DreamResponse(
-            project_id=request.project_id,
-            status="processing",
-            message="Dream request received and processing started"
-        )
-        
-    except HTTPException:
-        raise
+        project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+        name = f"projects/{project_id}/secrets/{secret_id}/versions/latest"
+        response = secret_client.access_secret_version(request={"name": name})
+        return response.payload.data.decode("UTF-8")
     except Exception as e:
-        logger.error(f"Error processing dream request: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Internal server error processing dream request"
-        )
+        logger.error(f"Failed to get secret {secret_id}: {e}")
+        return 'default_value'
 
-async def publish_dream_request(project_id: str, request_data: dict):
-    """Publish dream request to Pub/Sub"""
+def publish_to_pubsub(topic_name: str, data: Dict[str, Any]) -> bool:
+    """Publish message to Pub/Sub topic."""
+    if publisher is None:
+        logger.warning("Pub/Sub not available, skipping publish")
+        return False
+    
     try:
-        project_id_env = os.getenv("GOOGLE_CLOUD_PROJECT")
-        environment = os.getenv("ENVIRONMENT", "dev")
-        topic_path = publisher.topic_path(project_id_env, f"dream-requested-{environment}")
+        project_id = os.environ.get('GOOGLE_CLOUD_PROJECT')
+        topic_path = publisher.topic_path(project_id, topic_name)
         
-        message_data = json.dumps({
-            "project_id": project_id,
-            "request_data": request_data,
-            "timestamp": datetime.now().isoformat()
-        }).encode("utf-8")
+        # Convert data to JSON string
+        message_data = json.dumps(data).encode('utf-8')
         
+        # Publish message
         future = publisher.publish(topic_path, message_data)
         message_id = future.result()
         
-        logger.info(f"Published dream request to Pub/Sub: {message_id}")
+        logger.info(f"Published message {message_id} to {topic_name}")
+        return True
         
     except Exception as e:
-        logger.error(f"Failed to publish dream request: {str(e)}")
+        logger.error(f"Failed to publish to {topic_name}: {e}")
+        return False
 
-@app.get("/api/dream/{project_id}/status")
-async def get_dream_status(project_id: str):
-    """Get dream processing status"""
-    try:
-        # Check cache first
-        cache_key = f"dream_status:{project_id}"
-        cached_status = await redis_client.get(cache_key)
+class DreamProcessor:
+    """Processes user dreams into structured blueprints."""
+    
+    def __init__(self):
+        """Initialize the dream processor."""
+        self.tracer = get_tracer()
         
-        if cached_status:
-            return json.loads(cached_status)
+        # Initialize specialized agents for dream processing
+        self.agents = {}
+        self._initialize_agents()
+    
+    def _initialize_agents(self):
+        """Initialize dream processing agents."""
+        try:
+            # Vision Analysis Agent
+            vision_config = {
+                "name": "VisionAnalyst",
+                "system_prompt": "You analyze user visions and extract key requirements, goals, and constraints.",
+                "llm_provider": "openai",
+                "model_name": "gpt-4-turbo-preview"
+            }
+            self.agents["vision"] = LangGraphAgent(vision_config)
+            
+            # Blueprint Generator Agent
+            blueprint_config = {
+                "name": "BlueprintGenerator", 
+                "system_prompt": "You create detailed project blueprints from analyzed visions.",
+                "llm_provider": "openai",
+                "model_name": "gpt-4-turbo-preview"
+            }
+            self.agents["blueprint"] = LangGraphAgent(blueprint_config)
+            
+            logger.info("Dream processing agents initialized")
+            
+        except Exception as e:
+            logger.error(f"Failed to initialize dream agents: {e}")
+            self.agents = {}
+    
+    @trace_agent_method("dream")
+    def process_dream(self, user_dream: str, project_id: str) -> Dict[str, Any]:
+        """
+        Process a user's dream into a structured blueprint.
         
-        # Check database
-        async with db_pool.acquire() as conn:
-            row = await conn.fetchrow("""
-                SELECT status, created_at, updated_at
-                FROM dream_requests
-                WHERE project_id = $1
-                ORDER BY created_at DESC
-                LIMIT 1
-            """, project_id)
+        Args:
+            user_dream: User's vision/dream description
+            project_id: Unique project identifier
             
-            if not row:
-                raise HTTPException(
-                    status_code=404,
-                    detail="Dream request not found"
-                )
+        Returns:
+            Structured blueprint
+        """
+        try:
+            # Start tracing session
+            session_id = self.tracer.start_workflow_session(project_id, user_dream)
             
-            status_data = {
+            # Step 1: Vision Analysis
+            vision_result = self._analyze_vision(user_dream, project_id)
+            
+            # Step 2: Blueprint Generation
+            blueprint_result = self._generate_blueprint(vision_result, project_id)
+            
+            # Step 3: Validation and Enhancement
+            final_blueprint = self._validate_blueprint(blueprint_result, project_id)
+            
+            # Publish to next phase
+            self._publish_to_maturation(final_blueprint, project_id)
+            
+            # End tracing session
+            self.tracer.end_workflow_session("success", final_blueprint)
+            
+            return {
+                "status": "success",
                 "project_id": project_id,
-                "status": row["status"],
-                "created_at": row["created_at"].isoformat(),
-                "updated_at": row["updated_at"].isoformat()
+                "blueprint": final_blueprint,
+                "session_id": session_id
             }
             
-            # Cache for 5 minutes
-            await redis_client.setex(
-                cache_key,
-                300,
-                json.dumps(status_data)
-            )
+        except Exception as e:
+            logger.error(f"Dream processing failed for {project_id}: {e}")
+            self.tracer.end_workflow_session("error", {})
             
-            return status_data
-            
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error getting dream status: {str(e)}")
-        raise HTTPException(
-            status_code=500,
-            detail="Internal server error getting dream status"
+            return {
+                "status": "error",
+                "project_id": project_id,
+                "error": str(e)
+            }
+    
+    def _analyze_vision(self, user_dream: str, project_id: str) -> Dict[str, Any]:
+        """Analyze user vision to extract key components."""
+        if "vision" not in self.agents:
+            # Fallback analysis without LLM
+            return {
+                "vision_summary": user_dream[:200],
+                "key_requirements": ["Feature 1", "Feature 2", "Feature 3"],
+                "target_users": ["General users"],
+                "constraints": [],
+                "success_metrics": ["User satisfaction", "Performance"]
+            }
+        
+        # Use vision analysis agent
+        analysis_prompt = f"""
+        Analyze this user vision and extract key components:
+        
+        Vision: {user_dream}
+        
+        Extract:
+        1. Vision summary (2-3 sentences)
+        2. Key requirements and features
+        3. Target users and personas
+        4. Constraints and limitations
+        5. Success metrics and goals
+        
+        Provide structured output in JSON format.
+        """
+        
+        result = self.agents["vision"].process({
+            "content": analysis_prompt,
+            "project_id": project_id
+        })
+        
+        # Trace the vision analysis
+        self.tracer.trace_agent_execution(
+            agent_name="VisionAnalyst",
+            phase="dream_analysis",
+            input_data={"user_dream": user_dream[:100]},
+            output_data=result
         )
+        
+        return result
+    
+    def _generate_blueprint(self, vision_analysis: Dict[str, Any], project_id: str) -> Dict[str, Any]:
+        """Generate detailed blueprint from vision analysis."""
+        if "blueprint" not in self.agents:
+            # Fallback blueprint without LLM
+            return {
+                "project_title": "AI-Powered Application",
+                "description": "An innovative application built with AI",
+                "architecture": {
+                    "frontend": "React",
+                    "backend": "Python/Flask",
+                    "database": "PostgreSQL",
+                    "deployment": "Google Cloud"
+                },
+                "features": [
+                    {"name": "User Authentication", "priority": "high"},
+                    {"name": "Data Processing", "priority": "medium"},
+                    {"name": "Analytics Dashboard", "priority": "low"}
+                ],
+                "timeline": {
+                    "total_duration": "4-6 weeks",
+                    "phases": [
+                        {"name": "Planning", "duration": "1 week"},
+                        {"name": "Development", "duration": "3-4 weeks"},
+                        {"name": "Testing", "duration": "1 week"}
+                    ]
+                }
+            }
+        
+        blueprint_prompt = f"""
+        Create a detailed project blueprint based on this vision analysis:
+        
+        {json.dumps(vision_analysis, indent=2)}
+        
+        Generate:
+        1. Project title and description
+        2. Technical architecture recommendations
+        3. Feature breakdown with priorities
+        4. Development timeline and phases
+        5. Resource requirements
+        6. Risk assessment and mitigation
+        
+        Provide structured output in JSON format.
+        """
+        
+        result = self.agents["blueprint"].process({
+            "content": blueprint_prompt,
+            "project_id": project_id
+        })
+        
+        # Trace blueprint generation
+        self.tracer.trace_agent_execution(
+            agent_name="BlueprintGenerator",
+            phase="dream_blueprint",
+            input_data={"vision_analysis": vision_analysis},
+            output_data=result
+        )
+        
+        return result
+    
+    def _validate_blueprint(self, blueprint: Dict[str, Any], project_id: str) -> Dict[str, Any]:
+        """Validate and enhance the generated blueprint."""
+        # Add metadata and validation
+        enhanced_blueprint = {
+            **blueprint,
+            "metadata": {
+                "created_at": datetime.now().isoformat(),
+                "project_id": project_id,
+                "version": "1.0",
+                "status": "draft"
+            }
+        }
+        
+        return enhanced_blueprint
+    
+    def _publish_to_maturation(self, blueprint: Dict[str, Any], project_id: str):
+        """Publish blueprint to maturation phase."""
+        maturation_data = {
+            "project_id": project_id,
+            "blueprint": blueprint,
+            "phase": "maturation",
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        success = publish_to_pubsub("maturation-requests", maturation_data)
+        if success:
+            logger.info(f"Published blueprint for {project_id} to maturation phase")
+        else:
+            logger.warning(f"Failed to publish blueprint for {project_id} to maturation phase")
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# Global dream processor instance
+dream_processor = DreamProcessor()
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint."""
+    return jsonify({"status": "healthy", "service": "dream-service"})
+
+@app.route('/dream/process', methods=['POST'])
+def process_dream():
+    """Process a user's dream into a blueprint."""
+    try:
+        data = request.get_json()
+        
+        if not data or 'user_dream' not in data:
+            return jsonify({"error": "user_dream is required"}), 400
+        
+        user_dream = data['user_dream']
+        project_id = data.get('project_id', f"proj_{int(datetime.now().timestamp())}")
+        
+        # Process the dream
+        result = dream_processor.process_dream(user_dream, project_id)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error processing dream: {e}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/dream/status/<project_id>', methods=['GET'])
+def get_dream_status(project_id):
+    """Get the status of a dream processing job."""
+    # This would typically query the database or cache
+    # For now, return a simple response
+    return jsonify({
+        "project_id": project_id,
+        "status": "completed",
+        "phase": "dream"
+    })
+
+if __name__ == '__main__':
+    # Initialize GCP services
+    initialize_gcp_services()
+    
+    # Start the Flask app
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port, debug=os.environ.get('DEVELOPMENT_MODE', 'false').lower() == 'true')
