@@ -109,11 +109,22 @@ class AgenticGraph:
         # Default LLM if not provided
         if llm is None:
             try:
-                model_name = os.environ.get("COFOUNDAI_MODEL_NAME", "claude-3-sonnet-20240229")
-                self.llm = ChatAnthropic(model=model_name)
-            except:
-                logger.warning("ChatAnthropic not configured, falling back to ChatOpenAI")
-                self.llm = ChatOpenAI(model="gpt-4-turbo-preview")
+                # Use OpenAI GPT-4o as default
+                model_name = os.environ.get("MODEL_NAME", "gpt-4o")
+                provider = os.environ.get("LLM_PROVIDER", "openai")
+                
+                if provider == "openai":
+                    self.llm = ChatOpenAI(model=model_name)
+                    logger.info(f"Using OpenAI model: {model_name}")
+                else:
+                    # Fallback to Anthropic
+                    self.llm = ChatAnthropic(model="claude-3-sonnet-20240229")
+                    logger.info("Using Anthropic Claude as fallback")
+            except Exception as e:
+                logger.error(f"Failed to initialize LLM: {e}")
+                # Use test mode if all else fails
+                from cofoundai.core.llm_interface import LLMFactory
+                self.llm = LLMFactory.create_llm(use_dummy=True)
         else:
             self.llm = llm
             
