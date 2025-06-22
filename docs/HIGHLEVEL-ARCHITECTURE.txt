@@ -39,7 +39,7 @@ cofoundai/                      # Main package
   │   ├── developer.py          # Code development agent
   │   ├── tester.py             # Testing agent
   │   ├── reviewer.py           # Code review agent
-  │   ├── documentor.py         # Documentation agent
+  │   ├── documentor.py         # Documenter agent
   │   └── langgraph_agent.py    # LangGraph compatible agent implementation
   │
   ├── cli/                      # Command line interface
@@ -136,7 +136,7 @@ This module contains specialized AI agents that handle different aspects of the 
 - **developer.py**: Code development agent that writes, refactors, and debugs code
 - **tester.py**: Code testing and quality control agent that writes and executes tests
 - **reviewer.py**: Code review and improvement agent that identifies issues and suggests optimizations
-- **documentor.py**: Project documentation agent that creates technical documentation and guides
+- **documentor.py**: Documenter agent that creates technical documentation and guides
 - **langgraph_agent.py**: Base implementation for LangGraph-compatible agents with workflow integration
 - **extensible_agent.py**: Base classes for defining extensible agents
 
