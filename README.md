@@ -80,7 +80,7 @@ CoFound.ai implements a dynamic agent workflow system using LangGraph:
 4. **Development**: Developer agent generates code
 5. **Testing**: Tester agent creates and runs tests
 6. **Review**: Reviewer agent analyzes code quality
-7. **Documentation**: Documentor agent creates documentation
+7. **Documentation**: Documenter agent creates documentation
 
 Agents can transfer control to other agents based on task requirements using a handoff mechanism.
 
