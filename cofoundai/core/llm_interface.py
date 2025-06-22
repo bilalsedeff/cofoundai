@@ -233,10 +233,14 @@ class OpenAILLM(BaseLLM):
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         """Initialize the OpenAI LLM interface."""
         super().__init__(config)
-        self.model_name = config.get("model_name", "gpt-4-turbo")
+        self.model_name = config.get("model_name", "gpt-4o")
         
         # Get API key from config or from config_loader
         self.api_key = config.get("api_key") or config_loader.get_env("OPENAI_API_KEY")
+        
+        # Google Cloud integration
+        self.google_cloud_project = config_loader.get_env("GOOGLE_CLOUD_PROJECT")
+        self.google_api_key = config_loader.get_env("GOOGLE_API_KEY")
         
         if not self.api_key:
             logger.warning("OpenAI API key not found. Set OPENAI_API_KEY in .env file or environment.")
@@ -351,6 +355,9 @@ class LLMFactory:
             openai_config = config_loader.get_llm_config()
             if config:
                 openai_config.update(config)
+            # Default to GPT-4o
+            if "model_name" not in openai_config:
+                openai_config["model_name"] = "gpt-4o"
             return OpenAILLM(openai_config)
         else:
             logger.warning(f"Unsupported LLM provider: {provider}, falling back to test mode")

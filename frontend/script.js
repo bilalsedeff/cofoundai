@@ -56,8 +56,8 @@ class AppState {
     }
 
     updateProgressUI() {
-        const progressFill = document.getElementById('progress-fill');
-        const progressPercentage = document.getElementById('progress-percentage');
+        const progressFill = document.querySelector('.progress-fill');
+        const progressPercentage = document.getElementById('progress-percent');
         
         if (progressFill) {
             progressFill.style.width = `${this.progress}%`;
@@ -279,18 +279,20 @@ class CoFoundApp {
     setupEventListeners() {
         // Dream input events
         const dreamInput = document.getElementById('dream-input');
-        const dreamSubmit = document.getElementById('dream-submit');
+        const dreamSubmit = document.getElementById('start-building');
         
         if (dreamInput) {
             dreamInput.addEventListener('input', () => {
                 const hasContent = dreamInput.value.trim().length > 0;
-                dreamSubmit.disabled = !hasContent;
+                if (dreamSubmit) {
+                    dreamSubmit.disabled = !hasContent;
+                }
             });
 
             dreamInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    if (!dreamSubmit.disabled) {
+                    if (dreamSubmit && !dreamSubmit.disabled) {
                         this.handleDreamSubmit();
                     }
                 }
@@ -302,6 +304,20 @@ class CoFoundApp {
                 this.handleDreamSubmit();
             });
         }
+
+        // Suggestion items
+        const suggestionItems = document.querySelectorAll('.suggestion-item');
+        suggestionItems.forEach(item => {
+            item.addEventListener('click', () => {
+                const suggestion = item.getAttribute('data-suggestion');
+                if (dreamInput && suggestion) {
+                    dreamInput.value = suggestion;
+                    if (dreamSubmit) {
+                        dreamSubmit.disabled = false;
+                    }
+                }
+            });
+        });
 
         // Chat input events
         const chatInput = document.getElementById('chat-input');
