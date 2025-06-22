@@ -5,12 +5,18 @@ This module provides integration with LangSmith for tracing and monitoring
 multi-agent workflows and LLM interactions.
 """
 
-import os
-import logging
-from typing import Dict, Any, Optional, List, Union
-from datetime import datetime
-import uuid
+try:
+    from langsmith import Client
+except ImportError:
+    Client = None
 
+import os
+import uuid
+from datetime import datetime
+from typing import Dict, Any, Optional, List, Union
+
+# Set up logging
+import logging
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -24,29 +30,18 @@ class LangSmithTracer:
 
     def __init__(self):
         """Initialize LangSmith tracer."""
-        self.enabled = self._check_langsmith_config()
-        self.current_session = None
+        self.api_key = os.environ.get("LANGCHAIN_API_KEY")
+        self.tracing_enabled = os.environ.get("LANGCHAIN_TRACING_V2", "false").lower() == "true"
+        self.project_name = os.environ.get("LANGCHAIN_PROJECT", "CoFound.ai")
+
+        self.enabled = bool(self.api_key and self.tracing_enabled and Client is not None)
 
         if self.enabled:
             try:
-                from langsmith import Client
-                # Initialize with environment variables
-                self.client = Client(
-                    api_key=os.environ.get("LANGCHAIN_API_KEY"),
-                    api_url=os.environ.get("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
-                )
-
-                # Set project name
-                project_name = os.environ.get("LANGCHAIN_PROJECT", "cofoundai-development")
-                os.environ["LANGCHAIN_PROJECT"] = project_name
-
+                self.client = Client(api_key=self.api_key)
                 logger.info("LangSmith tracing enabled")
-            except ImportError:
-                logger.warning("LangSmith not installed, tracing disabled")
-                self.enabled = False
-                self.client = None
             except Exception as e:
-                logger.error(f"Failed to initialize LangSmith client: {e}")
+                logger.warning(f"Failed to initialize LangSmith client: {e}")
                 self.enabled = False
                 self.client = None
         else:

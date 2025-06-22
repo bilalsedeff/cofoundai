@@ -1,4 +1,3 @@
-
 // Application State
 class AppState {
     constructor() {
@@ -41,11 +40,11 @@ class AppState {
     updatePhaseUI() {
         const phases = document.querySelectorAll('.phase');
         const phaseNames = ['dream', 'maturation', 'assemble', 'prototype', 'feedback', 'iterate', 'validate', 'golive', 'evolve'];
-        
+
         phases.forEach((phase, index) => {
             const phaseName = phaseNames[index];
             phase.classList.remove('active', 'completed');
-            
+
             const currentIndex = phaseNames.indexOf(this.currentPhase);
             if (index < currentIndex) {
                 phase.classList.add('completed');
@@ -58,7 +57,7 @@ class AppState {
     updateProgressUI() {
         const progressFill = document.querySelector('.progress-fill');
         const progressPercentage = document.getElementById('progress-percent');
-        
+
         if (progressFill) {
             progressFill.style.width = `${this.progress}%`;
         }
@@ -280,7 +279,7 @@ class CoFoundApp {
         // Dream input events
         const dreamInput = document.getElementById('dream-input');
         const dreamSubmit = document.getElementById('start-building');
-        
+
         if (dreamInput) {
             dreamInput.addEventListener('input', () => {
                 const hasContent = dreamInput.value.trim().length > 0;
@@ -435,7 +434,7 @@ class CoFoundApp {
 
         try {
             this.appState.isProcessing = true;
-            
+
             // Add user message
             this.chatManager.addMessage(message, 'user');
             chatInput.value = '';
@@ -445,7 +444,7 @@ class CoFoundApp {
 
             // Send to API
             const response = await this.apiService.sendChatMessage(this.appState.currentSession, message);
-            
+
             this.chatManager.removeTypingIndicator();
 
             // Add AI response
@@ -517,7 +516,7 @@ class CoFoundApp {
             if (currentPhaseIndex < phases.length) {
                 const phase = phases[currentPhaseIndex];
                 this.appState.setPhase(phase);
-                
+
                 const progress = 75 + ((currentPhaseIndex + 1) / phases.length) * 25;
                 this.appState.setProgress(progress);
 
@@ -564,7 +563,7 @@ class CoFoundApp {
     showLoading(text = 'Processing...') {
         const overlay = document.getElementById('loading-overlay');
         const loadingText = document.getElementById('loading-text');
-        
+
         if (loadingText) loadingText.textContent = text;
         if (overlay) overlay.style.display = 'flex';
     }
@@ -579,7 +578,7 @@ class CoFoundApp {
 document.addEventListener('DOMContentLoaded', () => {
     const app = new CoFoundApp();
     app.init();
-    
+
     // Global error handling
     window.addEventListener('error', (e) => {
         console.error('Global error:', e.error);
@@ -591,3 +590,23 @@ document.addEventListener('DOMContentLoaded', () => {
         app.hideLoading();
     });
 });
+// Chat functionality
+const chatMessages = document.getElementById('chat-messages');
+const userInput = document.getElementById('user-input');
+const sendButton = document.getElementById('send-button');
+
+// Check if elements exist
+if (!chatMessages || !userInput || !sendButton) {
+    console.warn('Some chat elements not found on page');
+}
+function updateProgressBar(progress) {
+    const progressBar = document.querySelector('.progress-bar');
+    const progressText = document.querySelector('.progress-text');
+
+    if (progressBar) {
+        progressBar.style.width = `${progress}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `${progress}% Complete`;
+    }
+}
