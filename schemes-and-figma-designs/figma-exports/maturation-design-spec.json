@@ -1,0 +1,250 @@
+{
+  "name": "Maturation Screen",
+  "styles": {
+    "colors": {
+      "primary": "#665DFF",
+      "secondary": "#FC76A1",
+      "background": {
+        "dark": "#0f0f1e",
+        "medium": "#1e1e42",
+        "light": "rgba(30, 30, 50, 0.7)"
+      },
+      "text": {
+        "primary": "#f8f9fa",
+        "secondary": "rgba(255, 255, 255, 0.8)"
+      },
+      "status": {
+        "success": "#27AE60",
+        "warning": "#F2C94C",
+        "danger": "#EB5757"
+      }
+    },
+    "gradients": {
+      "headerGradient": "linear-gradient(90deg, #665DFF, #FC76A1)",
+      "progressGradient": "linear-gradient(90deg, #665DFF, #FC76A1)",
+      "backgroundGradient": "linear-gradient(120deg, #0f0f1e, #1e1e42)"
+    },
+    "typography": {
+      "heading1": {
+        "fontFamily": "Inter, 'Segoe UI', Roboto, sans-serif",
+        "fontSize": "40px",
+        "fontWeight": "700",
+        "lineHeight": "1.2"
+      },
+      "heading4": {
+        "fontFamily": "Inter, 'Segoe UI', Roboto, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "600",
+        "lineHeight": "1.5",
+        "opacity": "0.8"
+      },
+      "body": {
+        "fontFamily": "Inter, 'Segoe UI', Roboto, sans-serif",
+        "fontSize": "16px",
+        "fontWeight": "400",
+        "lineHeight": "1.5"
+      },
+      "small": {
+        "fontFamily": "Inter, 'Segoe UI', Roboto, sans-serif",
+        "fontSize": "14px",
+        "fontWeight": "400",
+        "lineHeight": "1.4"
+      }
+    },
+    "effects": {
+      "dropShadow": {
+        "x": "0",
+        "y": "4px",
+        "blur": "12px",
+        "color": "rgba(102, 93, 255, 0.4)"
+      },
+      "glassMorphism": {
+        "background": "rgba(30, 30, 50, 0.7)",
+        "backdropFilter": "blur(8px)"
+      }
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px",
+      "xxl": "48px"
+    },
+    "borderRadius": {
+      "sm": "6px",
+      "md": "8px",
+      "lg": "12px",
+      "full": "50%"
+    }
+  },
+  "layout": {
+    "dimensions": {
+      "width": "1400px",
+      "height": "900px"
+    },
+    "components": {
+      "header": {
+        "height": "150px",
+        "paddingTop": "32px",
+        "paddingBottom": "32px"
+      },
+      "chatInterface": {
+        "height": "calc(100vh - 150px)",
+        "gap": "20px"
+      },
+      "sidebar": {
+        "width": "250px",
+        "padding": "16px"
+      },
+      "chatArea": {
+        "padding": "24px"
+      },
+      "message": {
+        "maxWidth": "80%",
+        "gap": "12px"
+      },
+      "avatar": {
+        "size": "36px"
+      },
+      "quickAnswer": {
+        "height": "36px",
+        "paddingLeft": "16px",
+        "paddingRight": "16px",
+        "borderRadius": "20px"
+      },
+      "inputArea": {
+        "height": "60px",
+        "padding": "16px"
+      },
+      "floatingHelp": {
+        "size": "56px",
+        "positionBottom": "20px",
+        "positionRight": "20px"
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "ScopeLockBadge",
+      "type": "component",
+      "properties": {
+        "background": "rgba(252, 118, 161, 0.2)",
+        "border": "1px solid #FC76A1",
+        "borderRadius": "6px",
+        "padding": "6px 10px",
+        "fontSize": "14px",
+        "cursor": "pointer"
+      }
+    },
+    {
+      "name": "RiskItem",
+      "type": "component",
+      "variants": [
+        {
+          "name": "Success",
+          "properties": {
+            "background": "rgba(39, 174, 96, 0.2)",
+            "borderLeft": "3px solid #27AE60"
+          }
+        },
+        {
+          "name": "Warning",
+          "properties": {
+            "background": "rgba(242, 201, 76, 0.2)",
+            "borderLeft": "3px solid #F2C94C"
+          }
+        },
+        {
+          "name": "Danger",
+          "properties": {
+            "background": "rgba(235, 87, 87, 0.2)",
+            "borderLeft": "3px solid #EB5757"
+          }
+        }
+      ]
+    },
+    {
+      "name": "ArtifactItem",
+      "type": "component",
+      "properties": {
+        "display": "flex",
+        "alignItems": "center",
+        "gap": "8px",
+        "background": "rgba(60, 60, 90, 0.4)",
+        "borderRadius": "6px",
+        "padding": "8px 10px",
+        "marginBottom": "8px",
+        "fontSize": "14px"
+      }
+    },
+    {
+      "name": "ArtifactDropZone",
+      "type": "component",
+      "properties": {
+        "display": "flex",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "height": "60px",
+        "border": "1px dashed rgba(255, 255, 255, 0.3)",
+        "borderRadius": "6px",
+        "color": "rgba(255, 255, 255, 0.6)",
+        "fontSize": "14px",
+        "cursor": "pointer"
+      }
+    },
+    {
+      "name": "ProgressBar",
+      "type": "component",
+      "properties": {
+        "width": "100%",
+        "height": "6px",
+        "background": "rgba(255, 255, 255, 0.1)",
+        "borderRadius": "3px",
+        "overflow": "hidden"
+      },
+      "children": [
+        {
+          "name": "ProgressFill",
+          "properties": {
+            "width": "68%",
+            "height": "100%",
+            "background": "linear-gradient(90deg, #665DFF, #FC76A1)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "DocItem",
+      "type": "component",
+      "properties": {
+        "display": "flex",
+        "alignItems": "center",
+        "gap": "8px",
+        "padding": "8px 10px",
+        "borderRadius": "6px",
+        "background": "rgba(60, 60, 90, 0.4)",
+        "marginBottom": "8px",
+        "fontSize": "14px",
+        "cursor": "pointer"
+      }
+    },
+    {
+      "name": "FloatingHelpButton",
+      "type": "component",
+      "properties": {
+        "width": "56px",
+        "height": "56px",
+        "borderRadius": "50%",
+        "background": "#665DFF",
+        "color": "white",
+        "fontSize": "24px",
+        "display": "flex",
+        "justifyContent": "center",
+        "alignItems": "center",
+        "cursor": "pointer",
+        "boxShadow": "0 4px 12px rgba(102, 93, 255, 0.4)"
+      }
+    }
+  ]
+} 
