@@ -1,175 +1,339 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoFound.ai - Turn your ideas into products, in minutes</title>
+    <title>CoFound.ai - Transform Ideas into Products</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="header-content">
-                <div class="logo">
-                    <span class="logo-text">CoFound</span><span class="logo-ai">.ai</span>
-                </div>
-                <nav class="nav">
-                    <a href="#" class="nav-item">Discord</a>
-                    <a href="#" class="nav-item">Pricing</a>
-                    <button class="nav-item sign-in">Sign In</button>
-                </nav>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-rocket"></i>
+                <span>CoFound.ai</span>
             </div>
-        </header>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#pricing">Pricing</a>
+                <a href="#contact">Contact</a>
+                <button class="btn-secondary">Sign In</button>
+            </div>
+            <div class="nav-mobile">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </nav>
 
-        <!-- Main Content -->
-        <main class="main">
-            <!-- Hero Section (Initial View) -->
-            <section class="hero" id="hero-section">
-                <div class="hero-content">
-                    <h1 class="hero-title">
-                        Turn your ideas<br>
-                        into <span class="gradient-text">products</span>, in minutes.
-                    </h1>
-                    <p class="hero-subtitle">
-                        The first all-in-one AI platform to easily build <strong>fully functioning</strong> apps – without coding.
-                    </p>
-
-                    <!-- Chat Input -->
-                    <div class="dream-input-container">
-                        <div class="dream-input-wrapper">
-                            <textarea 
-                                id="dream-input" 
-                                class="dream-input"
-                                placeholder="What do you want to build? e.g. 'An AI powered blog editing tool'"
-                                rows="3"
-                            ></textarea>
-                            <button class="dream-submit" id="dream-submit" disabled>
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M7 11L12 6L17 11M12 18V7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="input-hint">
-                            <span class="hint-text">💡 Loved by over 250k builders worldwide</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Background Effects -->
-                <div class="hero-bg">
-                    <div class="gradient-orb orb-1"></div>
-                    <div class="gradient-orb orb-2"></div>
-                    <div class="gradient-orb orb-3"></div>
-                </div>
-            </section>
-
-            <!-- Chat Interface (Hidden Initially) -->
-            <section class="chat-interface" id="chat-interface" style="display: none;">
-                <div class="chat-container">
-                    <!-- Chat Header -->
-                    <div class="chat-header">
-                        <div class="chat-title">
-                            <button class="back-btn" id="back-to-hero">
-                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M19 12H5M12 19L5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                            <h2>Building your product...</h2>
-                        </div>
-                        <div class="chat-status">
-                            <div class="status-dot"></div>
-                            <span>CoFounder AI Active</span>
-                        </div>
-                    </div>
-
-                    <!-- Chat Messages -->
-                    <div class="chat-messages" id="chat-messages">
-                        <!-- Messages will be inserted here -->
-                    </div>
-
-                    <!-- Progress Indicator -->
-                    <div class="progress-section" id="progress-section" style="display: none;">
-                        <div class="progress-header">
-                            <h3>Development Progress</h3>
-                            <span class="progress-percentage" id="progress-percentage">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progress-fill"></div>
-                        </div>
-                        <div class="progress-phases">
-                            <div class="phase" data-phase="dream">
-                                <div class="phase-dot"></div>
-                                <span>Dream</span>
-                            </div>
-                            <div class="phase" data-phase="maturation">
-                                <div class="phase-dot"></div>
-                                <span>Maturation</span>
-                            </div>
-                            <div class="phase" data-phase="assemble">
-                                <div class="phase-dot"></div>
-                                <span>Assemble</span>
-                            </div>
-                            <div class="phase" data-phase="prototype">
-                                <div class="phase-dot"></div>
-                                <span>Prototype</span>
-                            </div>
-                            <div class="phase" data-phase="feedback">
-                                <div class="phase-dot"></div>
-                                <span>Feedback</span>
-                            </div>
-                            <div class="phase" data-phase="iterate">
-                                <div class="phase-dot"></div>
-                                <span>Iterate</span>
-                            </div>
-                            <div class="phase" data-phase="validate">
-                                <div class="phase-dot"></div>
-                                <span>Validate</span>
-                            </div>
-                            <div class="phase" data-phase="golive">
-                                <div class="phase-dot"></div>
-                                <span>Go Live</span>
-                            </div>
-                            <div class="phase" data-phase="evolve">
-                                <div class="phase-dot"></div>
-                                <span>Evolve</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Chat Input -->
-                    <div class="chat-input-container" id="chat-input-container" style="display: none;">
-                        <div class="chat-input-wrapper">
-                            <input 
-                                type="text" 
-                                id="chat-input" 
-                                class="chat-input"
-                                placeholder="Type your response..."
-                            >
-                            <button class="chat-send" id="chat-send">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                                    <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                </svg>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Loading Overlay -->
-        <div class="loading-overlay" id="loading-overlay" style="display: none;">
+    <!-- Main Application Container -->
+    <div class="app-container">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="loading-screen">
             <div class="loading-content">
                 <div class="loading-spinner"></div>
-                <p id="loading-text">Processing your request...</p>
+                <h3>Initializing CoFound.ai</h3>
+                <p>Preparing your AI-powered development environment...</p>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section id="hero" class="hero-section">
+            <div class="hero-background">
+                <div class="gradient-orb orb-1"></div>
+                <div class="gradient-orb orb-2"></div>
+                <div class="gradient-orb orb-3"></div>
+            </div>
+            
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Transform your <span class="gradient-text">ideas</span><br>
+                    into products, <span class="gradient-text">in minutes</span>
+                </h1>
+                
+                <p class="hero-subtitle">
+                    The first all-in-one AI platform to easily build fully functioning apps - without coding.
+                </p>
+
+                <!-- Dream Input Section -->
+                <div class="dream-container">
+                    <div class="input-wrapper">
+                        <textarea 
+                            id="dream-input" 
+                            placeholder="What do you want to build? e.g., 'An AI-powered blog editing tool'..."
+                            rows="3"
+                        ></textarea>
+                        <button id="start-building" class="btn-primary">
+                            <i class="fas fa-magic"></i>
+                            Start Building
+                        </button>
+                    </div>
+                    
+                    <div class="input-suggestions">
+                        <span class="suggestion-label">Try:</span>
+                        <div class="suggestions">
+                            <span class="suggestion-item" data-suggestion="A social media scheduler with AI content suggestions">Social Media Scheduler</span>
+                            <span class="suggestion-item" data-suggestion="An expense tracking app with receipt scanning">Expense Tracker</span>
+                            <span class="suggestion-item" data-suggestion="A project management tool with team collaboration">Project Manager</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-stats">
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <span>Loved by over 250k builders worldwide</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Journey Progress Section -->
+        <section id="journey-progress" class="journey-section" style="display: none;">
+            <div class="journey-container">
+                <div class="journey-header">
+                    <h2>Your Development Journey</h2>
+                    <div class="journey-breadcrumb">
+                        <span class="breadcrumb-item active" data-phase="dream">Dream</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item" data-phase="maturation">Maturation</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item" data-phase="assemble">Assemble</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item" data-phase="launch">Launch</span>
+                    </div>
+                </div>
+
+                <!-- Chat Interface -->
+                <div id="chat-container" class="chat-container">
+                    <div class="chat-header">
+                        <div class="chat-agent-info">
+                            <div class="agent-avatar">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="agent-details">
+                                <h4 id="current-agent-name">CoFounder Agent</h4>
+                                <span id="current-agent-status">Ready to help</span>
+                            </div>
+                        </div>
+                        <div class="chat-controls">
+                            <button class="btn-icon" id="minimize-chat">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="btn-icon" id="fullscreen-chat">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chat-messages">
+                        <!-- Messages will be dynamically inserted here -->
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="chat-input-wrapper">
+                            <textarea 
+                                id="chat-input" 
+                                placeholder="Ask me anything about your project..."
+                                rows="1"
+                            ></textarea>
+                            <button id="send-message" class="btn-send">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                        <div class="chat-suggestions" id="chat-suggestions">
+                            <!-- Dynamic suggestions will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Sidebar -->
+                <div class="progress-sidebar">
+                    <div class="progress-header">
+                        <h3>Project Progress</h3>
+                        <div class="progress-percentage">
+                            <span id="progress-percent">15%</span>
+                        </div>
+                    </div>
+
+                    <div class="progress-phases">
+                        <div class="phase-item completed" data-phase="dream">
+                            <div class="phase-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="phase-details">
+                                <h4>Dream</h4>
+                                <p>Vision captured</p>
+                            </div>
+                            <div class="phase-status">
+                                <i class="fas fa-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="phase-item active" data-phase="maturation">
+                            <div class="phase-icon">
+                                <i class="fas fa-seedling"></i>
+                            </div>
+                            <div class="phase-details">
+                                <h4>Maturation</h4>
+                                <p>Refining requirements</p>
+                            </div>
+                            <div class="phase-status">
+                                <div class="spinner-sm"></div>
+                            </div>
+                        </div>
+
+                        <div class="phase-item" data-phase="assemble">
+                            <div class="phase-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                            <div class="phase-details">
+                                <h4>Assemble</h4>
+                                <p>Building your team</p>
+                            </div>
+                        </div>
+
+                        <div class="phase-item" data-phase="prototype">
+                            <div class="phase-icon">
+                                <i class="fas fa-hammer"></i>
+                            </div>
+                            <div class="phase-details">
+                                <h4>Prototype</h4>
+                                <p>Creating MVP</p>
+                            </div>
+                        </div>
+
+                        <div class="phase-item" data-phase="launch">
+                            <div class="phase-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <div class="phase-details">
+                                <h4>Launch</h4>
+                                <p>Deploy to production</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="current-artifacts">
+                        <h4>Generated Assets</h4>
+                        <div class="artifact-list" id="artifact-list">
+                            <!-- Artifacts will be dynamically added -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agent Squad Assembly -->
+        <section id="agent-assembly" class="assembly-section" style="display: none;">
+            <div class="assembly-container">
+                <div class="assembly-header">
+                    <h2>Meet Your AI Development Squad</h2>
+                    <p>Specialized agents working together to bring your vision to life</p>
+                </div>
+
+                <div class="agent-grid">
+                    <div class="agent-card" data-agent="planner">
+                        <div class="agent-avatar">
+                            <i class="fas fa-map"></i>
+                        </div>
+                        <h3>Planner</h3>
+                        <p>Breaks down your project into manageable tasks and timelines</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-card" data-agent="architect">
+                        <div class="agent-avatar">
+                            <i class="fas fa-drafting-compass"></i>
+                        </div>
+                        <h3>Architect</h3>
+                        <p>Designs the system architecture and technical specifications</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-card" data-agent="developer">
+                        <div class="agent-avatar">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3>Developer</h3>
+                        <p>Writes clean, maintainable code based on specifications</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-card" data-agent="tester">
+                        <div class="agent-avatar">
+                            <i class="fas fa-bug"></i>
+                        </div>
+                        <h3>Tester</h3>
+                        <p>Creates comprehensive tests and ensures quality</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-card" data-agent="reviewer">
+                        <div class="agent-avatar">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <h3>Reviewer</h3>
+                        <p>Reviews code quality and suggests improvements</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+
+                    <div class="agent-card" data-agent="documentor">
+                        <div class="agent-avatar">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <h3>Documentor</h3>
+                        <p>Creates comprehensive documentation and user guides</p>
+                        <div class="agent-status">
+                            <span class="status-badge ready">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assembly-controls">
+                    <button id="start-development" class="btn-primary large">
+                        <i class="fas fa-play"></i>
+                        Start Development
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Real-time Status Bar -->
+    <div id="status-bar" class="status-bar" style="display: none;">
+        <div class="status-content">
+            <div class="status-indicator">
+                <div class="pulse-dot"></div>
+                <span id="status-text">Initializing...</span>
+            </div>
+            <div class="status-actions">
+                <button class="btn-icon" id="toggle-details">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
             </div>
         </div>
     </div>
 
+    <!-- Notification System -->
+    <div id="notification-container" class="notification-container"></div>
+
+    <!-- Scripts -->
     <script src="script.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>

@@ -32,9 +32,10 @@ from langgraph.prebuilt import create_react_agent
 from langgraph.checkpoint.memory import MemorySaver
 
 from cofoundai.communication.message import Message
-from cofoundai.communication.agent_command import Command, CommandType, CommandTarget, HandoffTool
+from cofoundai.communication.agent_command import Command, CommandType, CommandTarget
 from cofoundai.agents.langgraph_agent import LangGraphAgent
 from cofoundai.utils.logger import get_logger, get_workflow_logger, JSONLogger
+from cofoundai.utils.langsmith_integration import get_tracer, trace_agent_method
 
 # Set up logging
 logger = get_logger(__name__)
@@ -399,6 +400,10 @@ class AgenticGraph:
                 "status": "error",
                 "message": "Agentic graph not built, no agents registered"
             }
+        
+        # Initialize LangSmith tracing
+        tracer = get_tracer()
+        session_id = tracer.start_workflow_session(self.project_id, user_input)
             
         # Create human message
         human_message = HumanMessage(content=user_input)
@@ -423,6 +428,7 @@ class AgenticGraph:
             "metadata": {
                 "created_at": datetime.now().isoformat(),
                 "thread_id": thread_id,
+                "langsmith_session": session_id
             },
             "status": "in_progress"
         }
@@ -438,6 +444,20 @@ class AgenticGraph:
         # Run the workflow
         try:
             result = self.graph.invoke(initial_state, config=config)
+            
+            # Trace final result
+            tracer.trace_agent_execution(
+                agent_name="workflow_orchestrator",
+                phase="complete",
+                input_data={"user_input": user_input, "thread_id": thread_id},
+                output_data={"status": result.get("status", "unknown"), "final_artifacts": result.get("artifacts", {})}
+            )
+            
+            # End LangSmith session
+            tracer.end_workflow_session(
+                final_status=result.get("status", "unknown"),
+                artifacts=result.get("artifacts", {})
+            )
             
             # Log workflow completion
             logger.info(f"Workflow completed for thread ID: {thread_id}")
@@ -478,6 +498,10 @@ class AgenticGraph:
         except Exception as e:
             logger.error(f"Error during workflow execution: {str(e)}")
             self.workflow_logger.error("Workflow execution failed", error=str(e), thread_id=thread_id)
+            
+            # End LangSmith session with error
+            tracer.end_workflow_session("error", {})
+            
             return {
                 "status": "error",
                 "message": f"Workflow execution failed: {str(e)}",
