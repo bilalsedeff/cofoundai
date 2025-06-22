@@ -192,7 +192,7 @@ def initialize_agents(use_dummy_test: bool = False) -> Dict[str, BaseAgent]:
     return agents
 
 
-def run_workflow(workflow_id: str, project_description: str, use_dummy_test: bool = False) -> Dict[str, Any]:
+def run_workflow(workflow_id: str, project_description: str, use_dummy_test: bool = False, use_extensible: bool = False) -> Dict[str, Any]:
     """
     Run the specified workflow.
     
@@ -200,6 +200,7 @@ def run_workflow(workflow_id: str, project_description: str, use_dummy_test: boo
         workflow_id: ID of the workflow to run
         project_description: Project description
         use_dummy_test: Whether to use dummy test mode
+        use_extensible: Whether to use extensible orchestrator
         
     Returns:
         Workflow results
@@ -215,7 +216,7 @@ def run_workflow(workflow_id: str, project_description: str, use_dummy_test: boo
     # Initialize agents
     agents = initialize_agents(use_dummy_test)
     
-    # Find the workflow with the specified ID
+    # Determine and load workflow configuration file
     config = load_workflow_config(str(workflow_config_path))
     
     if not config or "main" not in config or "workflows" not in config["main"]:
@@ -233,13 +234,16 @@ def run_workflow(workflow_id: str, project_description: str, use_dummy_test: boo
         system_logger.error(f"Workflow not found: {workflow_id}")
         return {"error": f"Workflow not found: {workflow_id}"}
     
-    # Add agents to workflow_config
-    if workflow_config is None:
-        workflow_config = {}
+    # Add agents and extensibility flag to workflow config
     workflow_config["agents"] = agents
+    workflow_config["use_extensible"] = use_extensible
     
     # Create and run the workflow
-    workflow = LangGraphWorkflow(workflow_id, workflow_config)
+    if use_extensible:
+        from cofoundai.orchestration.extensible_orchestrator import ExtensibleOrchestrator
+        workflow = ExtensibleOrchestrator(workflow_id, workflow_config)
+    else:
+        workflow = LangGraphWorkflow(workflow_id, workflow_config)
     
     if not workflow:
         system_logger.error(f"Could not create workflow: {workflow_id}")
@@ -300,7 +304,7 @@ def start_project_command(args: argparse.Namespace) -> int:
     
     try:
         # Run the workflow
-        result = run_workflow(workflow_id, project_description, use_dummy_test)
+        result = run_workflow(workflow_id, project_description, use_dummy_test, args.extensible)
         
         if "error" in result:
             print(f"Error: {result['error']}")
@@ -342,7 +346,7 @@ def demo_langgraph_command(args: argparse.Namespace) -> int:
     
     try:
         # Run the workflow
-        result = run_workflow(workflow_id, project_description, use_dummy_test)
+        result = run_workflow(workflow_id, project_description, use_dummy_test, args.extensible)
         
         if "error" in result:
             print(f"Error: {result['error']}")

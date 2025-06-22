@@ -26,8 +26,8 @@ from langgraph.checkpoint.memory import MemorySaver
 from cofoundai.core.base_agent import BaseAgent
 from cofoundai.agents.langgraph_agent import LangGraphAgent
 
-# Circular import önleme için register_agent_graph'ı sonradan import edelim
-# API paketinin kullanılabilir olup olmadığını kontrol edelim 
+# Circular import prevention by importing register_agent_graph later
+# Check if API package is available
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -61,7 +61,7 @@ class LangGraphWorkflow:
         self.workdir = self.config.get("workdir", os.getcwd())
         self.checkpointer = MemorySaver()
         
-        # Agents varsa, config'den al ve ekle
+        # If agents exist, add them from config
         if "agents" in self.config and isinstance(self.config["agents"], dict):
             for agent_name, agent in self.config["agents"].items():
                 if isinstance(agent, BaseAgent):
@@ -295,15 +295,15 @@ class LangGraphWorkflow:
             Was registration successful? (True/False)
         """
         try:
-            # API modülünü dinamik olarak import et
-            # Bu, API modülünün opsiyonel olmasını sağlar
+            # Dynamically import API module
+            # This allows for optional API module
             from cofoundai.api.app import register_agent_graph
             
             if not self.graph:
                 self.build_graph()
                 
             if self.graph:
-                # Kaydı gerçekleştir
+                # Register the workflow
                 result = register_agent_graph(agent_id, self.graph)
                 if result:
                     logger.info(f"Workflow {self.name} registered as agent {agent_id}")
