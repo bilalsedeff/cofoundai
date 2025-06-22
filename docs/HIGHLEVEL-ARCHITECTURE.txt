@@ -39,7 +39,7 @@ cofoundai/                      # Main package
   │   ├── developer.py          # Code development agent
   │   ├── tester.py             # Testing agent
   │   ├── reviewer.py           # Code review agent
-  │   ├── documentor.py         # Documentation agent
+  │   ├── documentor.py         # Documenter agent
   │   └── langgraph_agent.py    # LangGraph compatible agent implementation
   │
   ├── cli/                      # Command line interface
@@ -112,7 +112,7 @@ logs/                           # Logs
   ├── agents/                   # Agent-specific logs
   │   ├── architect/            # Architect agent logs
   │   ├── developer/            # Developer agent logs
-  │   ├── documentor/           # Documentor agent logs
+  │   ├── documentor/           # Documenter agent logs
   │   ├── planner/              # Planner agent logs
   │   ├── reviewer/             # Reviewer agent logs
   │   └── tester/               # Tester agent logs
@@ -136,7 +136,7 @@ This module contains specialized AI agents that handle different aspects of the 
 - **developer.py**: Code development agent that writes, refactors, and debugs code
 - **tester.py**: Code testing and quality control agent that writes and executes tests
 - **reviewer.py**: Code review and improvement agent that identifies issues and suggests optimizations
-- **documentor.py**: Project documentation agent that creates technical documentation and guides
+- **documentor.py**: Documenter agent that creates technical documentation and guides
 - **langgraph_agent.py**: Base implementation for LangGraph-compatible agents with workflow integration
 - **extensible_agent.py**: Base classes for defining extensible agents
 
@@ -262,7 +262,7 @@ CoFound.ai implements a layered architecture that separates concerns and allows 
   - **Developer**: Code implementation and refinement
   - **Tester**: Test creation and execution
   - **Reviewer**: Code review and improvement suggestions
-  - **Documentor**: Documentation creation and maintenance
+  - **Documenter**: Documentation creation and maintenance
 - **Base Agent**: Common functionality shared by all agents
 - **LangGraph Integration**: Wrapper that adapts agents to LangGraph workflows
 
@@ -311,7 +311,7 @@ The CoFound.ai development process follows this general workflow:
 5. **Development Phase**: Developer agent implements code based on design
 6. **Testing Phase**: Tester agent creates and runs tests
 7. **Review Phase**: Reviewer agent evaluates code quality and suggests improvements
-8. **Documentation Phase**: Documentor agent creates user and technical documentation
+8. **Documentation Phase**: Documenter agent creates user and technical documentation
 9. **Delivery**: System provides completed software artifacts to user
 
 ## Agentic Graph Orchestration
