@@ -1,8 +1,4 @@
-
 ![WhatsApp Image 2025-05-03 at 23 41 29_1700ef67](https://github.com/user-attachments/assets/d2fe88e8-dd01-4435-904b-96693c83000d)
-
-
-
 
 # CoFound.ai - Multi-Agent Software Development System
 
