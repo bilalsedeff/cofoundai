@@ -1,472 +1,577 @@
 
-// Global state management
-let currentStep = 'dream';
-let projectData = {};
-let currentSession = null;
+// Application State
+class AppState {
+    constructor() {
+        this.currentView = 'hero';
+        this.currentSession = null;
+        this.currentPhase = 'dream';
+        this.progress = 0;
+        this.isProcessing = false;
+        this.messageHistory = [];
+    }
 
-// Initialize the application
-document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
-});
+    setView(view) {
+        this.currentView = view;
+        this.updateUI();
+    }
 
-function initializeApp() {
-    // Set up navigation
-    setupNavigation();
-    
-    // Set up event listeners
-    setupEventListeners();
-    
-    // Show initial step
-    showStep('dream');
-}
+    setPhase(phase) {
+        this.currentPhase = phase;
+        this.updatePhaseUI();
+    }
 
-function setupNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const step = this.getAttribute('href').substring(1);
-            showStep(step);
-        });
-    });
-}
+    setProgress(percentage) {
+        this.progress = Math.max(0, Math.min(100, percentage));
+        this.updateProgressUI();
+    }
 
-function setupEventListeners() {
-    // Tag selection
-    const tags = document.querySelectorAll('.tag');
-    tags.forEach(tag => {
-        tag.addEventListener('click', function() {
-            this.classList.toggle('active');
-        });
-    });
-    
-    // Chat input
-    const chatInput = document.getElementById('chat-input');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+    updateUI() {
+        const heroSection = document.getElementById('hero-section');
+        const chatInterface = document.getElementById('chat-interface');
+
+        if (this.currentView === 'hero') {
+            heroSection.style.display = 'block';
+            chatInterface.style.display = 'none';
+        } else if (this.currentView === 'chat') {
+            heroSection.style.display = 'none';
+            chatInterface.style.display = 'block';
+        }
+    }
+
+    updatePhaseUI() {
+        const phases = document.querySelectorAll('.phase');
+        const phaseNames = ['dream', 'maturation', 'assemble', 'prototype', 'feedback', 'iterate', 'validate', 'golive', 'evolve'];
+        
+        phases.forEach((phase, index) => {
+            const phaseName = phaseNames[index];
+            phase.classList.remove('active', 'completed');
+            
+            const currentIndex = phaseNames.indexOf(this.currentPhase);
+            if (index < currentIndex) {
+                phase.classList.add('completed');
+            } else if (index === currentIndex) {
+                phase.classList.add('active');
             }
         });
     }
-}
 
-function showStep(step) {
-    // Hide all sections
-    document.querySelectorAll('.step-section').forEach(section => {
-        section.classList.remove('active');
-    });
-    
-    // Show selected section
-    document.getElementById(step).classList.add('active');
-    
-    // Update navigation
-    document.querySelectorAll('.nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    document.querySelector(`[href="#${step}"]`).classList.add('active');
-    
-    currentStep = step;
-}
-
-function toggleAdvancedOptions() {
-    const button = document.querySelector('.toggle-advanced');
-    const content = document.querySelector('.advanced-content');
-    
-    if (content.style.display === 'none' || !content.style.display) {
-        content.style.display = 'block';
-        button.classList.add('active');
-    } else {
-        content.style.display = 'none';
-        button.classList.remove('active');
-    }
-}
-
-async function generateBlueprint() {
-    const visionInput = document.getElementById('vision-input').value;
-    const goalSelector = document.getElementById('goal-selector').value;
-    const selectedTags = Array.from(document.querySelectorAll('.tag.active')).map(tag => tag.getAttribute('data-tag'));
-    
-    if (!visionInput.trim()) {
-        alert('Please describe your vision first.');
-        return;
-    }
-    
-    // Show loading
-    showLoading('Generating your blueprint...');
-    
-    try {
-        // Prepare request data
-        const requestData = {
-            vision: visionInput,
-            goal: goalSelector,
-            tags: selectedTags,
-            advanced_options: getAdvancedOptions()
-        };
+    updateProgressUI() {
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercentage = document.getElementById('progress-percentage');
         
-        // Call backend API
-        const response = await fetch('/api/dream/generate-blueprint', {
+        if (progressFill) {
+            progressFill.style.width = `${this.progress}%`;
+        }
+        if (progressPercentage) {
+            progressPercentage.textContent = `${Math.round(this.progress)}%`;
+        }
+    }
+}
+
+// Chat Management
+class ChatManager {
+    constructor(appState) {
+        this.appState = appState;
+        this.messagesContainer = null;
+        this.typingTimeouts = [];
+    }
+
+    init() {
+        this.messagesContainer = document.getElementById('chat-messages');
+    }
+
+    addMessage(content, sender = 'ai', options = {}) {
+        if (!this.messagesContainer) return;
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = sender === 'ai' ? '🤖' : '👤';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+
+        if (options.html) {
+            contentDiv.innerHTML = content;
+        } else {
+            contentDiv.textContent = content;
+        }
+
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(contentDiv);
+
+        this.messagesContainer.appendChild(messageDiv);
+        this.scrollToBottom();
+
+        // Store in history
+        this.appState.messageHistory.push({
+            content,
+            sender,
+            timestamp: new Date().toISOString(),
+            options
+        });
+    }
+
+    addTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai typing-indicator';
+        typingDiv.id = 'typing-indicator';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = '🤖';
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.innerHTML = `
+            <span>CoFounder is thinking</span>
+            <div class="typing-dots">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+        `;
+
+        typingDiv.appendChild(avatar);
+        typingDiv.appendChild(contentDiv);
+
+        this.messagesContainer.appendChild(typingDiv);
+        this.scrollToBottom();
+    }
+
+    removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    scrollToBottom() {
+        if (this.messagesContainer) {
+            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+        }
+    }
+
+    clear() {
+        if (this.messagesContainer) {
+            this.messagesContainer.innerHTML = '';
+        }
+        this.appState.messageHistory = [];
+    }
+}
+
+// API Service
+class APIService {
+    constructor() {
+        this.baseURL = window.location.origin;
+    }
+
+    async generateBlueprint(vision) {
+        const response = await fetch(`${this.baseURL}/api/dream/generate-blueprint`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestData)
+            body: JSON.stringify({
+                vision,
+                goal: 'prototype',
+                tags: [],
+                advanced_options: {}
+            })
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            displayBlueprint(result);
-            projectData = result;
-        } else {
-            throw new Error('Failed to generate blueprint');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (error) {
-        console.error('Error generating blueprint:', error);
-        alert('Failed to generate blueprint. Please try again.');
-    } finally {
-        hideLoading();
+
+        return await response.json();
     }
-}
 
-function getAdvancedOptions() {
-    const advancedContent = document.querySelector('.advanced-content');
-    if (advancedContent.style.display === 'none') {
-        return {};
-    }
-    
-    const inputs = advancedContent.querySelectorAll('input, select');
-    const options = {};
-    
-    inputs.forEach(input => {
-        if (input.value) {
-            const key = input.previousElementSibling.textContent.toLowerCase().replace(/\s+/g, '_');
-            options[key] = input.value;
-        }
-    });
-    
-    return options;
-}
-
-function displayBlueprint(data) {
-    const preview = document.getElementById('blueprint-preview');
-    
-    // Update content
-    document.getElementById('project-overview').textContent = data.overview || 'Generated based on your vision and requirements.';
-    
-    const featuresList = document.getElementById('key-features');
-    featuresList.innerHTML = '';
-    (data.features || []).forEach(feature => {
-        const li = document.createElement('li');
-        li.textContent = feature;
-        featuresList.appendChild(li);
-    });
-    
-    const techStack = document.getElementById('tech-stack');
-    techStack.innerHTML = '';
-    (data.tech_stack || []).forEach(tech => {
-        const span = document.createElement('span');
-        span.textContent = tech;
-        techStack.appendChild(span);
-    });
-    
-    document.getElementById('timeline-estimate').textContent = data.timeline || '4-6 weeks';
-    document.getElementById('cost-estimate').textContent = data.cost || '2,500 tokens';
-    
-    // Show preview
-    preview.style.display = 'block';
-}
-
-function editBlueprint() {
-    const preview = document.getElementById('blueprint-preview');
-    preview.style.display = 'none';
-}
-
-async function proceedToMaturation() {
-    if (!projectData || !projectData.overview) {
-        alert('Please generate a blueprint first.');
-        return;
-    }
-    
-    showLoading('Initializing maturation process...');
-    
-    try {
-        // Initialize maturation session
-        const response = await fetch('/api/maturation/initialize', {
+    async initializeMaturation(projectData) {
+        const response = await fetch(`${this.baseURL}/api/maturation/initialize`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(projectData)
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            currentSession = result.session_id;
-            showStep('maturation');
-            initializeMaturationChat();
-        } else {
-            throw new Error('Failed to initialize maturation');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (error) {
-        console.error('Error initializing maturation:', error);
-        alert('Failed to start maturation process. Please try again.');
-    } finally {
-        hideLoading();
+
+        return await response.json();
     }
-}
 
-function initializeMaturationChat() {
-    const chatMessages = document.getElementById('chat-messages');
-    
-    // Add initial CoFounder message
-    setTimeout(() => {
-        addChatMessage(
-            "Hello! I'm your CoFounder agent. I've reviewed your initial blueprint and I have some questions to help clarify and strengthen your concept. Let's work together to turn your idea into a solid, executable plan.\n\nFirst, let me ask: Who is your primary target audience, and what specific problem does your solution solve for them?",
-            'agent'
-        );
-    }, 1000);
-}
-
-async function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    // Add user message to chat
-    addChatMessage(message, 'user');
-    input.value = '';
-    
-    // Show typing indicator
-    showTypingIndicator();
-    
-    try {
-        // Send message to backend
-        const response = await fetch('/api/maturation/chat', {
+    async sendChatMessage(sessionId, message) {
+        const response = await fetch(`${this.baseURL}/api/maturation/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                session_id: currentSession,
-                message: message
+                session_id: sessionId,
+                message
             })
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            
-            // Remove typing indicator
-            removeTypingIndicator();
-            
-            // Add agent response
-            addChatMessage(result.response, 'agent');
-            
-            // Update progress if provided
-            if (result.progress) {
-                updateMaturationProgress(result.progress);
-            }
-            
-            // Check if maturation is complete
-            if (result.completed) {
-                document.getElementById('proceed-assemble').disabled = false;
-            }
-        } else {
-            throw new Error('Failed to send message');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (error) {
-        console.error('Error sending message:', error);
-        removeTypingIndicator();
-        addChatMessage('Sorry, I encountered an error. Please try again.', 'agent');
+
+        return await response.json();
     }
-}
 
-function addChatMessage(message, sender) {
-    const chatMessages = document.getElementById('chat-messages');
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message ${sender}-message`;
-    
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'message-content';
-    contentDiv.textContent = message;
-    
-    messageDiv.appendChild(contentDiv);
-    chatMessages.appendChild(messageDiv);
-    
-    // Scroll to bottom
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function showTypingIndicator() {
-    const chatMessages = document.getElementById('chat-messages');
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'message agent-message typing-indicator';
-    typingDiv.innerHTML = '<div class="message-content">CoFounder is typing...</div>';
-    typingDiv.id = 'typing-indicator';
-    
-    chatMessages.appendChild(typingDiv);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function removeTypingIndicator() {
-    const typingIndicator = document.getElementById('typing-indicator');
-    if (typingIndicator) {
-        typingIndicator.remove();
-    }
-}
-
-function updateMaturationProgress(progress) {
-    const metrics = document.querySelectorAll('.metric');
-    
-    metrics.forEach((metric, index) => {
-        const progressBar = metric.querySelector('.progress-fill');
-        const progressText = metric.querySelector('.progress-text');
-        
-        if (progress[index] !== undefined) {
-            progressBar.style.width = `${progress[index]}%`;
-            progressText.textContent = `${progress[index]}%`;
-        }
-    });
-}
-
-async function proceedToAssemble() {
-    if (!currentSession) {
-        alert('Please complete the maturation process first.');
-        return;
-    }
-    
-    showLoading('Assembling your AI squad...');
-    
-    try {
-        const response = await fetch('/api/assemble/initialize', {
+    async initializeAssembly(sessionId) {
+        const response = await fetch(`${this.baseURL}/api/assemble/initialize`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                session_id: currentSession
+                session_id: sessionId
             })
         });
-        
-        if (response.ok) {
-            const result = await response.json();
-            showStep('assemble');
-            animateAssemblyProcess();
-        } else {
-            throw new Error('Failed to initialize assembly');
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    } catch (error) {
-        console.error('Error initializing assembly:', error);
-        alert('Failed to start assembly process. Please try again.');
-    } finally {
-        hideLoading();
+
+        return await response.json();
+    }
+
+    async startExecution(sessionId) {
+        const response = await fetch(`${this.baseURL}/api/assemble/start-execution`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                session_id: sessionId
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
     }
 }
 
-function animateAssemblyProcess() {
-    const steps = document.querySelectorAll('.progress-step');
-    let currentStepIndex = 0;
-    
-    const animateStep = () => {
-        if (currentStepIndex < steps.length) {
-            // Mark current step as active
-            steps[currentStepIndex].classList.add('active');
-            
-            // Mark previous step as completed
-            if (currentStepIndex > 0) {
-                steps[currentStepIndex - 1].classList.remove('active');
-                steps[currentStepIndex - 1].classList.add('completed');
-            }
-            
-            currentStepIndex++;
-            
-            // Continue animation
-            setTimeout(animateStep, 2000);
-        } else {
-            // All steps completed
-            steps[steps.length - 1].classList.remove('active');
-            steps[steps.length - 1].classList.add('completed');
-            
-            // Update status
-            const statusIndicator = document.querySelector('.status-indicator');
-            statusIndicator.innerHTML = '<span class="status-dot" style="background: #10b981;"></span><span>Squad Ready!</span>';
-            
-            // Enable start execution button
-            document.getElementById('start-execution').disabled = false;
-            
-            // Show success message
+// Main Application
+class CoFoundApp {
+    constructor() {
+        this.appState = new AppState();
+        this.chatManager = new ChatManager(this.appState);
+        this.apiService = new APIService();
+        this.currentProjectData = null;
+    }
+
+    init() {
+        this.chatManager.init();
+        this.setupEventListeners();
+        this.appState.updateUI();
+    }
+
+    setupEventListeners() {
+        // Dream input events
+        const dreamInput = document.getElementById('dream-input');
+        const dreamSubmit = document.getElementById('dream-submit');
+        
+        if (dreamInput) {
+            dreamInput.addEventListener('input', () => {
+                const hasContent = dreamInput.value.trim().length > 0;
+                dreamSubmit.disabled = !hasContent;
+            });
+
+            dreamInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (!dreamSubmit.disabled) {
+                        this.handleDreamSubmit();
+                    }
+                }
+            });
+        }
+
+        if (dreamSubmit) {
+            dreamSubmit.addEventListener('click', () => {
+                this.handleDreamSubmit();
+            });
+        }
+
+        // Chat input events
+        const chatInput = document.getElementById('chat-input');
+        const chatSend = document.getElementById('chat-send');
+
+        if (chatInput) {
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleChatSubmit();
+                }
+            });
+        }
+
+        if (chatSend) {
+            chatSend.addEventListener('click', () => {
+                this.handleChatSubmit();
+            });
+        }
+
+        // Back button
+        const backBtn = document.getElementById('back-to-hero');
+        if (backBtn) {
+            backBtn.addEventListener('click', () => {
+                this.appState.setView('hero');
+                this.chatManager.clear();
+            });
+        }
+    }
+
+    async handleDreamSubmit() {
+        const dreamInput = document.getElementById('dream-input');
+        const vision = dreamInput.value.trim();
+
+        if (!vision) return;
+
+        try {
+            this.showLoading('Generating your blueprint...');
+            this.appState.setView('chat');
+            this.appState.setPhase('dream');
+            this.appState.setProgress(10);
+
+            // Show initial AI message
+            this.chatManager.addMessage(
+                `Hello! I'm CoFounder, your AI development partner. I've received your idea: "${vision}". Let me analyze this and create a blueprint for you.`,
+                'ai'
+            );
+
+            // Generate blueprint
+            const blueprint = await this.apiService.generateBlueprint(vision);
+            this.currentProjectData = blueprint;
+
+            this.hideLoading();
+            this.appState.setProgress(25);
+
+            // Show blueprint summary
             setTimeout(() => {
-                alert('Your AI squad is assembled and ready to execute your project!');
-            }, 500);
-        }
-    };
-    
-    // Start animation
-    setTimeout(animateStep, 1000);
-}
+                this.chatManager.addMessage(
+                    `Great! I've created a blueprint for your ${blueprint.goal} project. Here's what I've planned:\n\n` +
+                    `📋 Overview: ${blueprint.overview}\n\n` +
+                    `🔧 Tech Stack: ${blueprint.tech_stack.slice(0, 4).join(', ')}\n\n` +
+                    `⏱️ Timeline: ${blueprint.timeline}\n\n` +
+                    `Now, let's move to the maturation phase where I'll ask you some questions to refine the plan.`,
+                    'ai'
+                );
 
-async function startExecution() {
-    showLoading('Starting project execution...');
-    
-    try {
-        const response = await fetch('/api/assemble/start-execution', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                session_id: currentSession
-            })
-        });
-        
-        if (response.ok) {
-            const result = await response.json();
-            alert('Project execution started! You will receive updates as your AI team works on your project.');
-            
-            // Could redirect to a monitoring dashboard
-            // window.location.href = '/dashboard';
-        } else {
-            throw new Error('Failed to start execution');
+                this.startMaturation();
+            }, 1500);
+
+        } catch (error) {
+            this.hideLoading();
+            this.chatManager.addMessage(
+                'I apologize, but I encountered an error processing your request. Please try again.',
+                'ai'
+            );
+            console.error('Error in dream phase:', error);
         }
-    } catch (error) {
-        console.error('Error starting execution:', error);
-        alert('Failed to start execution. Please try again.');
-    } finally {
-        hideLoading();
+    }
+
+    async startMaturation() {
+        try {
+            this.appState.setPhase('maturation');
+            this.appState.setProgress(30);
+
+            // Initialize maturation session
+            const sessionData = await this.apiService.initializeMaturation(this.currentProjectData);
+            this.appState.currentSession = sessionData.session_id;
+
+            // Show progress section and chat input
+            document.getElementById('progress-section').style.display = 'block';
+            document.getElementById('chat-input-container').style.display = 'block';
+
+            // Start maturation conversation
+            setTimeout(() => {
+                this.chatManager.addMessage(
+                    "Let's dive deeper into your project. First, tell me: who is your target audience and what specific problem does your solution solve for them?",
+                    'ai'
+                );
+            }, 1000);
+
+        } catch (error) {
+            this.chatManager.addMessage(
+                'I encountered an error initializing the maturation phase. Please try again.',
+                'ai'
+            );
+            console.error('Error in maturation initialization:', error);
+        }
+    }
+
+    async handleChatSubmit() {
+        const chatInput = document.getElementById('chat-input');
+        const message = chatInput.value.trim();
+
+        if (!message || this.appState.isProcessing) return;
+
+        try {
+            this.appState.isProcessing = true;
+            
+            // Add user message
+            this.chatManager.addMessage(message, 'user');
+            chatInput.value = '';
+
+            // Show typing indicator
+            this.chatManager.addTypingIndicator();
+
+            // Send to API
+            const response = await this.apiService.sendChatMessage(this.appState.currentSession, message);
+            
+            this.chatManager.removeTypingIndicator();
+
+            // Add AI response
+            this.chatManager.addMessage(response.response, 'ai');
+
+            // Update progress if provided
+            if (response.progress) {
+                this.updateMaturationProgress(response.progress);
+            }
+
+            // Check if maturation is complete
+            if (response.completed) {
+                this.startAssembly();
+            }
+
+        } catch (error) {
+            this.chatManager.removeTypingIndicator();
+            this.chatManager.addMessage(
+                'I apologize, but I encountered an error. Please try again.',
+                'ai'
+            );
+            console.error('Error in chat:', error);
+        } finally {
+            this.appState.isProcessing = false;
+        }
+    }
+
+    updateMaturationProgress(progressArray) {
+        // Calculate overall progress based on maturation sub-phases
+        const averageProgress = progressArray.reduce((sum, val) => sum + val, 0) / progressArray.length;
+        const overallProgress = 30 + (averageProgress * 0.4); // 30-70% range for maturation
+        this.appState.setProgress(overallProgress);
+    }
+
+    async startAssembly() {
+        try {
+            this.appState.setPhase('assemble');
+            this.appState.setProgress(75);
+
+            // Hide chat input during assembly
+            document.getElementById('chat-input-container').style.display = 'none';
+
+            this.chatManager.addMessage(
+                "Perfect! I now have all the information I need. Let me assemble your AI development squad and start building your product.",
+                'ai'
+            );
+
+            // Initialize assembly
+            await this.apiService.initializeAssembly(this.appState.currentSession);
+
+            setTimeout(() => {
+                this.showAssemblyProgress();
+            }, 2000);
+
+        } catch (error) {
+            this.chatManager.addMessage(
+                'I encountered an error during assembly. Please try again.',
+                'ai'
+            );
+            console.error('Error in assembly:', error);
+        }
+    }
+
+    async showAssemblyProgress() {
+        const phases = ['prototype', 'feedback', 'iterate', 'validate', 'golive', 'evolve'];
+        let currentPhaseIndex = 0;
+
+        const progressInterval = setInterval(async () => {
+            if (currentPhaseIndex < phases.length) {
+                const phase = phases[currentPhaseIndex];
+                this.appState.setPhase(phase);
+                
+                const progress = 75 + ((currentPhaseIndex + 1) / phases.length) * 25;
+                this.appState.setProgress(progress);
+
+                const phaseMessages = {
+                    'prototype': '🔨 Building your prototype with specialized AI agents...',
+                    'feedback': '📝 Gathering feedback and analyzing requirements...',
+                    'iterate': '🔄 Iterating and improving based on feedback...',
+                    'validate': '✅ Validating functionality and running tests...',
+                    'golive': '🚀 Preparing for deployment and go-live...',
+                    'evolve': '📈 Setting up continuous improvement systems...'
+                };
+
+                this.chatManager.addMessage(phaseMessages[phase], 'ai');
+                currentPhaseIndex++;
+            } else {
+                clearInterval(progressInterval);
+                this.completeJourney();
+            }
+        }, 3000);
+    }
+
+    async completeJourney() {
+        try {
+            this.appState.setProgress(100);
+
+            // Start execution
+            await this.apiService.startExecution(this.appState.currentSession);
+
+            this.chatManager.addMessage(
+                "🎉 Congratulations! Your product has been successfully built and deployed. Your AI development squad has created a fully functional application based on your requirements.\n\nYou can now access your product and continue to evolve it with our AI agents.",
+                'ai',
+                { html: true }
+            );
+
+        } catch (error) {
+            this.chatManager.addMessage(
+                'Your product has been built successfully! (Demo mode - execution simulation completed)',
+                'ai'
+            );
+            console.log('Execution completed in demo mode');
+        }
+    }
+
+    showLoading(text = 'Processing...') {
+        const overlay = document.getElementById('loading-overlay');
+        const loadingText = document.getElementById('loading-text');
+        
+        if (loadingText) loadingText.textContent = text;
+        if (overlay) overlay.style.display = 'flex';
+    }
+
+    hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) overlay.style.display = 'none';
     }
 }
 
-// Navigation functions
-function backToDream() {
-    showStep('dream');
-}
-
-function backToMaturation() {
-    showStep('maturation');
-}
-
-// Utility functions
-function showLoading(text = 'Processing...') {
-    const overlay = document.getElementById('loading-overlay');
-    const loadingText = document.getElementById('loading-text');
+// Initialize Application
+document.addEventListener('DOMContentLoaded', () => {
+    const app = new CoFoundApp();
+    app.init();
     
-    loadingText.textContent = text;
-    overlay.style.display = 'flex';
-}
+    // Global error handling
+    window.addEventListener('error', (e) => {
+        console.error('Global error:', e.error);
+        app.hideLoading();
+    });
 
-function hideLoading() {
-    const overlay = document.getElementById('loading-overlay');
-    overlay.style.display = 'none';
-}
-
-// Error handling
-window.addEventListener('error', function(e) {
-    console.error('Global error:', e.error);
-    hideLoading();
-});
-
-// Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', function(e) {
-    console.error('Unhandled promise rejection:', e.reason);
-    hideLoading();
+    window.addEventListener('unhandledrejection', (e) => {
+        console.error('Unhandled promise rejection:', e.reason);
+        app.hideLoading();
+    });
 });

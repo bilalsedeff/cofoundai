@@ -2,7 +2,32 @@
 
 ## Overview
 
-CoFound.ai is a multi-agent software development system designed to automate the development process through specialized AI agents. The system orchestrates agents that work together like a development team, handling everything from planning and architecture to coding, testing, and documentation.
+CoFound.ai is a cloud-native, microservices-based multi-agent software development system designed to automate the development process through specialized AI agents. The system runs on Google Cloud Platform and orchestrates agents that work together like a development team, handling everything from planning and architecture to coding, testing, and documentation.
+
+## Cloud Infrastructure
+
+The system is deployed on **Google Cloud Platform** with the following core infrastructure:
+
+### Compute & Orchestration
+- **Google Kubernetes Engine (GKE)**: Container orchestration for microservices
+- **Cloud Run**: Serverless container platform for lightweight services
+- **Compute Engine**: VM instances for specialized workloads
+
+### Data & Storage
+- **Cloud SQL (PostgreSQL)**: Primary database for application data
+- **Memorystore (Redis)**: In-memory cache and session storage
+- **Cloud Storage**: File storage and static assets
+- **Firestore**: Document database for real-time data
+
+### Messaging & Integration
+- **Pub/Sub**: Asynchronous messaging between microservices
+- **Vertex AI**: Machine learning and LLM services
+- **Secret Manager**: Secure secret and credential storage
+
+### CI/CD & Monitoring
+- **Cloud Build**: Continuous integration and deployment
+- **Artifact Registry**: Container image registry
+- **Cloud Logging & Monitoring**: Observability and alerting
 
 ## Folder Structure and Organization
 
