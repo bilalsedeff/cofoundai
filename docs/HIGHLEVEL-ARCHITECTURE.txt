@@ -76,6 +76,13 @@ cofoundai/                      # Main package
       ├── prompt_templates.py   # Prompt templates
       └── helpers.py            # Helper functions
 │
+frontend/                       # Web Frontend
+  ├── index.html                # Main HTML interface
+  ├── styles.css                # CSS styling and responsive design
+  └── script.js                 # JavaScript functionality and API integration
+│
+backend_api.py                  # Flask API server
+│
 logs/                           # Logs
   ├── agents/                   # Agent-specific logs
   │   ├── architect/            # Architect agent logs
@@ -205,8 +212,13 @@ This directory stores log files:
 CoFound.ai implements a layered architecture that separates concerns and allows for modular development:
 
 ### 1. User Interface Layer
+- **Web Frontend**: Modern web interface with three main phases:
+  - **Dream Interface**: Vision input, goal selection, and blueprint generation
+  - **Maturation Interface**: Interactive chat with CoFounder agent and progress tracking
+  - **Assemble Interface**: Visual agent squad assembly and execution management
 - **CLI Interface**: Command-line interface for user requests and interaction
-- **Dashboard**: (Future) Web interface for monitoring workflow status and agents
+- **REST API**: Flask-based API server handling frontend requests
+- **Session Management**: User session tracking and state persistence
 - **Request Processing**: Components that handle and validate user requests
 
 ### 2. Workflow Layer
@@ -313,6 +325,9 @@ CoFound.ai leverages these key technologies:
 5. **YAML**: Configuration and workflow definition format
 6. **JSON Schema**: Validation of configuration files
 7. **Git**: Version control for code artifacts
+8. **Flask**: Web framework for REST API backend
+9. **HTML/CSS/JavaScript**: Frontend technologies for user interface
+10. **JSON**: Data exchange format between frontend and backend
 
 ## Completed Features
 
@@ -325,6 +340,13 @@ CoFound.ai leverages these key technologies:
 - ✅ Command-line interface
 - ✅ Basic workflow visualization
 - ✅ File and version control tools
+- ✅ Web-based user interface with three phases
+- ✅ REST API backend with Flask
+- ✅ Session management and state persistence
+- ✅ Interactive CoFounder agent chat system
+- ✅ Visual agent squad assembly interface
+- ✅ Real-time progress tracking and updates
+- ✅ Responsive design for mobile and desktop
 
 ## Future Enhancements
 
