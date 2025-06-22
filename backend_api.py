@@ -5,6 +5,8 @@ import os
 import uuid
 import json
 import logging
+import requests
+import asyncio
 from datetime import datetime
 from typing import Dict, Any, List, Optional
 
@@ -92,7 +94,27 @@ def generate_blueprint():
         # Create project ID
         project_id = f"proj_{int(datetime.now().timestamp())}"
         
-        # Generate blueprint using AI agents (simplified for demo)
+        # In production environment, call dream microservice
+        dream_service_url = os.getenv('DREAM_SERVICE_URL')
+        if dream_service_url:
+            try:
+                response = requests.post(f"{dream_service_url}/api/dream", json={
+                    'user_id': request.headers.get('X-User-ID', 'anonymous'),
+                    'project_id': project_id,
+                    'prompt_text': vision,
+                    'goal': goal,
+                    'tags': tags,
+                    'advanced_options': advanced_options
+                }, timeout=30)
+                
+                if response.status_code == 200:
+                    return jsonify(response.json())
+                else:
+                    logger.error(f"Dream service error: {response.status_code} - {response.text}")
+            except requests.RequestException as e:
+                logger.error(f"Error calling dream service: {str(e)}")
+        
+        # Fallback: Generate blueprint locally (for development/demo)
         blueprint = {
             'project_id': project_id,
             'overview': f"A {goal} project focused on {vision[:100]}...",
