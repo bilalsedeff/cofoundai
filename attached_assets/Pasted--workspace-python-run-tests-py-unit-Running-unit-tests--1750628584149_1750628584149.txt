@@ -1,0 +1,149 @@
+~/workspace$ python run_tests.py unit
+Running unit tests...
+================================================================================ test session starts ================================================================================
+platform linux -- Python 3.12.7, pytest-8.4.1, pluggy-1.6.0 -- /home/runner/workspace/.pythonlibs/bin/python
+cachedir: .pytest_cache
+rootdir: /home/runner/workspace
+configfile: pytest.ini
+plugins: anyio-4.9.0, cov-6.2.1, langsmith-0.4.1
+collected 9 items                                                                                                                                                                   
+
+cofoundai/tests/unit/test_agentic_graph.py::test_agentic_graph PASSED                                                                                                         [ 11%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_langsmith_tracer_disabled_without_config PASSED                                       [ 22%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_langsmith_tracer_initialization FAILED                                                [ 33%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_llm_factory_creates_gpt4o FAILED                                                      [ 44%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_openai_llm_initialization PASSED                                                      [ 55%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_workflow_session_creation FAILED                                                      [ 66%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestLangGraphAgentIntegration::test_agentic_graph_creation FAILED                                                      [ 77%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestLangGraphAgentIntegration::test_langgraph_agent_creation PASSED                                                    [ 88%]
+cofoundai/tests/unit/test_google_cloud_integration.py::TestMultiAgentWorkflow::test_workflow_execution FAILED                                                                 [100%]
+
+===================================================================================== FAILURES ======================================================================================
+__________________________________________________________ TestGoogleCloudIntegration.test_langsmith_tracer_initialization __________________________________________________________
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1392: in patched
+    with self.decoration_helper(patched,
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1374: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/contextlib.py:526: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1463: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1436: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'cofoundai.utils.langsmith_integration' from '/home/runner/workspace/cofoundai/utils/langsmith_integration.py'> does not have the attribute 'Client'
+_____________________________________________________________ TestGoogleCloudIntegration.test_llm_factory_creates_gpt4o _____________________________________________________________
+cofoundai/tests/unit/test_google_cloud_integration.py:43: in test_llm_factory_creates_gpt4o
+    self.assertEqual(llm.model_name, "gpt-4o")
+E   AssertionError: 'gpt-4' != 'gpt-4o'
+E   - gpt-4
+E   + gpt-4o
+E   ?      +
+_____________________________________________________________ TestGoogleCloudIntegration.test_workflow_session_creation _____________________________________________________________
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1392: in patched
+    with self.decoration_helper(patched,
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1374: in decoration_helper
+    arg = exit_stack.enter_context(patching)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/contextlib.py:526: in enter_context
+    result = _enter(cm)
+             ^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1463: in __enter__
+    original, local = self.get_original()
+                      ^^^^^^^^^^^^^^^^^^^
+/nix/store/nb21sc3npfc8gvazwnrjxpvb5d48jysx-python3-3.12.7/lib/python3.12/unittest/mock.py:1436: in get_original
+    raise AttributeError(
+E   AttributeError: <module 'cofoundai.utils.langsmith_integration' from '/home/runner/workspace/cofoundai/utils/langsmith_integration.py'> does not have the attribute 'Client'
+_____________________________________________________________ TestLangGraphAgentIntegration.test_agentic_graph_creation _____________________________________________________________
+cofoundai/tests/unit/test_google_cloud_integration.py:154: in test_agentic_graph_creation
+    graph = AgenticGraph(
+cofoundai/orchestration/agentic_graph.py:146: in __init__
+    self.graph = self._build_graph()
+                 ^^^^^^^^^^^^^^^^^^^
+cofoundai/orchestration/agentic_graph.py:391: in _build_graph
+    graph = workflow.compile(checkpointer=self.checkpointer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.pythonlibs/lib/python3.12/site-packages/langgraph/graph/state.py:612: in compile
+    self.validate(
+.pythonlibs/lib/python3.12/site-packages/langgraph/graph/graph.py:274: in validate
+    raise ValueError(f"Found edge starting at unknown node '{source}'")
+E   ValueError: Found edge starting at unknown node 'Developer'
+------------------------------------------------------------------------------- Captured stderr call --------------------------------------------------------------------------------
+2025-06-22 21:42:51,380 - cofoundai.orchestration.agentic_graph - INFO - Using Anthropic Claude as fallback
+{"timestamp": 1750628571.384956, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Planner", "tools": ["transfer_to_Developer"]}}
+{"timestamp": 1750628571.3892171, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Developer", "tools": ["transfer_to_Planner"]}}
+2025-06-22 21:42:51,389 - cofoundai.orchestration.agentic_graph - WARNING - Agent Planner has no LangGraph implementation and couldn't create dummy
+{"timestamp": 1750628571.3896496, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Planner", "reason": "No LangGraph implementation or dummy function"}}
+2025-06-22 21:42:51,389 - cofoundai.orchestration.agentic_graph - WARNING - Agent Developer has no LangGraph implementation and couldn't create dummy
+{"timestamp": 1750628571.38982, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Developer", "reason": "No LangGraph implementation or dummy function"}}
+{"timestamp": 1750628571.390294, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+--------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------
+ERROR    cofoundai.agents.langgraph_agent:langgraph_agent.py:119 Failed to initialize LangGraph agent: create_react_agent() got an unexpected keyword argument 'system_prompt'
+ERROR    cofoundai.agents.langgraph_agent:langgraph_agent.py:119 Failed to initialize LangGraph agent: create_react_agent() got an unexpected keyword argument 'system_prompt'
+INFO     cofoundai.orchestration.agentic_graph:agentic_graph.py:122 Using Anthropic Claude as fallback
+ERROR    cofoundai.agents.langgraph_agent:langgraph_agent.py:119 Failed to initialize LangGraph agent: create_react_agent() got an unexpected keyword argument 'system_prompt'
+INFO     json_logger_agentic_graph_test-project:logger.py:178 {"timestamp": 1750628571.384956, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Planner", "tools": ["transfer_to_Developer"]}}
+ERROR    cofoundai.agents.langgraph_agent:langgraph_agent.py:119 Failed to initialize LangGraph agent: create_react_agent() got an unexpected keyword argument 'system_prompt'
+INFO     json_logger_agentic_graph_test-project:logger.py:178 {"timestamp": 1750628571.3892171, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Developer", "tools": ["transfer_to_Planner"]}}
+WARNING  cofoundai.orchestration.agentic_graph:agentic_graph.py:362 Agent Planner has no LangGraph implementation and couldn't create dummy
+INFO     json_logger_agentic_graph_test-project:logger.py:178 {"timestamp": 1750628571.3896496, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Planner", "reason": "No LangGraph implementation or dummy function"}}
+WARNING  cofoundai.orchestration.agentic_graph:agentic_graph.py:362 Agent Developer has no LangGraph implementation and couldn't create dummy
+INFO     json_logger_agentic_graph_test-project:logger.py:178 {"timestamp": 1750628571.38982, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Developer", "reason": "No LangGraph implementation or dummy function"}}
+INFO     json_logger_agentic_graph_test-project:logger.py:178 {"timestamp": 1750628571.390294, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-project", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+__________________________________________________________________ TestMultiAgentWorkflow.test_workflow_execution ___________________________________________________________________
+cofoundai/tests/unit/test_google_cloud_integration.py:199: in test_workflow_execution
+    graph = AgenticGraph(
+cofoundai/orchestration/agentic_graph.py:146: in __init__
+    self.graph = self._build_graph()
+                 ^^^^^^^^^^^^^^^^^^^
+cofoundai/orchestration/agentic_graph.py:391: in _build_graph
+    graph = workflow.compile(checkpointer=self.checkpointer)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.pythonlibs/lib/python3.12/site-packages/langgraph/graph/state.py:612: in compile
+    self.validate(
+.pythonlibs/lib/python3.12/site-packages/langgraph/graph/graph.py:274: in validate
+    raise ValueError(f"Found edge starting at unknown node '{source}'")
+E   ValueError: Found edge starting at unknown node 'Planner'
+------------------------------------------------------------------------------- Captured stderr call --------------------------------------------------------------------------------
+2025-06-22 21:42:51,429 - cofoundai.orchestration.agentic_graph - INFO - Using Anthropic Claude as fallback
+{"timestamp": 1750628571.4298067, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Planner", "tools": []}}
+2025-06-22 21:42:51,430 - cofoundai.orchestration.agentic_graph - WARNING - Agent Planner has no LangGraph implementation and couldn't create dummy
+{"timestamp": 1750628571.4301574, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Planner", "reason": "No LangGraph implementation or dummy function"}}
+{"timestamp": 1750628571.430413, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+--------------------------------------------------------------------------------- Captured log call ---------------------------------------------------------------------------------
+ERROR    cofoundai.agents.langgraph_agent:langgraph_agent.py:119 Failed to initialize LangGraph agent: create_react_agent() got an unexpected keyword argument 'system_prompt'
+INFO     cofoundai.orchestration.agentic_graph:agentic_graph.py:122 Using Anthropic Claude as fallback
+INFO     json_logger_agentic_graph_test-workflow:logger.py:178 {"timestamp": 1750628571.4298067, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "Planner", "tools": []}}
+WARNING  cofoundai.orchestration.agentic_graph:agentic_graph.py:362 Agent Planner has no LangGraph implementation and couldn't create dummy
+INFO     json_logger_agentic_graph_test-workflow:logger.py:178 {"timestamp": 1750628571.4301574, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "WARNING", "data": {"message": "Cannot add agent to graph", "agent": "Planner", "reason": "No LangGraph implementation or dummy function"}}
+INFO     json_logger_agentic_graph_test-workflow:logger.py:178 {"timestamp": 1750628571.430413, "formatted_time": "2025-06-22 21:42:51", "logger": "agentic_graph_test-workflow", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+================================================================================= warnings summary ==================================================================================
+.pythonlibs/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+.pythonlibs/lib/python3.12/site-packages/_pytest/config/__init__.py:1474
+  /home/runner/workspace/.pythonlibs/lib/python3.12/site-packages/_pytest/config/__init__.py:1474: PytestConfigWarning: Unknown config option: asyncio_mode
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================================================================== short test summary info ==============================================================================
+FAILED cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_langsmith_tracer_initialization - AttributeError: <module 'cofoundai.utils.langsmith_integration' from '/home/runner/workspace/cofoundai/utils/langsmith_integration.py'> does not have the attribute 'Client'
+FAILED cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_llm_factory_creates_gpt4o - AssertionError: 'gpt-4' != 'gpt-4o'
+FAILED cofoundai/tests/unit/test_google_cloud_integration.py::TestGoogleCloudIntegration::test_workflow_session_creation - AttributeError: <module 'cofoundai.utils.langsmith_integration' from '/home/runner/workspace/cofoundai/utils/langsmith_integration.py'> does not have the attribute 'Client'
+FAILED cofoundai/tests/unit/test_google_cloud_integration.py::TestLangGraphAgentIntegration::test_agentic_graph_creation - ValueError: Found edge starting at unknown node 'Developer'
+FAILED cofoundai/tests/unit/test_google_cloud_integration.py::TestMultiAgentWorkflow::test_workflow_execution - ValueError: Found edge starting at unknown node 'Planner'
+====================================================================== 5 failed, 4 passed, 2 warnings in 1.55s ======================================================================
+
+❌ Some tests failed!
+~/workspace$ 
