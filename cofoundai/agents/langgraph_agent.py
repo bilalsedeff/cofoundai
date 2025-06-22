@@ -23,7 +23,6 @@ from cofoundai.communication.message import Message, MessageContent
 from cofoundai.communication.agent_command import Command, CommandType, CommandTarget
 from cofoundai.core.llm_interface import BaseLLM, LLMFactory
 
-
 # Set up logging
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,8 @@ class LangGraphAgent(BaseAgent):
         # Agent configuration
         self.name = config.get("name", "LangGraphAgent")
         self.description = config.get("description", "LangGraph-powered agent")
-        self.system_prompt = config.get("system_prompt", f"You are {self.name}, {self.description}")
+        self.system_prompt = config.get(
+            "system_prompt", f"You are {self.name}, {self.description}")
         self.tools = []
 
         # Initialize LLM
@@ -74,11 +74,9 @@ class LangGraphAgent(BaseAgent):
 
             # Create LLM instance
             try:
-                self.llm = LLMFactory.create_llm(
-                    provider=provider,
-                    model_name=model_name,
-                    config=llm_config
-                )
+                self.llm = LLMFactory.create_llm(provider=provider,
+                                                 model_name=model_name,
+                                                 config=llm_config)
             except Exception as e:
                 logger.error(f"Failed to initialize LLM: {str(e)}")
                 # Fallback to test LLM
@@ -111,16 +109,16 @@ class LangGraphAgent(BaseAgent):
             if langchain_llm and self.tools:
                 # Create system message from system_prompt
                 from langchain_core.messages import SystemMessage
-                messages = [SystemMessage(content=self.system_prompt)] if self.system_prompt else []
+                messages = [SystemMessage(
+                    content=self.system_prompt)] if self.system_prompt else []
 
                 self.langgraph_agent = create_react_agent(
-                    langchain_llm,
-                    self.tools,
-                    messages_modifier=messages
-                )
+                    langchain_llm, self.tools, messages_modifier=messages)
             else:
                 self.langgraph_agent = None
-                logger.warning(f"Could not create LangGraph agent for {self.name}: missing LLM or tools")
+                logger.warning(
+                    f"Could not create LangGraph agent for {self.name}: missing LLM or tools"
+                )
             logger.info(f"Initialized LangGraph agent: {self.name}")
         except Exception as e:
             logger.error(f"Failed to initialize LangGraph agent: {str(e)}")
@@ -143,47 +141,69 @@ class LangGraphAgent(BaseAgent):
         try:
             if provider == "anthropic":
                 from langchain_anthropic import ChatAnthropic
-                return ChatAnthropic(
-                    model=self.llm.model_name,
-                    anthropic_api_key=self.llm.api_key,
-                    temperature=self.llm.config.get("temperature", 0.7)
-                )
+                return ChatAnthropic(model=self.llm.model_name,
+                                     anthropic_api_key=self.llm.api_key,
+                                     temperature=self.llm.config.get(
+                                         "temperature", 0.7))
             elif provider == "openai":
                 from langchain_openai import ChatOpenAI
-                return ChatOpenAI(
-                    model=self.llm.model_name,
-                    openai_api_key=self.llm.api_key,
-                    temperature=self.llm.config.get("temperature", 0.7)
-                )
+                return ChatOpenAI(model=self.llm.model_name,
+                                  openai_api_key=self.llm.api_key,
+                                  temperature=self.llm.config.get(
+                                      "temperature", 0.7))
             else:
                 # Default dummy LLM for testing
                 class DummyLLM(BaseChatModel):
+
                     @property
                     def _llm_type(self) -> str:
                         """Return type of llm."""
                         return "dummy"
 
-                    def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-                        return AIMessage(content="This is a dummy response for testing.")
+                    def _generate(self,
+                                  messages,
+                                  stop=None,
+                                  run_manager=None,
+                                  **kwargs):
+                        return AIMessage(
+                            content="This is a dummy response for testing.")
 
-                    async def _agenerate(self, messages, stop=None, run_manager=None, **kwargs):
-                        return AIMessage(content="This is a dummy response for testing.")
+                    async def _agenerate(self,
+                                         messages,
+                                         stop=None,
+                                         run_manager=None,
+                                         **kwargs):
+                        return AIMessage(
+                            content="This is a dummy response for testing.")
 
                 return DummyLLM()
         except ImportError as e:
-            logger.error(f"Failed to import necessary LangChain package: {str(e)}")
+            logger.error(
+                f"Failed to import necessary LangChain package: {str(e)}")
+
             # Return a dummy LLM as fallback
             class DummyLLM(BaseChatModel):
+
                 @property
                 def _llm_type(self) -> str:
                     """Return type of llm."""
                     return "dummy"
 
-                def _generate(self, messages, stop=None, run_manager=None, **kwargs):
-                    return AIMessage(content="This is a dummy response for testing.")
+                def _generate(self,
+                              messages,
+                              stop=None,
+                              run_manager=None,
+                              **kwargs):
+                    return AIMessage(
+                        content="This is a dummy response for testing.")
 
-                async def _agenerate(self, messages, stop=None, run_manager=None, **kwargs):
-                    return AIMessage(content="This is a dummy response for testing.")
+                async def _agenerate(self,
+                                     messages,
+                                     stop=None,
+                                     run_manager=None,
+                                     **kwargs):
+                    return AIMessage(
+                        content="This is a dummy response for testing.")
 
             return DummyLLM()
 
@@ -197,7 +217,8 @@ class LangGraphAgent(BaseAgent):
         Returns:
             LangChain message
         """
-        content = message.content.text if hasattr(message.content, "text") else str(message.content)
+        content = message.content.text if hasattr(
+            message.content, "text") else str(message.content)
 
         if message.sender == "system":
             return SystemMessage(content=content)
@@ -226,12 +247,11 @@ class LangGraphAgent(BaseAgent):
             sender = message.name if hasattr(message, "name") else self.name
             recipient = "human"
 
-        return Message(
-            sender=sender,
-            recipient=recipient,
-            content=message.content,
-            metadata=message.additional_kwargs if hasattr(message, "additional_kwargs") else {}
-        )
+        return Message(sender=sender,
+                       recipient=recipient,
+                       content=message.content,
+                       metadata=message.additional_kwargs if hasattr(
+                           message, "additional_kwargs") else {})
 
     def _convert_command_to_langgraph(self, command: Command) -> LGCommand:
         """
@@ -261,7 +281,8 @@ class LangGraphAgent(BaseAgent):
         if command.target == CommandTarget.PARENT:
             kwargs["graph"] = LGCommand.PARENT
         elif command.target == CommandTarget.CHILD:
-            kwargs["graph"] = "child"  # This might need adjustment based on child graph name
+            kwargs[
+                "graph"] = "child"  # This might need adjustment based on child graph name
 
         # Set state updates
         if command.update:
@@ -280,7 +301,9 @@ class LangGraphAgent(BaseAgent):
             Response message
         """
         if self.langgraph_agent is None:
-            logger.warning(f"LangGraph agent {self.name} not initialized, using BaseAgent implementation")
+            logger.warning(
+                f"LangGraph agent {self.name} not initialized, using BaseAgent implementation"
+            )
             return super().process_message(message)
 
         try:
@@ -303,14 +326,13 @@ class LangGraphAgent(BaseAgent):
                     for tool_call in last_message.tool_calls:
                         if tool_call["name"].startswith("transfer_to_"):
                             # This is a handoff tool call
-                            agent_name = tool_call["name"].replace("transfer_to_", "")
+                            agent_name = tool_call["name"].replace(
+                                "transfer_to_", "")
                             reason = tool_call["args"].get("reason", "")
 
                             # Create a command for handoff
-                            command = Command.handoff(
-                                to_agent=agent_name,
-                                reason=reason
-                            )
+                            command = Command.handoff(to_agent=agent_name,
+                                                      reason=reason)
 
                             # Add command to response metadata
                             response.metadata["command"] = command.to_dict()
@@ -322,17 +344,15 @@ class LangGraphAgent(BaseAgent):
                 sender=self.name,
                 recipient=message.sender,
                 content="Processed message but no response was generated",
-                metadata={"error": "No response from LangGraph agent"}
-            )
+                metadata={"error": "No response from LangGraph agent"})
 
         except Exception as e:
-            logger.error(f"Error processing message with LangGraph agent: {str(e)}")
-            return Message(
-                sender=self.name,
-                recipient=message.sender,
-                content=f"Error processing message: {str(e)}",
-                metadata={"error": str(e)}
-            )
+            logger.error(
+                f"Error processing message with LangGraph agent: {str(e)}")
+            return Message(sender=self.name,
+                           recipient=message.sender,
+                           content=f"Error processing message: {str(e)}",
+                           metadata={"error": str(e)})
 
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -348,20 +368,21 @@ class LangGraphAgent(BaseAgent):
         content = input_data.get("content", "")
 
         # Create a message for processing
-        message = Message(
-            sender="human",
-            recipient=self.name,
-            content=content,
-            metadata=input_data
-        )
+        message = Message(sender="human",
+                          recipient=self.name,
+                          content=content,
+                          metadata=input_data)
 
         # Process the message
         response = self.process_message(message)
 
         # Convert response to output format
         output_data = {
-            "status": "success",
-            "message": response.content.text if hasattr(response.content, "text") else str(response.content),
+            "status":
+            "success",
+            "message":
+            response.content.text
+            if hasattr(response.content, "text") else str(response.content),
             **response.metadata
         }
 
@@ -397,7 +418,8 @@ class PlannerLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Planner"
         if "description" not in config:
-            config["description"] = "Planning agent that breaks down user requirements into tasks and coordinates workflows"
+            config[
+                "description"] = "Planning agent that breaks down user requirements into tasks and coordinates workflows"
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are a planning agent that specializes in breaking down complex requirements into manageable tasks. "
@@ -416,7 +438,8 @@ class ArchitectLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Architect"
         if "description" not in config:
-            config["description"] = "Architecture design agent that creates system designs and technical specifications"
+            config[
+                "description"] = "Architecture design agent that creates system designs and technical specifications"
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are an architecture agent that specializes in system design. "
@@ -435,7 +458,8 @@ class DeveloperLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Developer"
         if "description" not in config:
-            config["description"] = "Development agent that writes code based on specifications"
+            config[
+                "description"] = "Development agent that writes code based on specifications"
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are a developer agent that specializes in writing clean, maintainable code. "
@@ -454,7 +478,8 @@ class TesterLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Tester"
         if "description" not in config:
-            config["description"] = "Testing agent that creates and runs tests to verify functionality"
+            config[
+                "description"] = "Testing agent that creates and runs tests to verify functionality"
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are a testing agent that specializes in quality assurance. "
@@ -473,8 +498,9 @@ class ReviewerLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Reviewer"
         if "description" not in config:
-            config["description"] = "Code review agent that evaluates code quality and suggests improvements"
-```python
+            config[
+                "description"] = "Code review agent that evaluates code quality and suggests improvements"
+
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are a code review agent that specializes in evaluating code quality. "
@@ -493,7 +519,8 @@ class DocumentorLangGraphAgent(LangGraphAgent):
         if "name" not in config:
             config["name"] = "Documentor"
         if "description" not in config:
-            config["description"] = "Documentation agent that creates user guides and technical documentation"
+            config[
+                "description"] = "Documentation agent that creates user guides and technical documentation"
         if "system_prompt" not in config:
             config["system_prompt"] = (
                 "You are a documentation agent that specializes in creating clear and helpful documentation. "
