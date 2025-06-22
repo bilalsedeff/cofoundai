@@ -14,6 +14,7 @@ import shutil
 from typing import Dict, List, Any, Optional, Union, Tuple
 from pathlib import Path
 import json
+from datetime import datetime
 
 from cofoundai.tools.file_manager import FileManager
 from cofoundai.utils.logger import get_logger
@@ -429,7 +430,6 @@ ENV/
             self.add_files([])
             
             # Create a timestamp for the snapshot
-            from datetime import datetime
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             # Commit with snapshot message
