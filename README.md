@@ -1,8 +1,4 @@
-
 ![WhatsApp Image 2025-05-03 at 23 41 29_1700ef67](https://github.com/user-attachments/assets/d2fe88e8-dd01-4435-904b-96693c83000d)
-
-
-
 
 # CoFound.ai - Multi-Agent Software Development System
 
@@ -80,7 +76,7 @@ CoFound.ai implements a dynamic agent workflow system using LangGraph:
 4. **Development**: Developer agent generates code
 5. **Testing**: Tester agent creates and runs tests
 6. **Review**: Reviewer agent analyzes code quality
-7. **Documentation**: Documentor agent creates documentation
+7. **Documentation**: Documenter agent creates documentation
 
 Agents can transfer control to other agents based on task requirements using a handoff mechanism.
 
