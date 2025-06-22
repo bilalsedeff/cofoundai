@@ -1,7 +1,7 @@
 """
-CoFound.ai Documentor Agent
+CoFound.ai Documenter Agent
 
-This module defines the Documentor agent responsible for creating project documentation.
+This module defines the Documenter agent responsible for creating project documentation.
 """
 
 import logging
@@ -13,7 +13,7 @@ from cofoundai.utils.logger import get_agent_logger
 
 class DocumentorAgent(BaseAgent):
     """
-    Documentor agent responsible for creating project documentation.
+    Documenter agent responsible for creating project documentation.
     
     This agent handles:
     - Creating README files
@@ -24,7 +24,7 @@ class DocumentorAgent(BaseAgent):
     
     def __init__(self, config: Dict[str, Any], test_mode: bool = False):
         """
-        Initialize the documentor agent.
+        Initialize the Documenter agent.
         
         Args:
             config: Dictionary containing the agent's configuration settings
@@ -34,7 +34,7 @@ class DocumentorAgent(BaseAgent):
         self.name = config.get("name", "Documentor")
         self.description = config.get("description", "Agent that creates project documentation")
         self.logger = get_agent_logger(self.name)
-        self.logger.info(f"Documentor agent initialized: {self.name}")
+        self.logger.info(f"Documenter agent initialized: {self.name}")
         self.test_mode = test_mode
     
     def process(self, input_data: Dict[str, Any]) -> Dict[str, Any]:

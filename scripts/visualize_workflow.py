@@ -98,7 +98,7 @@ def visualize_workflow(workflow: DynamicWorkflow, output_path: Optional[str] = N
             "Developer": "#77DD77",   # Light green
             "Tester": "#FDFD96",      # Light yellow
             "Reviewer": "#FFB347",    # Light orange
-            "Documentor": "#CF9FFF",  # Light purple
+            "Documentor": "#CF9FFF",  # Light purple for Documenter
             "END": "#D3D3D3"          # Light gray
         }
         
@@ -222,7 +222,7 @@ def visualize_agent_interactions(agent_configs: List[Dict[str, Any]], output_pat
             "Developer": "#77DD77",   # Light green
             "Tester": "#FDFD96",      # Light yellow
             "Reviewer": "#FFB347",    # Light orange
-            "Documentor": "#CF9FFF",  # Light purple
+            "Documentor": "#CF9FFF",  # Light purple for Documenter
         }
         
         # Get node colors
