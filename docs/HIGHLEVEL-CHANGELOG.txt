@@ -127,7 +127,7 @@ This file tracks high-level changes, implementations, and updates to the CoFound
 
 ### Core Features
 - ✅ **Base Agent System**: Abstract base agent with extensible architecture
-- ✅ **Specialized Agents**: Planner, Architect, Developer, Tester, Reviewer, Documentor
+- ✅ **Specialized Agents**: Planner, Architect, Developer, Tester, Reviewer, Documenter
 - ✅ **CLI Interface**: Command-line interface for workflow execution
 - ✅ **Memory Systems**: Short-term and long-term memory with vector storage
 - ✅ **Tool Integration**: File management and version control tools
