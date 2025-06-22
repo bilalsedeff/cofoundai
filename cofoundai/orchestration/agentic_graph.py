@@ -329,19 +329,19 @@ class AgenticGraph:
                 )
                 
                 # Create a dummy node function that just passes through the state
-                def dummy_node_func(state):
-                    # Just pass through the state, maybe add a diagnostic message
-                    if "messages" in state and len(state["messages"]) > 0:
-                        # Get the last message
-                        last_msg = state["messages"][-1]
-                        # Add a dummy response
-                        state["messages"].append(AIMessage(
-                            content=f"[{name} processed message but can't respond in LangGraph format]"
-                        ))
-                    return state
+                def create_dummy_node_func(agent_name):
+                    def dummy_node_func(state):
+                        # Just pass through the state, maybe add a diagnostic message
+                        if "messages" in state and len(state["messages"]) > 0:
+                            # Add a dummy response
+                            state["messages"].append(AIMessage(
+                                content=f"[{agent_name} processed message but can't respond in LangGraph format]"
+                            ))
+                        return state
+                    return dummy_node_func
                 
                 # Use this as the node function
-                langgraph_agent = dummy_node_func
+                langgraph_agent = create_dummy_node_func(name)
                 
             if langgraph_agent:
                 workflow.add_node(name, langgraph_agent)
@@ -354,31 +354,29 @@ class AgenticGraph:
                     reason="No LangGraph implementation or dummy function"
                 )
         
-        # Add conditional edges based on a simpler, fixed structure
-        # First node is always Planner if available, otherwise the first agent
-        start_node = "Planner" if "Planner" in self.agents else list(self.agents.keys())[0]
+        # Add conditional routing function
+        workflow.add_conditional_edges(
+            "Planner" if "Planner" in self.agents else list(self.agents.keys())[0],
+            self._route_messages,
+            {agent_name: agent_name for agent_name in self.agents.keys()} | {"END": END}
+        )
         
-        # Add edges between nodes in a fixed sequence
-        workflow.add_edge(start_node, END)
-        
-        # For simplicity, form a sequential workflow between agents
-        # Start -> A -> B -> C -> ... -> End
-        agent_keys = list(self.agents.keys())
-        for i in range(len(agent_keys) - 1):
-            current_agent = agent_keys[i]
-            next_agent = agent_keys[i + 1]
-            workflow.add_edge(current_agent, next_agent)
-        
-        # Last agent connects to END
-        if agent_keys:
-            workflow.add_edge(agent_keys[-1], END)
+        # Add conditional edges for all other agents
+        for agent_name in self.agents.keys():
+            if agent_name != ("Planner" if "Planner" in self.agents else list(self.agents.keys())[0]):
+                workflow.add_conditional_edges(
+                    agent_name,
+                    self._route_messages,
+                    {other_agent: other_agent for other_agent in self.agents.keys()} | {"END": END}
+                )
         
         # Set the entry point
+        start_node = "Planner" if "Planner" in self.agents else list(self.agents.keys())[0]
         workflow.set_entry_point(start_node)
         
         # Compile the graph
-        self.workflow_logger.info("Building a simple sequential graph")
-        graph = workflow.compile()
+        self.workflow_logger.info("Building dynamic routing graph")
+        graph = workflow.compile(checkpointer=self.checkpointer)
         
         self.workflow_logger.info("Graph built and compiled", agent_count=len(self.agents))
         

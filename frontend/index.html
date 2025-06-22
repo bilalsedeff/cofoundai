@@ -1,0 +1,409 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoFound.ai - AI-Powered Development Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <span class="logo">CoFound.ai</span>
+            </div>
+            <div class="nav-links">
+                <a href="#dream" class="nav-link active">Dream</a>
+                <a href="#maturation" class="nav-link">Maturation</a>
+                <a href="#assemble" class="nav-link">Assemble</a>
+            </div>
+        </nav>
+
+        <!-- Step 1: Dream -->
+        <section id="dream" class="step-section active">
+            <div class="step-header">
+                <h1>Step 1: Dream</h1>
+                <p>Describe your vision in plain language—an app idea, a new feature, or an entire department you wish existed.</p>
+            </div>
+            
+            <div class="dream-container">
+                <div class="dream-input-section">
+                    <div class="input-group">
+                        <label for="vision-input">Your Vision</label>
+                        <textarea 
+                            id="vision-input" 
+                            placeholder="Describe your app idea, digital company, or department concept..."
+                            rows="6"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="options-grid">
+                        <div class="option-group">
+                            <label>Goal</label>
+                            <select id="goal-selector">
+                                <option value="prototype">Prototype</option>
+                                <option value="mvp">MVP</option>
+                                <option value="scale">Scale</option>
+                            </select>
+                        </div>
+                        
+                        <div class="option-group">
+                            <label>Industry Tags</label>
+                            <div class="tag-selector">
+                                <span class="tag" data-tag="fintech">FinTech</span>
+                                <span class="tag" data-tag="mobile">Mobile</span>
+                                <span class="tag" data-tag="saas">SaaS</span>
+                                <span class="tag" data-tag="ecommerce">E-commerce</span>
+                                <span class="tag" data-tag="healthcare">Healthcare</span>
+                                <span class="tag" data-tag="education">Education</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="advanced-options">
+                        <button class="toggle-advanced" onclick="toggleAdvancedOptions()">
+                            <span>Advanced Options</span>
+                            <svg class="chevron" width="16" height="16" viewBox="0 0 16 16">
+                                <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none"/>
+                            </svg>
+                        </button>
+                        
+                        <div class="advanced-content" style="display: none;">
+                            <div class="option-group">
+                                <label>Target Audience</label>
+                                <input type="text" placeholder="e.g., Small business owners, Students, Developers">
+                            </div>
+                            
+                            <div class="option-group">
+                                <label>Budget Range</label>
+                                <select>
+                                    <option value="low">$1K - $10K</option>
+                                    <option value="medium">$10K - $50K</option>
+                                    <option value="high">$50K+</option>
+                                </select>
+                            </div>
+                            
+                            <div class="option-group">
+                                <label>Tech Stack Preference</label>
+                                <input type="text" placeholder="e.g., React, Python, Node.js (optional)">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="generate-btn" onclick="generateBlueprint()">
+                        <span>Generate Blueprint</span>
+                        <svg width="16" height="16" viewBox="0 0 16 16">
+                            <path d="M8 2l6 6-6 6" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="blueprint-preview" id="blueprint-preview" style="display: none;">
+                    <h3>Blueprint Preview</h3>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <h4>Project Overview</h4>
+                            <p id="project-overview"></p>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Key Features</h4>
+                            <ul id="key-features"></ul>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Technology Stack</h4>
+                            <div id="tech-stack" class="tech-tags"></div>
+                        </div>
+                        
+                        <div class="preview-section">
+                            <h4>Estimated Timeline & Cost</h4>
+                            <div class="estimate-grid">
+                                <div class="estimate-item">
+                                    <span class="estimate-label">Timeline:</span>
+                                    <span id="timeline-estimate">-</span>
+                                </div>
+                                <div class="estimate-item">
+                                    <span class="estimate-label">Token Cost:</span>
+                                    <span id="cost-estimate">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="preview-actions">
+                        <button class="btn-secondary" onclick="editBlueprint()">Edit</button>
+                        <button class="btn-primary" onclick="proceedToMaturation()">Proceed to Maturation</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Step 2: Maturation -->
+        <section id="maturation" class="step-section">
+            <div class="step-header">
+                <h1>Step 2: Maturation</h1>
+                <p>An AI agent efficiently assists users by clarifying requests and ensuring tasks are more achievable.</p>
+            </div>
+            
+            <div class="maturation-container">
+                <div class="cofounder-chat">
+                    <div class="chat-header">
+                        <div class="agent-info">
+                            <div class="agent-avatar">🤖</div>
+                            <div>
+                                <h3>CoFounder Agent</h3>
+                                <span class="agent-status">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message agent-message">
+                            <div class="message-content">
+                                Hello! I'm your CoFounder agent. I've reviewed your initial blueprint and I have some questions to help clarify and strengthen your concept. Let's work together to turn your idea into a solid, executable plan.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <div class="chat-input">
+                            <input type="text" id="chat-input" placeholder="Type your response...">
+                            <button onclick="sendMessage()">
+                                <svg width="16" height="16" viewBox="0 0 16 16">
+                                    <path d="M2 8l12-6-4 6 4 6-12-6z" fill="currentColor"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="maturation-sidebar">
+                    <div class="progress-card">
+                        <h3>Maturation Progress</h3>
+                        <div class="progress-metrics">
+                            <div class="metric">
+                                <div class="metric-header">
+                                    <span class="metric-icon">🎯</span>
+                                    <span>Discovery & Alignment</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                                <span class="progress-text">75%</span>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-header">
+                                    <span class="metric-icon">👁️</span>
+                                    <span>Definition & Clarity</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 50%"></div>
+                                </div>
+                                <span class="progress-text">50%</span>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-header">
+                                    <span class="metric-icon">⚠️</span>
+                                    <span>Feasibility & Risk</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 25%"></div>
+                                </div>
+                                <span class="progress-text">25%</span>
+                            </div>
+                            
+                            <div class="metric">
+                                <div class="metric-header">
+                                    <span class="metric-icon">✅</span>
+                                    <span>Governance & Compliance</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 10%"></div>
+                                </div>
+                                <span class="progress-text">10%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="artifacts-card">
+                        <h3>Generated Artifacts</h3>
+                        <div class="artifact-list">
+                            <div class="artifact-item">
+                                <span class="artifact-icon">📋</span>
+                                <span>Business Requirements Doc</span>
+                                <button class="artifact-btn">View</button>
+                            </div>
+                            <div class="artifact-item">
+                                <span class="artifact-icon">🏗️</span>
+                                <span>System Architecture</span>
+                                <button class="artifact-btn">View</button>
+                            </div>
+                            <div class="artifact-item">
+                                <span class="artifact-icon">📊</span>
+                                <span>Risk Assessment</span>
+                                <button class="artifact-btn">View</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="maturation-actions">
+                <button class="btn-secondary" onclick="backToDream()">← Back to Dream</button>
+                <button class="btn-primary" onclick="proceedToAssemble()" id="proceed-assemble" disabled>
+                    Proceed to Assemble →
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 3: Assemble -->
+        <section id="assemble" class="step-section">
+            <div class="step-header">
+                <h1>Step 3: Assemble</h1>
+                <p>CoFound.ai spins up the perfect multi-agent squad in seconds.</p>
+            </div>
+            
+            <div class="assemble-container">
+                <div class="squad-visualization">
+                    <div class="cofounder-central">
+                        <div class="agent-node cofounder">
+                            <div class="agent-avatar">👨‍💼</div>
+                            <span>CoFounder Agent</span>
+                        </div>
+                    </div>
+                    
+                    <div class="workspace-grid">
+                        <div class="workspace-card">
+                            <h3>Software Development</h3>
+                            <div class="workspace-agents">
+                                <div class="agent-node">
+                                    <div class="agent-avatar">📋</div>
+                                    <span>Planner</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">🏗️</div>
+                                    <span>Architect</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">👩‍💻</div>
+                                    <span>Developer</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">🧪</div>
+                                    <span>Tester</span>
+                                </div>
+                            </div>
+                            <div class="orchestrator">Orchestrator</div>
+                        </div>
+                        
+                        <div class="workspace-card">
+                            <h3>Digital Marketing</h3>
+                            <div class="workspace-agents">
+                                <div class="agent-node">
+                                    <div class="agent-avatar">📈</div>
+                                    <span>Strategist</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">✍️</div>
+                                    <span>Content Creator</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">🎨</div>
+                                    <span>Designer</span>
+                                </div>
+                            </div>
+                            <div class="orchestrator">Orchestrator</div>
+                        </div>
+                        
+                        <div class="workspace-card">
+                            <h3>Business Operations</h3>
+                            <div class="workspace-agents">
+                                <div class="agent-node">
+                                    <div class="agent-avatar">💼</div>
+                                    <span>Operations</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">📊</div>
+                                    <span>Analytics</span>
+                                </div>
+                                <div class="agent-node">
+                                    <div class="agent-avatar">💰</div>
+                                    <span>Finance</span>
+                                </div>
+                            </div>
+                            <div class="orchestrator">Orchestrator</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="squad-status">
+                    <div class="status-header">
+                        <h3>Squad Assembly Status</h3>
+                        <div class="status-indicator active">
+                            <span class="status-dot"></span>
+                            <span>Assembling...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="assembly-progress">
+                        <div class="progress-step completed">
+                            <div class="step-icon">✅</div>
+                            <div class="step-content">
+                                <h4>Requirements Analysis</h4>
+                                <p>Analyzed project needs and complexity</p>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-step active">
+                            <div class="step-icon">⚙️</div>
+                            <div class="step-content">
+                                <h4>Agent Configuration</h4>
+                                <p>Setting up specialized agents with project context</p>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-step">
+                            <div class="step-icon">🔗</div>
+                            <div class="step-content">
+                                <h4>Workflow Integration</h4>
+                                <p>Connecting agents and establishing communication</p>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-step">
+                            <div class="step-icon">🚀</div>
+                            <div class="step-content">
+                                <h4>Squad Ready</h4>
+                                <p>Your AI team is ready to execute</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="assemble-actions">
+                <button class="btn-secondary" onclick="backToMaturation()">← Back to Maturation</button>
+                <button class="btn-primary" onclick="startExecution()" id="start-execution" disabled>
+                    Start Execution 🚀
+                </button>
+            </div>
+        </section>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p id="loading-text">Processing your request...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
