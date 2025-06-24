@@ -5,7 +5,7 @@ run = "node index.js"
 channel = "stable-24_05"
 
 [deployment]
-run = ["sh", "-c", "node index.js"]
+run = ["sh", "-c", "python backend_api.py"]
 
 [workflows]
 runButton = "Run Backend"
@@ -18,6 +18,24 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python backend_api.py"
+
+[[workflows.workflow]]
+name = "Monitor System"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python monitor_dashboard.py"
+
+[[workflows.workflow]]
+name = "Test LangGraph"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_langgraph.py"
 
 [[ports]]
 localPort = 5000

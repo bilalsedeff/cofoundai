@@ -34,7 +34,20 @@ from langgraph.checkpoint.memory import MemorySaver
 from cofoundai.communication.message import Message
 from cofoundai.communication.agent_command import Command, CommandType, CommandTarget
 from cofoundai.agents.langgraph_agent import LangGraphAgent
-from cofoundai.utils.logger import get_logger, get_workflow_logger, JSONLogger
+from cofoundai.utils.logger import get_logger, get_workflow_logger
+try:
+    from cofoundai.utils.langsmith_integration import get_tracer
+except ImportError:
+    def get_tracer():
+        """Dummy tracer for when LangSmith is not available."""
+        class DummyTracer:
+            def start_workflow_session(self, project_id, input_text):
+                return f"session_{project_id}"
+            def trace_agent_execution(self, **kwargs):
+                pass
+            def end_workflow_session(self, status, artifacts):
+                pass
+        return DummyTracer()
 
 # Set up logging
 logger = get_logger(__name__)

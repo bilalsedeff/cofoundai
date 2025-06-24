@@ -25,15 +25,15 @@ class AppState {
     }
 
     updateUI() {
-        const heroSection = document.getElementById('hero-section');
-        const chatInterface = document.getElementById('chat-interface');
+        const heroSection = document.getElementById('hero');
+        const journeySection = document.getElementById('journey-progress');
 
         if (this.currentView === 'hero') {
-            heroSection.style.display = 'block';
-            chatInterface.style.display = 'none';
+            if (heroSection) heroSection.style.display = 'block';
+            if (journeySection) journeySection.style.display = 'none';
         } else if (this.currentView === 'chat') {
-            heroSection.style.display = 'none';
-            chatInterface.style.display = 'block';
+            if (heroSection) heroSection.style.display = 'none';
+            if (journeySection) journeySection.style.display = 'block';
         }
     }
 
@@ -276,6 +276,9 @@ class CoFoundApp {
     }
 
     setupEventListeners() {
+        // Hide loading screen initially
+        this.hideLoading();
+
         // Dream input events
         const dreamInput = document.getElementById('dream-input');
         const dreamSubmit = document.getElementById('start-building');
@@ -320,11 +323,11 @@ class CoFoundApp {
 
         // Chat input events
         const chatInput = document.getElementById('chat-input');
-        const chatSend = document.getElementById('chat-send');
+        const chatSend = document.getElementById('send-message');
 
         if (chatInput) {
             chatInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
                     this.handleChatSubmit();
                 }
@@ -561,16 +564,16 @@ class CoFoundApp {
     }
 
     showLoading(text = 'Processing...') {
-        const overlay = document.getElementById('loading-overlay');
-        const loadingText = document.getElementById('loading-text');
+        const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = loadingScreen?.querySelector('p');
 
         if (loadingText) loadingText.textContent = text;
-        if (overlay) overlay.style.display = 'flex';
+        if (loadingScreen) loadingScreen.style.display = 'flex';
     }
 
     hideLoading() {
-        const overlay = document.getElementById('loading-overlay');
-        if (overlay) overlay.style.display = 'none';
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) loadingScreen.style.display = 'none';
     }
 }
 
@@ -590,23 +593,16 @@ document.addEventListener('DOMContentLoaded', () => {
         app.hideLoading();
     });
 });
-// Chat functionality
-const chatMessages = document.getElementById('chat-messages');
-const userInput = document.getElementById('user-input');
-const sendButton = document.getElementById('send-button');
-
-// Check if elements exist
-if (!chatMessages || !userInput || !sendButton) {
-    console.warn('Some chat elements not found on page');
+// Initialize application when DOM is loaded
+function initializeApp() {
+    const app = new CoFoundApp();
+    app.init();
 }
-function updateProgressBar(progress) {
-    const progressBar = document.querySelector('.progress-bar');
-    const progressText = document.querySelector('.progress-text');
 
-    if (progressBar) {
-        progressBar.style.width = `${progress}%`;
-    }
-    if (progressText) {
-        progressText.textContent = `${progress}% Complete`;
+// Progress bar helper function
+function updateProgressBar(progress) {
+    const progressPercent = document.getElementById('progress-percent');
+    if (progressPercent) {
+        progressPercent.textContent = `${progress}%`;
     }
 }
