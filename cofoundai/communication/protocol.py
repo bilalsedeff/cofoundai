@@ -183,6 +183,59 @@ def convert_from_ap_message(ap_message: APMessage) -> Message:
         message_id=ap_message.message_id
     )
 
+# Flask Route Registration Function
+
+def register_agent_protocol_routes(flask_app):
+    """
+    Register Agent Protocol routes with a Flask application.
+    
+    Args:
+        flask_app: Flask application instance
+    """
+    from flask import request, jsonify
+    
+    # Create adapter instance
+    adapter = AgentProtocolAdapter()
+    
+    # Health endpoint
+    @flask_app.route('/ap/health')
+    def ap_health():
+        return jsonify({"status": "ok", "service": "Agent Protocol"})
+    
+    # Agent endpoints
+    @flask_app.route('/ap/agents/<agent_id>')
+    def get_agent(agent_id):
+        try:
+            import asyncio
+            result = asyncio.run(adapter.get_agent(agent_id))
+            return jsonify(result.dict())
+        except Exception as e:
+            return jsonify({"error": str(e)}), 404
+    
+    # Run endpoints
+    @flask_app.route('/ap/runs', methods=['POST'])
+    def create_run():
+        try:
+            data = request.get_json()
+            run_create = RunCreate(**data)
+            import asyncio
+            result = asyncio.run(adapter.create_run(run_create))
+            return jsonify(result.dict())
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    
+    @flask_app.route('/ap/runs/<run_id>')
+    def get_run(run_id):
+        try:
+            import asyncio
+            result = asyncio.run(adapter.get_run(run_id))
+            return jsonify(result.dict())
+        except Exception as e:
+            return jsonify({"error": str(e)}), 404
+    
+    logger.info("Agent Protocol routes registered with Flask app")
+    return adapter
+
 # Agent Protocol API Adapter
 
 class AgentProtocolAdapter:
