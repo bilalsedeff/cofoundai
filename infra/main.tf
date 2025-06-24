@@ -31,7 +31,7 @@ variable "environment" {
 
 # Configure providers
 provider "google" {
-  credentials = file("terraform-sa-key.json")
+  credentials = file("../terraform-sa-key.json")
   project     = var.project_id
   region      = var.region
 }
@@ -39,6 +39,9 @@ provider "google" {
 # Enable required APIs
 resource "google_project_service" "apis" {
   for_each = toset([
+    "cloudresourcemanager.googleapis.com",
+    "iam.googleapis.com",
+    "servicenetworking.googleapis.com",
     "compute.googleapis.com",
     "container.googleapis.com",
     "sql-component.googleapis.com",
@@ -146,7 +149,7 @@ resource "google_container_node_pool" "cofoundai_nodes" {
     disk_size_gb = 50
     disk_type    = "pd-standard"
 
-    # Service account
+    # Service account  
     service_account = google_service_account.gke_nodes.email
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform"
@@ -178,19 +181,12 @@ resource "google_service_account" "gke_nodes" {
   display_name = "CoFound.ai GKE Nodes"
 }
 
-resource "google_project_iam_member" "gke_nodes_roles" {
-  for_each = toset([
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/monitoring.viewer",
-    "roles/stackdriver.resourceMetadata.writer",
-    "roles/storage.objectViewer"
-  ])
-
-  project = var.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.gke_nodes.email}"
-}
+# IAM will be handled manually via gcloud commands
+# resource "google_project_iam_member" "gke_nodes_editor" {
+#   project = var.project_id
+#   role    = "roles/editor"
+#   member  = "serviceAccount:${google_service_account.gke_nodes.email}"
+# }
 
 # Cloud SQL PostgreSQL
 resource "google_sql_database_instance" "cofoundai_db" {
@@ -219,9 +215,10 @@ resource "google_sql_database_instance" "cofoundai_db" {
     }
 
     ip_configuration {
-      ipv4_enabled                                  = false
-      private_network                               = google_compute_network.cofoundai_vpc.id
-      enable_private_path_for_google_cloud_services = true
+      ipv4_enabled                                  = true
+      # Temporarily disable private network due to permission issues
+      # private_network                               = google_compute_network.cofoundai_vpc.id
+      # enable_private_path_for_google_cloud_services = true
     }
 
     maintenance_window {
@@ -233,8 +230,16 @@ resource "google_sql_database_instance" "cofoundai_db" {
 
   deletion_protection = true
 
-  depends_on = [google_service_networking_connection.private_vpc_connection]
+  # Private VPC Connection for Cloud SQL - temporarily disabled due to permissions
+  # depends_on = [google_service_networking_connection.private_vpc_connection]
 }
+
+# Private VPC Connection for Cloud SQL - temporarily disabled due to permissions
+# resource "google_service_networking_connection" "private_vpc_connection" {
+#   network                 = google_compute_network.cofoundai_vpc.id
+#   service                 = "servicenetworking.googleapis.com"
+#   reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+# }
 
 # Private VPC Connection for Cloud SQL
 resource "google_compute_global_address" "private_ip_address" {
@@ -245,27 +250,16 @@ resource "google_compute_global_address" "private_ip_address" {
   network       = google_compute_network.cofoundai_vpc.id
 }
 
-resource "google_service_networking_connection" "private_vpc_connection" {
-  network                 = google_compute_network.cofoundai_vpc.id
-  service                 = "servicenetworking.googleapis.com"
-  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
-}
-
 # Database and User
 resource "google_sql_database" "cofoundai_database" {
   name     = "cofoundai"
   instance = google_sql_database_instance.cofoundai_db.name
 }
 
-resource "random_password" "db_password" {
-  length  = 16
-  special = true
-}
-
 resource "google_sql_user" "cofoundai_user" {
   name     = "cofoundai_user"
   instance = google_sql_database_instance.cofoundai_db.name
-  password = random_password.db_password.result
+  password = "CoFoundAI2025!"
 }
 
 # Store DB password in Secret Manager
@@ -273,13 +267,13 @@ resource "google_secret_manager_secret" "db_password" {
   secret_id = "database-password"
   
   replication {
-    automatic = true
+    auto {}
   }
 }
 
 resource "google_secret_manager_secret_version" "db_password" {
   secret      = google_secret_manager_secret.db_password.id
-  secret_data = random_password.db_password.result
+  secret_data = "CoFoundAI2025!"
 }
 
 # Memorystore Redis
@@ -324,7 +318,7 @@ resource "google_storage_bucket" "cofoundai_storage" {
   lifecycle_rule {
     condition {
       age = 7
-      with_state = "NONCURRENT"
+      num_newer_versions = 3
     }
     action {
       type = "Delete"

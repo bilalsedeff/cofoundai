@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "cofoundaiproject",
+  "private_key_id": "642c803351a04371623224fa5eaf755e1aeaefc1",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/mlf5o7SJ6BoM\nfB8TBTOXBP8YnhOIVbcW8zY7D/x/A/WIw7gytB8L4R9I66nTBHH8O2U318g4DgEB\n4bZatSORWZkoDlRJzmlMxPuhjz9zQunJV8ZWab6nHV+/SbV35pMMkENLLnXD3wFb\nTnN/1Vpe6DAvpgIWl/bb8v5b5ysh/4cmhrr9DHM85k/LvLfnbZthC4vDPm31evGR\nd9AhiYuHxz3vtgDGXk/ZSGRrj/5mAoBXxwN8jnEUiUd4y3KXHMlIaRrOMTXobtXh\nVyM9hALsHLxdu7zCoP/R6mqZxhJos6JrA/k91Tl9e0+D6QHI8ZKJp5N253nJBkm6\nwfsaeXdBAgMBAAECggEAASrcRH1PrDuvnXH76Txx0JavZHexmiX+DSfvFZfqx54X\nPtWk85ui+Qo+i93iOXK8bE9TFf6UxekpbsjQmO/Du0bsysiAEVlObVEhsJ3AIuhW\nZvN3xhbjuk5QsxhckIIFVTkzjMOoJGjxX9xb8ixjTiLbaM3p0zgKsTNDQx125wCO\nL8hwSnTX0cw0QQql7N1xUJH5ZUrXJRfZecA8oTQmqR85v5LM8ek3S7BHiIEsXwU6\nvI0+vY43vEjS17p7o+I9pXVf0wwdG2PBLnYxhza+dQTtWhoJpLSh7t+FLqFh5+av\nihwYLiYrSKUe5J3AJo2iARs0EqQV6c9pqOlmhZeeAQKBgQDjcs/SDHOm0XbRkDKm\nH0TejN2x+n2QJa9xaN3J3eOV4RX/QRsXfT/F7fSFbisZSwmmr/C0e2LEHrVkmWrb\n5OHnGTDy3yVVvmUix40qqVRAu+teqoR4giY6z33fS2PP/Y52aeWp4fglebeDwDlP\n9+wNZZUW9HUaleV5ZFBMoCpKwQKBgQDXp50O6Yn/GMIfO2bUghVPJu+5zHLaP4Kx\nBK8Y2rAvGFxNRphVxtUUid8/p3lo40q/HCs6QasRfd0ZxgubTzdMUb7YsA7IKSo6\n4CuBUCzsnNqKCazU8eNM61/OkLyNKmASNgDp8twKE5z8IsxAv2jvIUtjugA4j1un\ndbL/D5jMgQKBgBcidHT/Azxyjc1fB2fSQmUImvwhaGgjDSdR7U09Hor+LAicjK7k\n9HmjbH2t6QBXm5Gyz57r9e3Q2c5ztGTNcRTagRoTDG8eQJc7CObP9lvnQVeNrI+9\nXToaJMlzl6FuPvFYcB3JeD4HlVz3Tl0N8JqkPHfrQYYEvSSNyYUhvWuBAoGBAKT4\nTcdYk/4XHHjz4gfyswZnzL8fTUTzjLCJ2sBympCMXB+pP2NuxRX/Gk8BeHjqVwW3\nMMJR9eFdnUPYIozenni9l/b/R2+LPgjn75/ui0899lfeat5DZBQ1gobsZbC/l9qW\ngUB2TilPM6oVnJZzVnyHxbo2UXDzCbQi75j6f3MBAoGAPmO7UDafl9/BcSPjOxe3\nSZ9gKrldSlN6eKZdpN2fOk4aRidNfitaUHaj+uas9DdgZWTJ/0zlTDpD4LUaYnoS\newpKwskAndeSGW9hAtwg/SONUxpdbHeji4PBM5Yqddc1ZLc8hkWlRztTxXf+U5IT\nLxhDbGtxBpaVpGaFcnFZnVE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "cofoundai-terraform@cofoundaiproject.iam.gserviceaccount.com",
+  "client_id": "101996720759206650705",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cofoundai-terraform%40cofoundaiproject.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
