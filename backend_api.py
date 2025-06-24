@@ -18,6 +18,16 @@ CORS(app)
 # Register Agent Protocol routes
 register_agent_protocol_routes(app)
 
+@app.route('/styles.css')
+def serve_css():
+    """Serve CSS file."""
+    return app.send_static_file('styles.css')
+
+@app.route('/script.js')
+def serve_js():
+    """Serve JavaScript file."""
+    return app.send_static_file('script.js')
+
 # Global session storage (in production, use Redis or database)
 sessions = {}
 

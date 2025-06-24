@@ -404,13 +404,16 @@ class CoFoundApp {
             this.appState.setPhase('maturation');
             this.appState.setProgress(30);
 
+            // Show progress section and chat input (check if elements exist)
+            const progressSection = document.getElementById('progress-section');
+            const chatInputContainer = document.getElementById('chat-input-container');
+
+            if (progressSection) progressSection.style.display = 'block';
+            if (chatInputContainer) chatInputContainer.style.display = 'block';
+
             // Initialize maturation session
             const sessionData = await this.apiService.initializeMaturation(this.currentProjectData);
             this.appState.currentSession = sessionData.session_id;
-
-            // Show progress section and chat input
-            document.getElementById('progress-section').style.display = 'block';
-            document.getElementById('chat-input-container').style.display = 'block';
 
             // Start maturation conversation
             setTimeout(() => {
