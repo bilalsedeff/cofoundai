@@ -1,0 +1,153 @@
+# Cloud Build configuration for CoFound.ai
+# This file defines the CI/CD pipeline for building and deploying the system
+
+steps:
+  # Step 1: Run tests
+  - name: 'python:3.11-slim'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        pip install -r requirements.txt
+        python -m pytest tests/unit/ -v --tb=short
+    id: 'run-tests'
+
+  # Step 2: Build Dream Service Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/dream-service:$COMMIT_SHA'
+      - '-t'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/dream-service:latest'
+      - '--file=services/dream-service/Dockerfile'
+      - '.'
+    id: 'build-dream-service'
+    waitFor: ['run-tests']
+
+  # Step 3: Push Dream Service image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/dream-service:$COMMIT_SHA'
+    id: 'push-dream-service-sha'
+    waitFor: ['build-dream-service']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_ARTIFACT_REPO}/dream-service:latest'
+    id: 'push-dream-service-latest'
+    waitFor: ['build-dream-service']
+
+  # Step 4: Update Kubernetes deployment files with new image
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Replace PROJECT_ID placeholder in k8s files
+        sed -i "s/PROJECT_ID/$PROJECT_ID/g" k8s/dream-service-deployment.yaml
+        
+        # Replace image tag with commit SHA
+        sed -i "s/:latest/:$COMMIT_SHA/g" k8s/dream-service-deployment.yaml
+        
+        # Show the updated file for verification
+        cat k8s/dream-service-deployment.yaml
+    id: 'update-k8s-manifests'
+    waitFor: ['push-dream-service-sha']
+
+  # Step 5: Deploy to GKE cluster
+  - name: 'gcr.io/cloud-builders/gke-deploy'
+    args:
+      - 'run'
+      - '--filename=k8s/dream-service-deployment.yaml'
+      - '--location=${_GKE_REGION}'
+      - '--cluster=${_GKE_CLUSTER}'
+      - '--timeout=600s'
+    id: 'deploy-to-gke'
+    waitFor: ['update-k8s-manifests']
+
+  # Step 6: Wait for deployment rollout
+  - name: 'gcr.io/cloud-builders/kubectl'
+    args:
+      - 'rollout'
+      - 'status'
+      - 'deployment/dream-service'
+      - '--timeout=600s'
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=${_GKE_REGION}'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=${_GKE_CLUSTER}'
+    id: 'verify-deployment'
+    waitFor: ['deploy-to-gke']
+
+  # Step 7: Run health check
+  - name: 'gcr.io/cloud-builders/curl'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        # Wait for service to be ready
+        sleep 30
+        
+        # Get the external IP of the LoadBalancer
+        EXTERNAL_IP=$(kubectl get service dream-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+        
+        if [ -z "$EXTERNAL_IP" ]; then
+          echo "External IP not found, using port-forward for health check"
+          kubectl port-forward service/dream-service 8080:80 &
+          sleep 10
+          curl -f http://localhost:8080/health || exit 1
+        else
+          echo "External IP found: $EXTERNAL_IP"
+          curl -f http://$EXTERNAL_IP/health || exit 1
+        fi
+    env:
+      - 'CLOUDSDK_COMPUTE_ZONE=${_GKE_REGION}'
+      - 'CLOUDSDK_CONTAINER_CLUSTER=${_GKE_CLUSTER}'
+    id: 'health-check'
+    waitFor: ['verify-deployment']
+
+  # Step 8: Notification (optional)
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "🎉 CoFound.ai Dream Service successfully deployed!"
+        echo "Commit SHA: $COMMIT_SHA"
+        echo "Build ID: $BUILD_ID"
+        echo "Project: $PROJECT_ID"
+        echo "Cluster: ${_GKE_CLUSTER}"
+        echo "Region: ${_GKE_REGION}"
+    id: 'notification'
+    waitFor: ['health-check']
+
+# Build options
+options:
+  # Use high-performance machine for faster builds
+  machineType: 'E2_HIGHCPU_8'
+  
+  # Enable logging to Cloud Logging
+  logging: CLOUD_LOGGING_ONLY
+  
+  # Set build timeout (20 minutes)
+  timeout: '1200s'
+  
+  # Use substitution for environment variables
+  substitution_option: 'ALLOW_LOOSE'
+
+# Substitution variables
+substitutions:
+  _REGION: 'us-central1'
+  _ARTIFACT_REPO: 'cofoundai-repo'
+  _GKE_CLUSTER: 'cofoundai-cluster'
+  _GKE_REGION: 'us-central1'
+  _ENVIRONMENT: 'prod'
+
+# Build triggers configuration
+# This section is used when setting up triggers via gcloud or UI
+tags:
+  - 'cofoundai'
+  - 'dream-service'
+  - 'production' 

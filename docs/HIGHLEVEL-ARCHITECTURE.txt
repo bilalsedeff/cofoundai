@@ -383,3 +383,120 @@ The system has been recently cleaned and organized with:
    - Maintained only necessary configuration and source files
 
 The system now has a clean, organized structure that matches the documented architecture and supports both development and production deployment scenarios.
+
+## 9-Phase Workflow System Architecture
+
+CoFound.ai implements a comprehensive 9-phase workflow system using LangGraph for orchestration:
+
+### Phase 1: Dream
+**Goal**: Convert user vision into structured project blueprint
+- **Frontend**: React-based dream capture interface
+- **Backend**: Flask Dream Service microservice 
+- **LangGraph Agents**: VisionAnalyst, BlueprintGenerator
+- **Output**: Initial project blueprint and requirements
+
+### Phase 2: Maturation
+**Goal**: Refine and mature the initial blueprint
+- **Process**: 4-step maturation (Discovery, Definition, Assessment, Governance)
+- **Agents**: RequirementsAnalyst, TechnicalArchitect, ComplianceAgent
+- **Output**: Detailed functional and non-functional requirements
+
+### Phase 3: Assemble
+**Goal**: Create deployment-ready architecture
+- **Agents**: ArchitecturalDesigner, IntegrationPlanner
+- **Output**: System architecture diagrams, API contracts, deployment manifests
+
+### Phase 4: Prototype
+**Goal**: Build working proof-of-concept
+- **Agents**: RapidPrototyper, UIDesigner
+- **Output**: Minimal viable prototype with core functionality
+
+### Phase 5: Feedback
+**Goal**: Capture stakeholder input
+- **Tools**: Feedback capture service, analytics dashboard
+- **Integration**: Google Analytics, BigQuery data pipeline
+
+### Phase 6: Iterate
+**Goal**: Automated enhancement based on feedback
+- **Workflow**: Feedback → Auto-plan → Feature branch → CI/CD → Canary deploy
+- **Tools**: Automated git workflow, continuous deployment
+
+### Phase 7: Validate
+**Goal**: Comprehensive QA and compliance validation
+- **Testing**: Load testing, security auditing, compliance verification
+- **Tools**: Cloud Test Lab, OWASP ZAP, dependency scanning
+
+### Phase 8: Go Live
+**Goal**: Production deployment
+- **Strategy**: Blue-green deployment with traffic splitting
+- **Monitoring**: Real-time SLO monitoring, automated alerting
+
+### Phase 9: Evolve
+**Goal**: Continuous improvement through telemetry
+- **Analytics**: BigQuery usage analytics, A/B testing framework
+- **Automation**: Metrics-driven iteration triggers
+
+## LangGraph Implementation Details
+
+### Multi-Agent Communication
+```python
+# Agent handoff example
+def create_handoff_tool(agent_name: str, description: str = None):
+    def transfer_func(reason: str) -> str:
+        return f"Successfully transferred to {agent_name} with reason: {reason}"
+    
+    return StructuredTool.from_function(
+        func=transfer_func,
+        name=f"transfer_to_{agent_name}",
+        description=description
+    )
+```
+
+### State Management
+```python
+class AgenticState(TypedDict):
+    messages: Annotated[List[BaseMessage], add_messages]
+    project_description: str
+    active_agent: Optional[str]
+    artifacts: Dict[str, Any]
+    status: str
+```
+
+### Workflow Orchestration
+The system uses LangGraph's StateGraph for workflow management:
+- **Dynamic Routing**: Agents can decide to process or handoff tasks
+- **State Persistence**: Workflow state is maintained across agent transitions
+- **Error Recovery**: Comprehensive error handling and rollback mechanisms
+- **Checkpointing**: Progress is saved at each phase transition
+
+## Google Cloud Platform Integration
+
+### Infrastructure Components
+- **GKE Cluster**: Container orchestration with auto-scaling
+- **Cloud SQL**: PostgreSQL database with private networking  
+- **Memorystore**: Redis cache for session management
+- **Pub/Sub**: Asynchronous messaging between microservices
+- **Vertex AI**: LLM integration with token tracking
+- **Secret Manager**: Secure credential storage
+- **Artifact Registry**: Container image management
+
+### CI/CD Pipeline
+- **Cloud Build**: Automated build and test on git push
+- **Canary Deployments**: Gradual rollout with monitoring
+- **Blue-Green Deployments**: Zero-downtime production updates
+- **Automated Rollback**: SLO-based rollback triggers
+
+### Monitoring & Observability
+- **Cloud Logging**: Structured JSON logs with workflow tracking
+- **Cloud Monitoring**: Custom metrics and SLO dashboards
+- **LangSmith Integration**: Agent execution tracing
+- **Cost Management**: Budget alerts and resource optimization
+
+## Security & Compliance
+- **Least Privilege IAM**: Service-specific access controls
+- **VPC Service Controls**: Data isolation and security boundaries
+- **Encryption**: At-rest and in-transit data protection
+- **GDPR Compliance**: Data privacy and retention policies
+- **SOC2 Compliance**: Security and availability controls
+
+This architecture ensures scalability, reliability, and maintainability while supporting the rapid evolution of AI-powered software development workflows.
