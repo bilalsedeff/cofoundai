@@ -82,5 +82,26 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Google Cloud Platform Credentials (ÇOK ÖNEMLİ!)
+*.json
+*-key.json
+*-sa-key.json
+terraform-sa-key.json
+service-account-key.json
+gcp-credentials.json
+google-credentials.json
+*.pem
+*.p12
+*.pfx
+
+# API Keys ve Secrets
+.env
+.env.*
+config.env
+secrets.json
+api-keys.json
+*.secret
+.secrets/
+
 # Memory Bank
 cursor-memory-bank/
