@@ -40,37 +40,42 @@ cofoundai/                      # Main package
   │   ├── tester.py             # Testing agent
   │   ├── reviewer.py           # Code review agent
   │   ├── documentor.py         # Documenter agent
-  │   └── langgraph_agent.py    # LangGraph compatible agent implementation
+  │   ├── langgraph_agent.py    # LangGraph compatible agent implementation
+  │   └── extensible_agent.py   # Base classes for extensible agents
+  │
+  ├── api/                      # API Layer
+  │   ├── app.py                # FastAPI Agent Protocol server
+  │   └── backend_api.py        # Flask REST API server (moved from root)
   │
   ├── cli/                      # Command line interface
   │   ├── main.py               # Main CLI entry point
   │   ├── commands.py           # CLI commands and functionality
-  │   └── output_formatter.py   # Output formatting
+  │   └── output_formatter.py   # Output formatting (if exists)
   │
   ├── communication/            # Inter-agent communication
   │   ├── message.py            # Message object definition
   │   ├── agent_command.py      # Command protocol definitions
-  │   └── protocol.py           # Communication protocols
+  │   ├── protocol.py           # Communication protocols
+  │   ├── acp_adapter.py        # ACP protocol adapter
+  │   └── mcp_adapter.py        # MCP protocol adapter
   │
   ├── config/                   # Configuration files
   │   ├── schema/               # JSON schemas
+  │   │   ├── components.yaml   # Component definitions
+  │   │   ├── graph.yaml        # Graph configurations
   │   │   └── workflows_schema.json # Schema for workflow configuration
-  │   ├── agent_config.yaml     # Agent configurations
   │   ├── system_config.yaml    # System configurations
   │   └── workflows.yaml        # Workflow definitions (LangGraph integration)
   │
   ├── core/                     # Core system components
   │   ├── llm_interface.py      # LLM API integration
-  │   ├── config_manager.py     # Configuration management
-  │   ├── system.py             # System management
+  │   ├── config_loader.py      # Configuration loading and management
   │   ├── base_agent.py         # Base agent class
-  │   ├── extensibility.py      # Interfaces and classes for extensible components and provider types
-  │   ├── component_factory.py  # Factory to instantiate extensible components dynamically
-  │   └── base_agent.py         # Base agent class
+  │   ├── extensibility.py      # Interfaces and classes for extensible components
+  │   └── component_factory.py  # Factory to instantiate extensible components dynamically
   │
   ├── memory/                   # Memory systems
   │   ├── short_term.py         # Short-term memory
-  │   ├── long_term.py          # Long-term memory (vector database)
   │   ├── project_context.py    # Project context
   │   └── vector_store.py       # Vector DB interface
   │
@@ -80,49 +85,114 @@ cofoundai/                      # Main package
   │   ├── agentic_graph.py      # Dynamic agent graph for routing
   │   ├── dynamic_graph.py      # Extended graph functionality
   │   ├── supervisor.py         # Workflow supervision and monitoring
-  │   ├── extensible_orchestrator.py  # Orchestrator integrating extensible components into LangGraph workflows
-  │   └── supervisor.py         # Workflow supervision and monitoring
+  │   └── extensible_orchestrator.py  # Orchestrator integrating extensible components
   │
   ├── tests/                    # Test files
-  │   ├── unit/                 # Unit tests
+  │   ├── conftest.py           # Test configuration
   │   ├── integration/          # Integration tests
-  │   └── fixtures/             # Test fixtures
+  │   │   ├── test_acp.py
+  │   │   ├── test_agent_communication.py
+  │   │   ├── test_agent_protocol.py
+  │   │   ├── test_end_to_end_workflow.py
+  │   │   └── test_llm_integration.py
+  │   └── unit/                 # Unit tests
+  │       ├── test_agentic_graph.py
+  │       ├── test_context7.py
+  │       ├── test_file_manager.py
+  │       ├── test_google_cloud_integration.py
+  │       ├── test_version_control.py
+  │       └── test_workflow.py
   │
   ├── tools/                    # Agent tools
   │   ├── code_generator.py     # Code generation tool
   │   ├── file_manager.py       # File management
   │   ├── version_control.py    # Version control (Git) tool
   │   ├── context7_adapter.py   # Documentation access tool
-  │   ├── extensible_tool.py    # Base classes for extensible tool components
-  │   └── context7_adapter.py   # Documentation access tool
+  │   └── extensible_tool.py    # Base classes for extensible tool components
   │
   └── utils/                    # Helper functions
       ├── logger.py             # Logging module with JSON formatting
-      ├── prompt_templates.py   # Prompt templates
-      └── helpers.py            # Helper functions
+      ├── langsmith_integration.py # LangSmith integration
+      └── helpers.py            # Helper functions (if exists)
 │
-frontend/                       # Web Frontend
-  ├── index.html                # Main HTML interface
-  ├── styles.css                # CSS styling and responsive design
-  └── script.js                 # JavaScript functionality and API integration
+├── services/                   # Microservices (Cloud Infrastructure)  
+│   ├── dream-service/          # Dream service microservice
+│   │   ├── Dockerfile
+│   │   ├── main.py
+│   │   └── requirements.txt
+│   ├── monitoring/             # Monitoring service
+│   │   └── monitor_dashboard.py
+│   └── orchestrator/           # Orchestrator service
+│       └── src/
+│           └── index.ts
 │
-backend_api.py                  # Flask API server
+├── frontend/                   # Web Frontend
+│   ├── index.html              # Main HTML interface
+│   ├── styles.css              # CSS styling and responsive design
+│   └── script.js               # JavaScript functionality and API integration
 │
-logs/                           # Logs
-  ├── agents/                   # Agent-specific logs
-  │   ├── architect/            # Architect agent logs
-  │   ├── developer/            # Developer agent logs
-  │   ├── documentor/           # Documenter agent logs
-  │   ├── planner/              # Planner agent logs
-  │   ├── reviewer/             # Reviewer agent logs
-  │   └── tester/               # Tester agent logs
-  │
-  ├── system/                   # System logs
-  └── workflows/                # Workflow logs by project ID
-      └── workflow_*            # Workflow-specific log directories
+├── infra/                      # Infrastructure as Code
+│   └── main.tf                 # Terraform main configuration
 │
-projects/                       # User projects
-  └── proj_*                    # Project-specific directories with artifacts
+├── k8s/                        # Kubernetes Manifests
+│   └── dream-service-deployment.yaml  # Kubernetes deployment config
+│
+├── demos/                      # Demo scripts and examples
+│   ├── demo_cofoundai_cli.py   # CLI demo script
+│   ├── demo_english.bat        # English demo batch script
+│   ├── demo_test_agents.bat    # Agent testing demo
+│   ├── run_demo.bat           # Demo runner (Windows)
+│   ├── run_demo.sh            # Demo runner (Unix)
+│   ├── projects/              # Demo projects (cleaned)
+│   └── logs/                  # Demo logs
+│
+├── scripts/                    # Utility scripts  
+│   ├── check_yaml.py          # YAML validation script
+│   ├── fix_imports.py         # Import fixing script
+│   ├── fix_null_bytes.py      # Null bytes fixing script
+│   ├── run_tests.py           # Test runner script
+│   ├── test_echo.bat          # Test echo script
+│   ├── test_langgraph.py      # LangGraph testing script
+│   ├── visualize_code_review.py  # Code review visualization
+│   ├── visualize_develop_app.py  # App development visualization
+│   ├── visualize_prototype.py    # Prototype visualization
+│   └── visualize_workflow.py     # Workflow visualization
+│
+├── docs/                       # Documentation
+│   ├── HIGHLEVEL-ARCHITECTURE.txt  # This file
+│   ├── HIGHLEVEL-CHANGELOG.txt     # Change log
+│   └── README-TESTING.md           # Testing documentation
+│
+├── Project-Readings/           # Project documentation and readings
+│   ├── CoFound.ai Multi‑Agent System Integration Report.pdf
+│   ├── CoFound.ai Multi‑Agent System Integration Report.txt
+│   ├── CoFound.ai Technical Architecture Whitepaper and Specification.pdf
+│   └── CoFound.ai Technical Architecture Whitepaper and Specification.txt
+│
+├── projects/                   # User projects (created projects go here)
+│   └── proj_*                 # Project-specific directories with artifacts
+│
+├── logs/                       # Logs (organized structure)
+│   ├── agents/                # Agent-specific logs
+│   │   ├── architect/         # Architect agent logs
+│   │   ├── developer/         # Developer agent logs
+│   │   ├── documentor/        # Documenter agent logs
+│   │   ├── planner/           # Planner agent logs
+│   │   ├── reviewer/          # Reviewer agent logs
+│   │   └── tester/            # Tester agent logs
+│   ├── system/                # System logs
+│   └── workflows/             # Workflow logs by project ID
+│
+├── memory-bank/                # Memory bank storage
+│
+├── ana_akis.txt               # Turkish workflow documentation (newly created)
+├── README.md                  # Main project README
+├── requirements.txt           # Python dependencies
+├── package.json              # Node.js dependencies
+├── pytest.ini               # Pytest configuration
+├── .yamllint.yml            # YAML linting configuration
+├── .gitignore               # Git ignore rules
+└── LICENSE                  # Project license
 ```
 
 ## Module Details
@@ -140,13 +210,20 @@ This module contains specialized AI agents that handle different aspects of the 
 - **langgraph_agent.py**: Base implementation for LangGraph-compatible agents with workflow integration
 - **extensible_agent.py**: Base classes for defining extensible agents
 
+### cofoundai/api/ - API Layer
+
+This module provides both CLI and web API interfaces:
+
+- **app.py**: FastAPI implementation of Agent Protocol standard for agent communication
+- **backend_api.py**: Flask-based REST API server for web frontend integration (moved from root)
+
 ### cofoundai/cli/ - Command Line Interface
 
 This module provides the command-line interface for interacting with the system:
 
 - **main.py**: Main CLI entry point that parses arguments and initiates workflows
 - **commands.py**: Implementation of CLI commands for different operations
-- **output_formatter.py**: Formats output for CLI display with colors and formatting
+- **output_formatter.py**: Formats output for CLI display with colors and formatting (if exists)
 
 ### cofoundai/communication/ - Agent Communication
 
@@ -162,18 +239,19 @@ This module defines the communication protocol between agents:
 
 This module contains configuration files and schemas:
 
-- **agent_config.yaml**: Configuration settings for different agent types
 - **system_config.yaml**: System-wide configuration including LLM settings
 - **workflows.yaml**: Workflow definitions specifying agent interactions and transitions
-- **schema/workflows_schema.json**: JSON schema for validating workflow configurations
+- **schema/**: JSON schemas directory
+  - **components.yaml**: Component definitions
+  - **graph.yaml**: Graph configurations  
+  - **workflows_schema.json**: JSON schema for validating workflow configurations
 
 ### cofoundai/core/ - Core System Components
 
 This module contains core functionality:
 
 - **llm_interface.py**: Interface for interacting with Language Models via different providers
-- **config_manager.py**: Manages loading and validating configuration
-- **system.py**: Handles system initialization and management
+- **config_loader.py**: Manages loading and validating configuration
 - **base_agent.py**: Base class that all agents inherit from
 - **extensibility.py**: Interfaces and classes for extensible components and provider types
 - **component_factory.py**: Factory to instantiate extensible components dynamically
@@ -183,7 +261,6 @@ This module contains core functionality:
 This module implements memory capabilities for agents:
 
 - **short_term.py**: Short-term memory for current context within a session
-- **long_term.py**: Long-term memory using vector databases for persistent knowledge
 - **project_context.py**: Stores and manages context specific to a project
 - **vector_store.py**: Abstraction over vector database implementations
 
@@ -198,188 +275,111 @@ This module manages multi-agent workflows:
 - **supervisor.py**: Monitors and supervises workflow execution
 - **extensible_orchestrator.py**: Orchestrator integrating extensible components into LangGraph workflows
 
-### cofoundai/tests/ - Test Files
-
-This module contains test infrastructure:
-
-- **unit/**: Unit tests for individual components
-- **integration/**: Tests for integrated components working together
-- **fixtures/**: Test data and mock objects for testing
-
 ### cofoundai/tools/ - Agent Tools
 
-This module provides tools that agents can use:
+This module contains tools that agents can use:
 
-- **code_generator.py**: Tool for generating and modifying code
-- **file_manager.py**: Tool for file operations (read, write, modify)
-- **version_control.py**: Git-based version control tool
-- **context7_adapter.py**: Tool for accessing external documentation
-- **extensible_tool.py**: Base classes for extensible tool components
+- **code_generator.py**: Tool for generating code snippets and files
+- **file_manager.py**: File system operations and management
+- **version_control.py**: Git integration for version control operations
+- **context7_adapter.py**: Documentation and reference access tool
+- **extensible_tool.py**: Base classes for creating extensible tool components
 
-### cofoundai/utils/ - Helper Functions
+### cofoundai/utils/ - Utility Functions
 
-This module contains utility functions:
+This module provides helper functions and utilities:
 
-- **logger.py**: Structured logging with JSON formatting and thread tracking
-- **prompt_templates.py**: Templates for agent interactions with LLMs
-- **helpers.py**: General utility functions
+- **logger.py**: Structured logging with JSON formatting and agent context
+- **langsmith_integration.py**: Integration with LangSmith for workflow monitoring
+- **helpers.py**: General helper functions (if exists)
 
-### logs/ - Log Files
+## Services Architecture (Microservices)
 
-This directory stores log files:
+### services/dream-service/ - Dream Service Microservice
+FastAPI-based microservice that handles initial user vision processing and dream phase operations.
 
-- **agents/**: Agent-specific logs organized by agent type
-- **system/**: System-wide logs
-- **workflows/**: Logs organized by workflow ID
+### services/monitoring/ - Monitoring Service  
+Dashboard and monitoring capabilities for the entire system.
 
-## Layered Architecture
+### services/orchestrator/ - Orchestrator Service
+Node.js/TypeScript-based orchestrator service for managing LangGraph workflows in a distributed environment.
 
-CoFound.ai implements a layered architecture that separates concerns and allows for modular development:
+## Frontend Architecture
 
-### 1. User Interface Layer
-- **Web Frontend**: Modern web interface with three main phases:
-  - **Dream Interface**: Vision input, goal selection, and blueprint generation
-  - **Maturation Interface**: Interactive chat with CoFounder agent and progress tracking
-  - **Assemble Interface**: Visual agent squad assembly and execution management
-- **CLI Interface**: Command-line interface for user requests and interaction
-- **REST API**: Flask-based API server handling frontend requests
-- **Session Management**: User session tracking and state persistence
-- **Request Processing**: Components that handle and validate user requests
+### frontend/ - Web Interface
+- **index.html**: Modern web interface with glassmorphism design
+- **styles.css**: Advanced CSS animations and responsive design
+- **script.js**: Real-time chat interface and API integration
 
-### 2. Workflow Layer
-- **Orchestration Engine**: Core components that manage workflows:
-  - **LangGraph StateGraph**: State machine with transitions between agents
-  - **AgenticGraph**: Dynamic routing based on agent decisions
-  - **Handoff Mechanism**: Tools that enable agents to transfer control
-  - **State Tracking**: Monitoring of workflow state and agent activity
-- **Workflow Definitions**: YAML configuration of different workflow types
+## Infrastructure and Deployment
 
-### 3. Agent Layer
-- **Agent Communication Protocol (ACP)**: Standardized message format for agent interactions
-- **Specialized Agents**: Task-specific agents with distinct roles:
-  - **Planner**: Requirement analysis and task planning
-  - **Architect**: System design and technical decisions
-  - **Developer**: Code implementation and refinement
-  - **Tester**: Test creation and execution
-  - **Reviewer**: Code review and improvement suggestions
-  - **Documenter**: Documentation creation and maintenance
-- **Base Agent**: Common functionality shared by all agents
-- **LangGraph Integration**: Wrapper that adapts agents to LangGraph workflows
+### infra/ - Infrastructure as Code
+Terraform configurations for Google Cloud Platform deployment.
 
-### 4. Memory Layer
-- **Short-Term Memory**: Temporary context for current session
-- **Long-Term Memory**: Persistent knowledge using vector databases
-- **Project Context**: Project-specific information and history
+### k8s/ - Kubernetes Manifests
+Kubernetes deployment configurations for containerized services.
 
-### 5. Communication Layer
-- **Message System**: Structured message passing between agents
-- **Command Structure**: Action commands that trigger state changes
-- **State Management**: Mechanisms to manage and persist state
+## Development and Testing
 
-### 6. Monitoring and Logging Layer
-- **Structured Logging**: JSON-formatted logs with consistent structure
-- **Agent-Specific Logs**: Separate logs for each agent type
-- **Workflow Logs**: Process-level logging for each workflow
-- **Log Analysis**: Tools to analyze and visualize log data
+### demos/ - Demonstration Scripts
+Example scripts and demo projects for showcasing system capabilities.
 
-### 7. Tools Layer
-- **Code Generation**: Tools for creating and modifying code
-- **Version Control**: Git-based version tracking
-- **File Operations**: Reading, writing, and updating files
-- **Documentation Access**: Tools to access external documentation
+### scripts/ - Utility Scripts
+Various utility scripts for development, testing, and maintenance.
 
-### 8. Extensibility Layer
-- **Component Registry**: Interfaces and registry for extensible components (`core/extensibility.py` and `core/component_factory.py`)
-- **Protocol Adapters**: ACP and MCP adapters for agent and tool integration (`communication/acp_adapter.py`, `communication/mcp_adapter.py`)
-- **Extensible Components**: Base classes enabling third-party extensions (`agents/extensible_agent.py`, `tools/extensible_tool.py`)
-- **Extensible Orchestrator**: Workflow orchestration supporting modular components (`orchestration/extensible_orchestrator.py`)
+### tests/ - Test Suite
+Comprehensive testing including unit tests and integration tests.
 
-### 9. Configuration Layer
-- **System Settings**: Global configuration
-- **Agent Configuration**: Agent-specific settings
-- **Workflow Definition**: Process and transition definitions
-- **LLM Settings**: Language model configuration and API keys
+## Documentation and Resources
 
-## Workflow and Agent Interaction
+### docs/ - Documentation
+Architecture documentation, changelogs, and technical specifications.
 
-The CoFound.ai development process follows this general workflow:
+### Project-Readings/ - Reference Materials
+Technical whitepapers and integration reports.
 
-1. **Request Processing**: User submits a software development request via CLI
-2. **Workflow Selection**: System selects appropriate workflow type
-3. **Planning Phase**: Planner agent breaks down the request into tasks
-4. **Architecture Phase**: Architect agent designs system components and relationships
-5. **Development Phase**: Developer agent implements code based on design
-6. **Testing Phase**: Tester agent creates and runs tests
-7. **Review Phase**: Reviewer agent evaluates code quality and suggests improvements
-8. **Documentation Phase**: Documenter agent creates user and technical documentation
-9. **Delivery**: System provides completed software artifacts to user
+## Data and Storage
 
-## Agentic Graph Orchestration
+### projects/ - User Projects
+Directory where all user-created projects are stored with their artifacts.
 
-The core innovation of CoFound.ai is its flexible agent orchestration system:
+### logs/ - System Logs
+Organized logging structure with separate directories for agents, system, and workflows.
 
-1. **Dynamic Agent Selection**: Agents can decide when to hand off to other agents
-2. **Tool-Based Routing**: Agents use special tools to transfer control
-3. **State Persistence**: All workflow state is tracked and persisted
-4. **Conditional Transitions**: Graph edges can have conditions for transitions
-5. **Real-Time Monitoring**: Streaming updates during workflow execution
+### memory-bank/ - Memory Storage
+Persistent storage for agent memory and context.
 
-## LLM Integration and Test Mode
+## System State and Progress
 
-The system supports two primary operation modes:
+The system has been recently cleaned and organized with:
 
-1. **Production Mode**: Uses real LLM API calls for agent processing
-   - Integration with multiple LLM providers (OpenAI, Anthropic, etc.)
-   - Full agent capabilities with dynamic responses
-   - Requires API keys and incurs usage costs
+✅ **Clean Project Structure**: All files organized according to architectural principles
+✅ **Proper Log Organization**: Agent, system, and workflow logs properly separated  
+✅ **API Layer Consolidation**: Backend API moved to proper location
+✅ **Demo Cleanup**: Old demo projects removed, structure maintained
+✅ **Missing Directory Creation**: All required directories created according to architecture
+✅ **Documentation Updates**: Architecture and workflow documentation updated
 
-2. **Test Mode**: Operates without LLM API calls
-   - Uses predefined responses for deterministic behavior
-   - All agent classes support a `test_mode` parameter
-   - Enables development and testing without API costs
-   - Useful for integration testing and demonstrations
+## Key Changes Made During Organization
 
-## Technology Stack
+1. **File Reorganization**: 
+   - Moved `backend_api.py` from root to `cofoundai/api/`
+   - Cleaned up old demo project directories
+   - Removed development artifacts (node_modules, etc.)
 
-CoFound.ai leverages these key technologies:
+2. **Directory Structure**: 
+   - Created proper log directory structure for agents
+   - Established `projects/` directory for user projects
+   - Organized system and workflow logs
 
-1. **Python**: Primary programming language
-2. **LangChain**: Framework for LLM application development
-3. **LangGraph**: Agent orchestration and workflow management
-4. **Vector Databases**: Storage for semantic memory (ChromaDB, etc.)
-5. **YAML**: Configuration and workflow definition format
-6. **JSON Schema**: Validation of configuration files
-7. **Git**: Version control for code artifacts
-8. **Flask**: Web framework for REST API backend
-9. **HTML/CSS/JavaScript**: Frontend technologies for user interface
-10. **JSON**: Data exchange format between frontend and backend
+3. **Documentation**: 
+   - Created `ana_akis.txt` for Turkish workflow documentation
+   - Updated architecture documentation to reflect current state
+   - Maintained consistency between documentation and actual structure
 
-## Completed Features
+4. **Cleanup**: 
+   - Removed temporary and development files
+   - Cleaned up demo project artifacts
+   - Maintained only necessary configuration and source files
 
-- ✅ LangGraph workflow integration
-- ✅ Agent Communication Protocol (ACP)
-- ✅ Dynamic agent routing with graph structure
-- ✅ Structured logging with JSON format
-- ✅ Configuration validation with JSON Schema
-- ✅ Test mode for LLM-free operation
-- ✅ Command-line interface
-- ✅ Basic workflow visualization
-- ✅ File and version control tools
-- ✅ Web-based user interface with three phases
-- ✅ REST API backend with Flask
-- ✅ Session management and state persistence
-- ✅ Interactive CoFounder agent chat system
-- ✅ Visual agent squad assembly interface
-- ✅ Real-time progress tracking and updates
-- ✅ Responsive design for mobile and desktop
-
-## Future Enhancements
-
-1. **Web Interface**: Browser-based UI for workflow monitoring
-2. **Expanded Agent Capabilities**: More specialized agents for different tasks
-3. **Multi-User Support**: Collaborative development with multiple users
-4. **Enhanced Memory**: Improved vector database integration
-5. **CI/CD Integration**: Pipeline integration for automated workflows
-6. **Metrics Dashboard**: Performance and usage statistics
-7. **Custom Agent Creation**: User-defined agent capabilities
-8. **Multi-Language Support**: Beyond Python to JavaScript, Go, etc.
+The system now has a clean, organized structure that matches the documented architecture and supports both development and production deployment scenarios.
