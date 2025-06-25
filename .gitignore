@@ -105,3 +105,6 @@ api-keys.json
 
 # Memory Bank
 cursor-memory-bank/
+
+# Attached assets
+attached_assets/

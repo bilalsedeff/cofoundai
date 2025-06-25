@@ -26,7 +26,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python monitor_dashboard.py"
+args = "python services/monitoring/monitor_dashboard.py"
 
 [[workflows.workflow]]
 name = "Test LangGraph"
@@ -76,3 +76,6 @@ args = "python test_dream_flow.py"
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 5001
