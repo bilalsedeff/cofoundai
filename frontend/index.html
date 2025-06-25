@@ -1,341 +1,211 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoFound.ai - Transform Ideas into Products</title>
+    <title>CoFound.ai - AI-Powered Development Platform</title>
     <link rel="stylesheet" href="styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <i class="fas fa-rocket"></i>
-                <span>CoFound.ai</span>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <h1>CoFound.ai</h1>
+                <span class="tagline">Transform Ideas into Reality</span>
             </div>
-            <div class="nav-links">
-                <a href="#about">About</a>
-                <a href="#pricing">Pricing</a>
-                <a href="#contact">Contact</a>
-                <button class="btn-secondary">Sign In</button>
+            <div class="phase-indicator">
+                <div class="phase active" data-phase="dream">Dream</div>
+                <div class="phase" data-phase="maturation">Mature</div>
+                <div class="phase" data-phase="assemble">Assemble</div>
             </div>
-            <div class="nav-mobile">
-                <i class="fas fa-bars"></i>
-            </div>
-        </div>
-    </nav>
+        </header>
 
-    <!-- Main Application Container -->
-    <div class="app-container">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="loading-screen">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <h3>Initializing CoFound.ai</h3>
-                <p>Preparing your AI-powered development environment...</p>
-            </div>
-        </div>
+        <!-- Dream Phase -->
+        <div id="dream-phase" class="phase-content active">
+            <div class="dream-container">
+                <h2>What's Your Vision? 🚀</h2>
+                <p class="subtitle">Describe your dream project in your own words</p>
 
-        <!-- Hero Section -->
-        <section id="hero" class="hero-section">
-            <div class="hero-background">
-                <div class="gradient-orb orb-1"></div>
-                <div class="gradient-orb orb-2"></div>
-                <div class="gradient-orb orb-3"></div>
-            </div>
-            
-            <div class="hero-content">
-                <h1 class="hero-title">
-                    Transform your <span class="gradient-text">ideas</span><br>
-                    into products, <span class="gradient-text">in minutes</span>
-                </h1>
-                
-                <p class="hero-subtitle">
-                    The first all-in-one AI platform to easily build fully functioning apps - without coding.
-                </p>
+                <div class="input-section">
+                    <textarea 
+                        id="vision-input" 
+                        placeholder="Create an AI fitness coach app that helps users track workouts and provides personalized nutrition advice..."
+                        rows="6"
+                    ></textarea>
 
-                <!-- Dream Input Section - Centered -->
-                <div class="dream-container">
-                    <div class="chat-input-centered">
-                        <div class="input-wrapper">
-                            <textarea 
-                                id="dream-input" 
-                                placeholder="What do you want to build? e.g., 'An AI-powered blog editing tool'..."
-                                rows="3"
-                            ></textarea>
-                            <button id="start-building" class="btn-primary">
-                                <i class="fas fa-magic"></i>
-                                Start Building
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="input-suggestions">
-                        <span class="suggestion-label">Try:</span>
-                        <div class="suggestions">
-                            <span class="suggestion-item" data-suggestion="A social media scheduler with AI content suggestions">Social Media Scheduler</span>
-                            <span class="suggestion-item" data-suggestion="An expense tracking app with receipt scanning">Expense Tracker</span>
-                            <span class="suggestion-item" data-suggestion="A project management tool with team collaboration">Project Manager</span>
+                    <div class="input-meta">
+                        <div class="token-estimate">
+                            <span id="token-count">0</span> tokens
+                            <span id="cost-estimate">~$0.00</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-users"></i>
-                        <span>Loved by over 250k builders worldwide</span>
+                <div class="options-section">
+                    <div class="option-group">
+                        <label>Goal</label>
+                        <select id="goal-selector">
+                            <option value="prototype">Prototype</option>
+                            <option value="mvp">MVP</option>
+                            <option value="production">Production Ready</option>
+                        </select>
+                    </div>
+
+                    <div class="option-group">
+                        <label>Technology Preferences</label>
+                        <div class="tag-selector" id="tech-tags">
+                            <span class="tag" data-value="react">React</span>
+                            <span class="tag" data-value="python">Python</span>
+                            <span class="tag" data-value="nodejs">Node.js</span>
+                            <span class="tag" data-value="mobile">Mobile</span>
+                            <span class="tag" data-value="ai">AI/ML</span>
+                            <span class="tag" data-value="blockchain">Blockchain</span>
+                        </div>
+                    </div>
+
+                    <div class="option-group">
+                        <label>Project Categories</label>
+                        <div class="tag-selector" id="category-tags">
+                            <span class="tag" data-value="webapp">Web App</span>
+                            <span class="tag" data-value="mobile">Mobile App</span>
+                            <span class="tag" data-value="api">API Service</span>
+                            <span class="tag" data-value="ecommerce">E-commerce</span>
+                            <span class="tag" data-value="social">Social Platform</span>
+                            <span class="tag" data-value="enterprise">Enterprise</span>
+                        </div>
                     </div>
                 </div>
+
+                <button id="generate-blueprint" class="primary-button">
+                    Generate Blueprint ✨
+                </button>
             </div>
-        </section>
 
-        <!-- Journey Progress Section -->
-        <section id="journey-progress" class="journey-section" style="display: none;">
-            <div class="journey-container">
-                <div class="journey-header">
-                    <h2>Your Development Journey</h2>
-                    <div class="journey-breadcrumb">
-                        <span class="breadcrumb-item active" data-phase="dream">Dream</span>
-                        <i class="fas fa-chevron-right"></i>
-                        <span class="breadcrumb-item" data-phase="maturation">Maturation</span>
-                        <i class="fas fa-chevron-right"></i>
-                        <span class="breadcrumb-item" data-phase="assemble">Assemble</span>
-                        <i class="fas fa-chevron-right"></i>
-                        <span class="breadcrumb-item" data-phase="launch">Launch</span>
-                    </div>
-                </div>
-
-                <!-- Chat Interface -->
-                <div id="chat-container" class="chat-container">
-                    <div class="chat-header">
-                        <div class="chat-agent-info">
-                            <div class="agent-avatar">
-                                <i class="fas fa-robot"></i>
-                            </div>
-                            <div class="agent-details">
-                                <h4 id="current-agent-name">CoFounder Agent</h4>
-                                <span id="current-agent-status">Ready to help</span>
-                            </div>
+            <!-- Blueprint Preview -->
+            <div id="blueprint-preview" class="blueprint-preview hidden">
+                <h3>Your Project Blueprint</h3>
+                <div class="blueprint-content">
+                    <div id="blueprint-text"></div>
+                    <div class="blueprint-meta">
+                        <div class="cost-breakdown">
+                            <h4>Estimated Cost</h4>
+                            <div id="cost-details"></div>
                         </div>
-                        <div class="chat-controls">
-                            <button class="btn-icon" id="minimize-chat">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <button class="btn-icon" id="fullscreen-chat">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="chat-messages" id="chat-messages">
-                        <!-- Messages will be dynamically inserted here -->
-                    </div>
-
-                    <div class="chat-input-container">
-                        <div class="chat-input-wrapper">
-                            <textarea 
-                                id="chat-input" 
-                                placeholder="Ask me anything about your project..."
-                                rows="1"
-                            ></textarea>
-                            <button id="send-message" class="btn-send">
-                                <i class="fas fa-paper-plane"></i>
-                            </button>
-                        </div>
-                        <div class="chat-suggestions" id="chat-suggestions">
-                            <!-- Dynamic suggestions will appear here -->
+                        <div class="extracted-tags">
+                            <h4>Project Tags</h4>
+                            <div id="project-tags"></div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Progress Sidebar -->
-                <div class="progress-sidebar">
-                    <div class="progress-header">
-                        <h3>Project Progress</h3>
-                        <div class="progress-percentage">
-                            <span id="progress-percent">15%</span>
-                        </div>
-                    </div>
-
-                    <div class="progress-phases">
-                        <div class="phase-item completed" data-phase="dream">
-                            <div class="phase-icon">
-                                <i class="fas fa-lightbulb"></i>
-                            </div>
-                            <div class="phase-details">
-                                <h4>Dream</h4>
-                                <p>Vision captured</p>
-                            </div>
-                            <div class="phase-status">
-                                <i class="fas fa-check"></i>
-                            </div>
-                        </div>
-
-                        <div class="phase-item active" data-phase="maturation">
-                            <div class="phase-icon">
-                                <i class="fas fa-seedling"></i>
-                            </div>
-                            <div class="phase-details">
-                                <h4>Maturation</h4>
-                                <p>Refining requirements</p>
-                            </div>
-                            <div class="phase-status">
-                                <div class="spinner-sm"></div>
-                            </div>
-                        </div>
-
-                        <div class="phase-item" data-phase="assemble">
-                            <div class="phase-icon">
-                                <i class="fas fa-cogs"></i>
-                            </div>
-                            <div class="phase-details">
-                                <h4>Assemble</h4>
-                                <p>Building your team</p>
-                            </div>
-                        </div>
-
-                        <div class="phase-item" data-phase="prototype">
-                            <div class="phase-icon">
-                                <i class="fas fa-hammer"></i>
-                            </div>
-                            <div class="phase-details">
-                                <h4>Prototype</h4>
-                                <p>Creating MVP</p>
-                            </div>
-                        </div>
-
-                        <div class="phase-item" data-phase="launch">
-                            <div class="phase-icon">
-                                <i class="fas fa-rocket"></i>
-                            </div>
-                            <div class="phase-details">
-                                <h4>Launch</h4>
-                                <p>Deploy to production</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="current-artifacts">
-                        <h4>Generated Assets</h4>
-                        <div class="artifact-list" id="artifact-list">
-                            <!-- Artifacts will be dynamically added -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Agent Squad Assembly -->
-        <section id="agent-assembly" class="assembly-section" style="display: none;">
-            <div class="assembly-container">
-                <div class="assembly-header">
-                    <h2>Meet Your AI Development Squad</h2>
-                    <p>Specialized agents working together to bring your vision to life</p>
-                </div>
-
-                <div class="agent-grid">
-                    <div class="agent-card" data-agent="planner">
-                        <div class="agent-avatar">
-                            <i class="fas fa-map"></i>
-                        </div>
-                        <h3>Planner</h3>
-                        <p>Breaks down your project into manageable tasks and timelines</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="agent-card" data-agent="architect">
-                        <div class="agent-avatar">
-                            <i class="fas fa-drafting-compass"></i>
-                        </div>
-                        <h3>Architect</h3>
-                        <p>Designs the system architecture and technical specifications</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="agent-card" data-agent="developer">
-                        <div class="agent-avatar">
-                            <i class="fas fa-code"></i>
-                        </div>
-                        <h3>Developer</h3>
-                        <p>Writes clean, maintainable code based on specifications</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="agent-card" data-agent="tester">
-                        <div class="agent-avatar">
-                            <i class="fas fa-bug"></i>
-                        </div>
-                        <h3>Tester</h3>
-                        <p>Creates comprehensive tests and ensures quality</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="agent-card" data-agent="reviewer">
-                        <div class="agent-avatar">
-                            <i class="fas fa-search"></i>
-                        </div>
-                        <h3>Reviewer</h3>
-                        <p>Reviews code quality and suggests improvements</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-
-                    <div class="agent-card" data-agent="documentor">
-                        <div class="agent-avatar">
-                            <i class="fas fa-book"></i>
-                        </div>
-                        <h3>Documenter</h3>
-                        <p>Creates comprehensive documentation and user guides</p>
-                        <div class="agent-status">
-                            <span class="status-badge ready">Ready</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="assembly-controls">
-                    <button id="start-development" class="btn-primary large">
-                        <i class="fas fa-play"></i>
-                        Start Development
-                    </button>
-                </div>
-            </div>
-        </section>
-    </div>
-
-    <!-- Real-time Status Bar -->
-    <div id="status-bar" class="status-bar" style="display: none;">
-        <div class="status-content">
-            <div class="status-indicator">
-                <div class="pulse-dot"></div>
-                <span id="status-text">Initializing...</span>
-            </div>
-            <div class="status-actions">
-                <button class="btn-icon" id="toggle-details">
-                    <i class="fas fa-chevron-up"></i>
+                <button id="proceed-to-maturation" class="secondary-button">
+                    Proceed to Maturation 🎯
                 </button>
             </div>
         </div>
+
+        <!-- Maturation Phase -->
+        <div id="maturation-phase" class="phase-content">
+            <div class="maturation-container">
+                <h2>Let's Mature Your Idea 🎯</h2>
+                <p class="subtitle">We'll refine your project through 4 focused steps</p>
+
+                <div class="maturation-steps">
+                    <div class="step active" data-step="discovery">
+                        <div class="step-header">
+                            <span class="step-number">1</span>
+                            <span class="step-title">Discovery & Alignment</span>
+                        </div>
+                        <div class="step-content">
+                            <p>Let's clarify your vision and align on objectives</p>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="clarity">
+                        <div class="step-header">
+                            <span class="step-number">2</span>
+                            <span class="step-title">Definition & Clarity</span>
+                        </div>
+                        <div class="step-content">
+                            <p>Define detailed scope and functional requirements</p>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="feasibility">
+                        <div class="step-header">
+                            <span class="step-number">3</span>
+                            <span class="step-title">Feasibility & Risk</span>
+                        </div>
+                        <div class="step-content">
+                            <p>Assess technical feasibility and identify risks</p>
+                        </div>
+                    </div>
+
+                    <div class="step" data-step="governance">
+                        <div class="step-header">
+                            <span class="step-number">4</span>
+                            <span class="step-title">Governance & Compliance</span>
+                        </div>
+                        <div class="step-content">
+                            <p>Establish governance framework and compliance requirements</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-interface">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Share your thoughts or answer the question...">
+                        <button id="send-message">Send</button>
+                    </div>
+                </div>
+
+                <div id="artifacts-panel" class="artifacts-panel">
+                    <h3>Generated Artifacts</h3>
+                    <div id="artifacts-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assemble Phase -->
+        <div id="assemble-phase" class="phase-content">
+            <div class="assemble-container">
+                <h2>Assemble Your AI Team 🤖</h2>
+                <p class="subtitle">Based on your mature blueprint, here's your recommended AI development team</p>
+
+                <div id="team-composition" class="team-composition">
+                    <!-- Team members will be populated here -->
+                </div>
+
+                <div class="deployment-options">
+                    <h3>Deployment Configuration</h3>
+                    <div id="deployment-spec"></div>
+                </div>
+
+                <div class="cost-summary">
+                    <h3>Cost Summary</h3>
+                    <div id="total-cost"></div>
+                </div>
+
+                <button id="launch-team" class="primary-button">
+                    Launch AI Team 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="loading-overlay hidden">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <p id="loading-text">Processing your vision...</p>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status-message" class="status-message hidden"></div>
     </div>
 
-    <!-- Notification System -->
-    <div id="notification-container" class="notification-container"></div>
-
-    <!-- Scripts -->
     <script src="script.js"></script>
 </body>
 </html>

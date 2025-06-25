@@ -609,3 +609,328 @@ function updateProgressBar(progress) {
         progressPercent.textContent = `${progress}%`;
     }
 }
+
+class CoFoundAI {
+    constructor() {
+        this.currentPhase = 'dream';
+        this.projectId = null;
+        this.selectedTags = [];
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+        this.setupTokenEstimator();
+    }
+
+    bindEvents() {
+        // Dream phase events
+        document.getElementById('vision-input').addEventListener('input', () => {
+            this.updateTokenEstimate();
+        });
+
+        document.getElementById('generate-blueprint').addEventListener('click', () => {
+            this.generateBlueprint();
+        });
+
+        document.getElementById('proceed-to-maturation').addEventListener('click', () => {
+            this.switchToPhase('maturation');
+        });
+
+        // Tag selection events
+        document.querySelectorAll('.tag-selector .tag').forEach(tag => {
+            tag.addEventListener('click', (e) => {
+                this.toggleTag(e.target);
+            });
+        });
+
+        // Maturation phase events
+        document.getElementById('send-message').addEventListener('click', () => {
+            this.sendChatMessage();
+        });
+
+        document.getElementById('chat-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendChatMessage();
+            }
+        });
+
+        // Assemble phase events
+        document.getElementById('launch-team').addEventListener('click', () => {
+            this.launchTeam();
+        });
+
+        // Phase navigation
+        document.querySelectorAll('.phase').forEach(phase => {
+            phase.addEventListener('click', (e) => {
+                const phaseType = e.target.getAttribute('data-phase');
+                this.switchToPhase(phaseType);
+            });
+        });
+    }
+
+    setupTokenEstimator() {
+        this.updateTokenEstimate();
+    }
+
+    updateTokenEstimate() {
+        const visionText = document.getElementById('vision-input').value;
+        const tokenCount = Math.ceil(visionText.length / 4); // Rough estimate
+        const cost = tokenCount * 0.00002; // GPT-4o pricing estimate
+
+        document.getElementById('token-count').textContent = tokenCount;
+        document.getElementById('cost-estimate').textContent = `~$${cost.toFixed(4)}`;
+    }
+
+    toggleTag(tagElement) {
+        const value = tagElement.getAttribute('data-value');
+
+        if (tagElement.classList.contains('selected')) {
+            tagElement.classList.remove('selected');
+            this.selectedTags = this.selectedTags.filter(tag => tag !== value);
+        } else {
+            tagElement.classList.add('selected');
+            this.selectedTags.push(value);
+        }
+    }
+
+    async generateBlueprint() {
+        const visionText = document.getElementById('vision-input').value.trim();
+
+        if (!visionText) {
+            this.showStatusMessage('Please enter your vision first!', 'error');
+            return;
+        }
+
+        this.showLoading('Analyzing your vision and generating blueprint...');
+
+        try {
+            const response = await fetch('/api/dream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    vision_text: visionText,
+                    tags: this.selectedTags,
+                    goal: document.getElementById('goal-selector').value,
+                    tech_preferences: this.selectedTags.filter(tag => 
+                        ['react', 'python', 'nodejs', 'mobile', 'ai', 'blockchain'].includes(tag)
+                    )
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            this.projectId = data.project_id;
+            this.displayBlueprint(data);
+
+        } catch (error) {
+            console.error('Error generating blueprint:', error);
+            this.showStatusMessage('Failed to generate blueprint. Please try again.', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    displayBlueprint(data) {
+        const preview = document.getElementById('blueprint-preview');
+        const blueprintText = document.getElementById('blueprint-text');
+        const costDetails = document.getElementById('cost-details');
+        const projectTags = document.getElementById('project-tags');
+
+        // Display blueprint content
+        blueprintText.innerHTML = this.formatBlueprint(data.initial_brief);
+
+        // Display cost details
+        costDetails.innerHTML = `
+            <div class="cost-item">
+                <span>Tokens:</span>
+                <span>${data.cost_estimate.tokens}</span>
+            </div>
+            <div class="cost-item">
+                <span>Cost:</span>
+                <span>$${data.cost_estimate.cost_usd.toFixed(4)}</span>
+            </div>
+            <div class="cost-item">
+                <span>Complexity:</span>
+                <span>${data.cost_estimate.complexity}</span>
+            </div>
+        `;
+
+        // Display extracted tags
+        projectTags.innerHTML = data.extracted_tags.map(tag => 
+            `<span class="tag">${tag}</span>`
+        ).join('');
+
+        preview.classList.remove('hidden');
+        preview.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    formatBlueprint(text) {
+        // Simple markdown-like formatting
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+    }
+
+    switchToPhase(phaseType) {
+        // Update phase indicators
+        document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.phase[data-phase="${phaseType}"]`).classList.add('active');
+
+        // Switch phase content
+        document.querySelectorAll('.phase-content').forEach(p => p.classList.remove('active'));
+        document.getElementById(`${phaseType}-phase`).classList.add('active');
+
+        this.currentPhase = phaseType;
+
+        // Initialize phase-specific functionality
+        if (phaseType === 'maturation') {
+            this.initMaturationPhase();
+        } else if (phaseType === 'assemble') {
+            this.initAssemblePhase();
+        }
+    }
+
+    initMaturationPhase() {
+        // Start the maturation conversation
+        this.addChatMessage(
+            'system',
+            "Welcome to the Maturation phase! Let's start with Discovery & Alignment. " +
+            "Can you tell me more about who will be using this application and what success looks like for you?"
+        );
+    }
+
+    async sendChatMessage() {
+        const input = document.getElementById('chat-input');
+        const message = input.value.trim();
+
+        if (!message) return;
+
+        this.addChatMessage('user', message);
+        input.value = '';
+
+        // Simulate AI response (replace with actual API call)
+        setTimeout(() => {
+            this.addChatMessage('system', 'Thank you for that insight. Let me analyze this information and generate the appropriate artifacts...');
+        }, 1000);
+    }
+
+    addChatMessage(sender, message) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${sender}`;
+        messageDiv.innerHTML = `
+            <div class="message-content">${message}</div>
+            <div class="message-time">${new Date().toLocaleTimeString()}</div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    async initAssemblePhase() {
+        if (!this.projectId) {
+            this.showStatusMessage('Please complete the previous phases first!', 'error');
+            return;
+        }
+
+        this.showLoading('Analyzing your project and assembling AI team...');
+
+        try {
+            const response = await fetch('/api/assemble', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    project_id: this.projectId,
+                    matured_brief: 'Placeholder matured brief' // This would come from maturation phase
+                })
+            });
+
+            const data = await response.json();
+            this.displayTeamComposition(data);
+
+        } catch (error) {
+            console.error('Error in assemble phase:', error);
+            this.showStatusMessage('Failed to assemble team. Please try again.', 'error');
+        } finally {
+            this.hideLoading();
+        }
+    }
+
+    displayTeamComposition(data) {
+        const teamComposition = document.getElementById('team-composition');
+        const deploymentSpec = document.getElementById('deployment-spec');
+        const totalCost = document.getElementById('total-cost');
+
+        // Display team members
+        teamComposition.innerHTML = data.team_composition.map(agent => `
+            <div class="team-member">
+                <div class="member-role">${agent.role}</div>
+                <div class="member-details">
+                    <span>Count: ${agent.count}</span>
+                    <span>Tokens: ${agent.estimated_tokens}</span>
+                    <span>Cost: $${agent.estimated_cost.toFixed(2)}</span>
+                </div>
+            </div>
+        `).join('');
+
+        // Display deployment specification
+        deploymentSpec.innerHTML = `
+            <div class="spec-item">Platform: ${data.deployment_spec.platform}</div>
+            <div class="spec-item">Services: ${data.deployment_spec.services.join(', ')}</div>
+            <div class="spec-item">Scaling: ${data.deployment_spec.scaling}</div>
+        `;
+
+        // Display total cost
+        totalCost.innerHTML = `
+            <div class="cost-total">
+                <span>Total Estimated Cost:</span>
+                <span class="cost-amount">$${data.estimated_cost.total_usd.toFixed(2)}</span>
+            </div>
+        `;
+    }
+
+    async launchTeam() {
+        this.showLoading('Launching your AI development team...');
+
+        // Simulate team launch
+        setTimeout(() => {
+            this.hideLoading();
+            this.showStatusMessage('AI team launched successfully! 🚀', 'success');
+        }, 3000);
+    }
+
+    showLoading(message) {
+        const overlay = document.getElementById('loading-overlay');
+        const text = document.getElementById('loading-text');
+        text.textContent = message;
+        overlay.classList.remove('hidden');
+    }
+
+    hideLoading() {
+        document.getElementById('loading-overlay').classList.add('hidden');
+    }
+
+    showStatusMessage(message, type = 'info') {
+        const statusEl = document.getElementById('status-message');
+        statusEl.textContent = message;
+        statusEl.className = `status-message ${type}`;
+        statusEl.classList.remove('hidden');
+
+        setTimeout(() => {
+            statusEl.classList.add('hidden');
+        }, 5000);
+    }
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', () => {
+    new CoFoundAI();
+});

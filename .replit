@@ -8,7 +8,7 @@ channel = "stable-24_05"
 run = ["sh", "-c", "uvicorn undefined:app --host 0.0.0.0 --port 3000"]
 
 [workflows]
-runButton = "Run Backend"
+runButton = "Run API Server"
 
 [[workflows.workflow]]
 name = "Run Backend"
@@ -36,6 +36,24 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python test_langgraph.py"
+
+[[workflows.workflow]]
+name = "Test Dream Flow"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_dream_flow.py"
+
+[[workflows.workflow]]
+name = "Run API Server"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python cofoundai/api/backend_api.py"
 
 [[ports]]
 localPort = 5000

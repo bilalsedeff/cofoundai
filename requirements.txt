@@ -55,6 +55,12 @@ cloud-sql-python-connector>=1.6.0
 google-cloud-pubsub>=2.18.0
 google-cloud-secret-manager>=2.18.0
 google-cloud-storage>=2.18.0
+google-cloud-aiplatform>=1.38.0
+vertexai>=1.38.0
+
+# Additional API and testing dependencies
+uvicorn[standard]>=0.24.0
+gunicorn>=21.2.0
 
 # Flask for Dream Service
 Flask>=2.3.0

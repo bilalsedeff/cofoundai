@@ -1,185 +1,274 @@
-from flask import Flask, render_template, jsonify, request
-from flask_cors import CORS
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Dict, Any, Optional
 import os
-import sys
-import uuid
-from datetime import datetime
-
-# Add the project root to the Python path
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-from cofoundai.communication.protocol import register_agent_protocol_routes
+import asyncio
+from cofoundai.core.llm_interface import LLMFactory
 from cofoundai.orchestration.agentic_graph import AgenticGraph
 from cofoundai.agents.langgraph_agent import LangGraphAgent
+import json
+import logging
 
-app = Flask(__name__, static_folder='frontend', template_folder='frontend')
-CORS(app)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Register Agent Protocol routes
-register_agent_protocol_routes(app)
+app = FastAPI(title="CoFound.ai API", version="1.0.0")
 
-@app.route('/styles.css')
-def serve_css():
-    """Serve CSS file."""
-    return app.send_static_file('styles.css')
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.route('/script.js')
-def serve_js():
-    """Serve JavaScript file."""
-    return app.send_static_file('script.js')
+# Request/Response models
+class DreamRequest(BaseModel):
+    vision_text: str
+    tags: Optional[List[str]] = []
+    goal: str = "prototype"
+    tech_preferences: Optional[List[str]] = []
 
-# Global session storage (in production, use Redis or database)
-sessions = {}
+class DreamResponse(BaseModel):
+    initial_brief: str
+    extracted_tags: List[str]
+    cost_estimate: Dict[str, Any]
+    status: str
+    project_id: str
 
-@app.route('/')
-def index():
-    """Serve the main application page."""
-    return render_template('index.html')
+class MaturationRequest(BaseModel):
+    project_id: str
+    refined_input: str
+    phase: str  # "discovery", "clarity", "feasibility", "governance"
 
-@app.route('/health')
-def health():
-    """Health check endpoint."""
-    return jsonify({"status": "healthy", "service": "CoFound.ai Backend API"})
+class MaturationResponse(BaseModel):
+    artifacts: List[Dict[str, Any]]
+    next_phase: Optional[str]
+    status: str
+    project_id: str
 
-@app.route('/api/dream/generate-blueprint', methods=['POST'])
-def generate_blueprint():
-    """Generate blueprint from user vision."""
+class AssembleRequest(BaseModel):
+    project_id: str
+    matured_brief: str
+
+class AssembleResponse(BaseModel):
+    team_composition: List[Dict[str, Any]]
+    estimated_cost: Dict[str, Any]
+    deployment_spec: Dict[str, Any]
+    status: str
+
+# Global variables
+orchestrator = None
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize the system on startup"""
+    global orchestrator
     try:
-        data = request.get_json()
-        vision = data.get('vision', '')
-
-        # Create project ID
-        project_id = f"proj_{int(datetime.now().timestamp())}"
-
-        # Create simple blueprint response
-        blueprint = {
-            "project_id": project_id,
-            "vision": vision,
-            "goal": data.get('goal', 'web_application'),
-            "overview": f"Creating a {data.get('goal', 'web application')} based on: {vision[:100]}...",
-            "tech_stack": ["Python", "Flask", "JavaScript", "HTML/CSS", "SQLite"],
-            "timeline": "2-4 weeks estimated development time",
-            "status": "blueprint_generated"
-        }
-
-        return jsonify(blueprint)
-
+        # Initialize LLM
+        logger.info("Initializing LLM interface...")
+        
+        # Create agents for the dream phase
+        agent_configs = [
+            {
+                "name": "VisionAnalyst",
+                "description": "Analyzes user vision and extracts key insights",
+                "system_prompt": """You are a vision analyst agent. Your role is to:
+1. Extract key business requirements from user descriptions
+2. Identify relevant technology tags and categories
+3. Provide initial cost and complexity estimates
+4. Generate clear, actionable project briefs""",
+                "llm_provider": os.getenv("LLM_PROVIDER", "openai"),
+                "model_name": os.getenv("MODEL_NAME", "gpt-4o")
+            },
+            {
+                "name": "BlueprintGenerator", 
+                "description": "Creates initial project blueprints",
+                "system_prompt": """You are a blueprint generator agent. Your role is to:
+1. Transform user visions into structured project blueprints
+2. Define project scope and objectives
+3. Identify key milestones and deliverables
+4. Create initial architectural recommendations""",
+                "llm_provider": os.getenv("LLM_PROVIDER", "openai"),
+                "model_name": os.getenv("MODEL_NAME", "gpt-4o")
+            }
+        ]
+        
+        # Create agent instances
+        agents = {}
+        for config in agent_configs:
+            agent = LangGraphAgent(config)
+            agents[agent.name] = agent
+        
+        # Initialize orchestrator
+        orchestrator = AgenticGraph(
+            project_id="system",
+            agents=agents
+        )
+        
+        logger.info("System initialized successfully!")
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Failed to initialize system: {e}")
+        raise
 
-@app.route('/api/maturation/initialize', methods=['POST'])
-def initialize_maturation():
-    """Initialize maturation session."""
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "service": "cofound-ai-api"}
+
+@app.post("/api/dream", response_model=DreamResponse)
+async def dream_phase(request: DreamRequest):
+    """Process user vision in the Dream phase"""
     try:
-        data = request.get_json()
-        project_id = data.get('project_id', f"proj_{int(datetime.now().timestamp())}")
-
-        # Create session
-        session_id = f"session_{uuid.uuid4().hex[:8]}"
-
-        # Store session
-        sessions[session_id] = {
-            "project_id": project_id,
-            "phase": "maturation",
-            "progress": [25, 0, 0, 0],  # Discovery, Definition, Technical, Governance
-            "created_at": datetime.now().isoformat(),
-            "data": data
-        }
-
-        return jsonify({
-            "session_id": session_id,
-            "status": "initialized",
-            "phase": "maturation"
-        })
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/api/maturation/chat', methods=['POST'])
-def maturation_chat():
-    """Handle maturation phase chat."""
-    try:
-        data = request.get_json()
-        session_id = data.get('session_id')
-        message = data.get('message', '')
-
-        if session_id not in sessions:
-            return jsonify({"error": "Session not found"}), 404
-
-        session = sessions[session_id]
-
-        # Simple response logic
-        response_text = f"Thank you for that information: '{message}'. "
-
-        if "target audience" in message.lower() or "users" in message.lower():
-            response_text += "Great! Now tell me about the core features you envision. What are the 3-5 most important things users should be able to do?"
-            session["progress"][0] = 50
-        elif "feature" in message.lower() or "function" in message.lower():
-            response_text += "Excellent! Now let's discuss the technical requirements. Do you have any preferences for technology stack, performance requirements, or integration needs?"
-            session["progress"][1] = 75
-        elif "technical" in message.lower() or "technology" in message.lower():
-            response_text += "Perfect! We have enough information to move to the assembly phase. Your maturation is complete!"
-            session["progress"] = [100, 100, 100, 100]
-            completed = True
+        if not orchestrator:
+            raise HTTPException(status_code=500, detail="System not initialized")
+        
+        # Generate project ID
+        import uuid
+        project_id = f"proj_{uuid.uuid4().hex[:8]}"
+        
+        # Create dream processing prompt
+        dream_prompt = f"""
+        User Vision: {request.vision_text}
+        Selected Tags: {', '.join(request.tags)}
+        Goal: {request.goal}
+        Tech Preferences: {', '.join(request.tech_preferences)}
+        
+        Please analyze this vision and provide:
+        1. A refined project brief with clear objectives
+        2. Extracted and additional relevant tags 
+        3. Initial scope and complexity assessment
+        4. Technology recommendations
+        5. Cost and timeline estimates
+        """
+        
+        # Process through orchestrator
+        result = orchestrator.run(dream_prompt)
+        
+        # Extract information from result
+        if isinstance(result, dict) and "messages" in result:
+            messages = result["messages"]
+            last_message = messages[-1] if messages else None
+            
+            if last_message and hasattr(last_message, 'content'):
+                response_content = last_message.content
+            else:
+                response_content = "Blueprint generated successfully"
         else:
-            response_text += "Can you provide more details about your target users and what problems this solves for them?"
-
-        # Check if completed
-        completed = all(p >= 75 for p in session["progress"])
-
-        return jsonify({
-            "response": response_text,
-            "progress": session["progress"],
-            "completed": completed,
-            "status": "success"
-        })
-
+            response_content = str(result)
+        
+        # Estimate tokens and cost (simplified)
+        total_tokens = len(dream_prompt.split()) + len(response_content.split())
+        estimated_cost = total_tokens * 0.00002  # Rough estimate
+        
+        return DreamResponse(
+            initial_brief=response_content,
+            extracted_tags=request.tags + ["AI-Generated", "CoFound.ai"],
+            cost_estimate={
+                "tokens": total_tokens,
+                "cost_usd": estimated_cost,
+                "complexity": "Medium"
+            },
+            status="completed",
+            project_id=project_id
+        )
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in dream phase: {e}")
+        raise HTTPException(status_code=500, detail=f"Dream phase failed: {str(e)}")
 
-@app.route('/api/assemble/initialize', methods=['POST'])
-def initialize_assembly():
-    """Initialize assembly phase."""
+@app.post("/api/maturation", response_model=MaturationResponse)
+async def maturation_phase(request: MaturationRequest):
+    """Process project through Maturation phase"""
     try:
-        data = request.get_json()
-        session_id = data.get('session_id')
-
-        if session_id not in sessions:
-            return jsonify({"error": "Session not found"}), 404
-
-        session = sessions[session_id]
-        session["phase"] = "assembly"
-
-        return jsonify({
-            "status": "assembly_initialized",
-            "agents": ["Planner", "Architect", "Developer", "Tester", "Reviewer", "Documentor"]
-        })
-
+        # Maturation logic would go here
+        # For now, return a placeholder response
+        artifacts = [
+            {
+                "name": "Refined BRD",
+                "type": "document",
+                "status": "generated",
+                "content": "Business Requirements Document has been refined based on stakeholder input."
+            },
+            {
+                "name": "Functional Requirements",
+                "type": "specification", 
+                "status": "generated",
+                "content": "Detailed functional requirements have been documented."
+            }
+        ]
+        
+        next_phase_map = {
+            "discovery": "clarity",
+            "clarity": "feasibility", 
+            "feasibility": "governance",
+            "governance": None
+        }
+        
+        return MaturationResponse(
+            artifacts=artifacts,
+            next_phase=next_phase_map.get(request.phase),
+            status="completed",
+            project_id=request.project_id
+        )
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in maturation phase: {e}")
+        raise HTTPException(status_code=500, detail=f"Maturation phase failed: {str(e)}")
 
-@app.route('/api/assemble/start-execution', methods=['POST'])
-def start_execution():
-    """Start execution phase."""
+@app.post("/api/assemble", response_model=AssembleResponse)
+async def assemble_phase(request: AssembleRequest):
+    """Process project through Assemble phase"""
     try:
-        data = request.get_json()
-        session_id = data.get('session_id')
-
-        if session_id not in sessions:
-            return jsonify({"error": "Session not found"}), 404
-
-        session = sessions[session_id]
-        session["phase"] = "execution"
-        session["status"] = "completed"
-
-        return jsonify({
-            "status": "execution_started",
-            "message": "Multi-agent workflow initiated successfully"
-        })
-
+        # Assemble logic would go here
+        team_composition = [
+            {
+                "role": "Planner Agent",
+                "count": 1,
+                "estimated_tokens": 5000,
+                "estimated_cost": 0.10
+            },
+            {
+                "role": "Architect Agent", 
+                "count": 1,
+                "estimated_tokens": 8000,
+                "estimated_cost": 0.16
+            },
+            {
+                "role": "Developer Agent",
+                "count": 2,
+                "estimated_tokens": 15000,
+                "estimated_cost": 0.30
+            }
+        ]
+        
+        total_cost = sum(agent["estimated_cost"] for agent in team_composition)
+        
+        return AssembleResponse(
+            team_composition=team_composition,
+            estimated_cost={
+                "total_usd": total_cost,
+                "currency": "USD",
+                "breakdown": team_composition
+            },
+            deployment_spec={
+                "platform": "replit",
+                "services": ["api", "frontend", "database"],
+                "scaling": "auto"
+            },
+            status="ready_for_launch"
+        )
+        
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Error in assemble phase: {e}")
+        raise HTTPException(status_code=500, detail=f"Assemble phase failed: {str(e)}")
 
-if __name__ == '__main__':
-    # Use 0.0.0.0 to make it accessible externally
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 5000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
