@@ -206,6 +206,124 @@
         <div id="status-message" class="status-message hidden"></div>
     </div>
 
+    <main>
+        <div class="hero">
+            <h1>CoFound.ai</h1>
+            <p>Multi-Agent Software Development System</p>
+            <div id="api-status" style="margin: 20px 0; font-weight: bold;">Checking API...</div>
+
+            <div style="margin: 30px 0; max-width: 600px;">
+                <h3>Test Dream Phase</h3>
+                <textarea id="vision-input" placeholder="Enter your app vision here..." 
+                         style="width: 100%; height: 100px; margin: 10px 0; padding: 10px;"></textarea>
+                <button onclick="testDream()" class="cta-button">Test Dream API</button>
+                <div id="dream-result" style="margin-top: 20px; text-align: left; background: #f5f5f5; padding: 15px; border-radius: 5px;"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Function to test the Dream API
+        async function testDream() {
+            const vision = document.getElementById('vision-input').value;
+            const dreamResultDiv = document.getElementById('dream-result');
+
+            dreamResultDiv.textContent = "Loading...";
+
+            try {
+                const response = await fetch('/api/dream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ vision: vision })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                dreamResultDiv.textContent = JSON.stringify(data, null, 2); // Pretty print JSON
+            } catch (error) {
+                dreamResultDiv.textContent = `Error: ${error}`;
+            }
+        }
+
+         // Function to check the API status
+         async function checkApiStatus() {
+            const apiStatusDiv = document.getElementById('api-status');
+            apiStatusDiv.textContent = "Checking API...";
+
+            try {
+                const response = await fetch('/health'); // Assuming /health endpoint exists
+                if (!response.ok) {
+                    throw new Error(`API health check failed with status: ${response.status}`);
+                }
+                apiStatusDiv.textContent = "API is healthy!";
+                apiStatusDiv.style.color = 'green';
+            } catch (error) {
+                apiStatusDiv.textContent = `API is down: ${error}`;
+                apiStatusDiv.style.color = 'red';
+            }
+        }
+
+        // Call checkApiStatus when the page loads
+        window.onload = checkApiStatus;
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
+```<script>
+        // Function to test the Dream API
+        async function testDream() {
+            const vision = document.getElementById('vision-input').value;
+            const dreamResultDiv = document.getElementById('dream-result');
+
+            dreamResultDiv.textContent = "Loading...";
+
+            try {
+                const response = await fetch('/api/dream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ vision: vision })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                dreamResultDiv.textContent = JSON.stringify(data, null, 2); // Pretty print JSON
+            } catch (error) {
+                dreamResultDiv.textContent = `Error: ${error}`;
+            }
+        }
+
+         // Function to check the API status
+         async function checkApiStatus() {
+            const apiStatusDiv = document.getElementById('api-status');
+            apiStatusDiv.textContent = "Checking API...";
+
+            try {
+                const response = await fetch('/health'); // Assuming /health endpoint exists
+                if (!response.ok) {
+                    throw new Error(`API health check failed with status: ${response.status}`);
+                }
+                apiStatusDiv.textContent = "API is healthy!";
+                apiStatusDiv.style.color = 'green';
+            } catch (error) {
+                apiStatusDiv.textContent = `API is down: ${error}`;
+                apiStatusDiv.style.color = 'red';
+            }
+        }
+
+        // Call checkApiStatus when the page loads
+        window.onload = checkApiStatus;
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
+`

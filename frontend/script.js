@@ -1,3 +1,55 @@
+// CoFound.ai Frontend JavaScript
+
+const API_BASE = window.location.origin;
+
+async function testAPI() {
+    try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        document.getElementById('api-status').textContent = `API Status: ${data.status}`;
+        document.getElementById('api-status').style.color = 'green';
+    } catch (error) {
+        document.getElementById('api-status').textContent = 'API Status: Error';
+        document.getElementById('api-status').style.color = 'red';
+    }
+}
+
+async function testDream() {
+    const visionText = document.getElementById('vision-input').value;
+    if (!visionText) {
+        alert('Please enter your vision');
+        return;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE}/api/dream`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                vision_text: visionText,
+                tags: ["test"],
+                goal: "prototype",
+                tech_preferences: ["python", "react"]
+            })
+        });
+
+        const data = await response.json();
+        document.getElementById('dream-result').innerHTML = `
+            <h3>Dream Result:</h3>
+            <p><strong>Project ID:</strong> ${data.project_id}</p>
+            <p><strong>Status:</strong> ${data.status}</p>
+            <p><strong>Tags:</strong> ${data.extracted_tags.join(', ')}</p>
+            <div><strong>Brief:</strong><br>${data.initial_brief}</div>
+        `;
+    } catch (error) {
+        document.getElementById('dream-result').textContent = 'Error: ' + error.message;
+    }
+}
+
+// Test API on page load
+window.addEventListener('load', testAPI);
 // Application State
 class AppState {
     constructor() {

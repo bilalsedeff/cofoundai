@@ -122,6 +122,23 @@ async def startup_event():
         raise
 
 
+@app.get("/")
+async def root():
+    """Root endpoint with API information"""
+    return {
+        "name": "CoFound.ai API",
+        "version": "1.0.0",
+        "status": "running",
+        "endpoints": {
+            "health": "/health",
+            "dream": "/api/dream",
+            "maturation": "/api/maturation", 
+            "assemble": "/api/assemble"
+        },
+        "docs": "/docs",
+        "redoc": "/redoc"
+    }
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
