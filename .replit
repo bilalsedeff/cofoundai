@@ -17,7 +17,7 @@ mode = "sequential"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python cofoundai/api/backend_api.py"
+args = "python start_backend.py"
 
 [[workflows.workflow]]
 name = "Monitor System"

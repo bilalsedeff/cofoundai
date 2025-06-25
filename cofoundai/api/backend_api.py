@@ -1,8 +1,15 @@
+import sys
+import os
+from pathlib import Path
+
+# Add project root to Python path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-import os
 import asyncio
 from cofoundai.core.llm_interface import LLMFactory
 from cofoundai.orchestration.agentic_graph import AgenticGraph
