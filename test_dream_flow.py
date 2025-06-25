@@ -68,6 +68,8 @@ class DreamFlowTester:
             
         except Exception as e:
             logger.error(f"LLM interface test failed: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     async def test_agent_creation(self):
