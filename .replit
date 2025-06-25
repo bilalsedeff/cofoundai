@@ -8,7 +8,7 @@ channel = "stable-24_05"
 run = ["sh", "-c", "uvicorn undefined:app --host 0.0.0.0 --port 3000"]
 
 [workflows]
-runButton = "Run API Server"
+runButton = "Test Dream Flow"
 
 [[workflows.workflow]]
 name = "Run Backend"
