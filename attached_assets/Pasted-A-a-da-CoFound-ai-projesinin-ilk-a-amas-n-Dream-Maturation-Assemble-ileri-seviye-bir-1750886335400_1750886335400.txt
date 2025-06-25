@@ -1,0 +1,355 @@
+Aşağıda, **CoFound.ai** projesinin ilk üç aşamasını (Dream → Maturation → Assemble) ileri seviye bir full-stack yazılımcıya anlatır gibi, adım adım, mümkün olduğunca detaylı ve uzun bir teknik brief olarak hazırladım. Hem frontend hem backend, altyapı, CI/CD, entegrasyon ve izleme noktalarını kapsıyor.
+
+---
+
+# 0. Ön Koşullar & Proje Klasör Yapısı
+
+## 0.1. Gereksinimler
+
+* **Node.js ≥18** (Next.js ≥14)
+* **Python 3.11+**, Poetry veya virtualenv
+* **Docker & Docker Compose**
+* **Git**, GitHub hesabı
+* **GCP CLI** (gcloud), Terraform CLI
+* **OpenAI API Key**, **LangSmith API Key**
+* **IDE**: VSCode + Docker eklentisi
+
+## 0.2. Önerilen Klasör Yapısı
+
+```
+/cofound-ai
+├── frontend/                      # Next.js uygulaması
+│   ├── components/
+│   ├── pages/
+│   ├── public/
+│   └── package.json
+├── backend/                       # FastAPI + LangGraph
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── api/                   # route handler’lar
+│   │   ├── services/              # business logic, chains
+│   │   ├── models/                # Pydantic şemalar
+│   │   └── helpers/               # utils
+│   ├── Dockerfile
+│   └── requirements.txt
+├── infra/                         # IaC: Terraform + k8s manifest
+│   ├── terraform/
+│   └── k8s/
+├── artefacts/                     # Kullanıcıya sunulan çıktılar
+│   └── {projectId}/v{version}/
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+# 1. DREAM AŞAMASI
+
+*Kullanıcının “hayalini” alıp, otomatik tag’leme ve ilk blueprint draft’ını üretme*
+
+## 1.1. Frontend (Next.js + React + TailwindCSS)
+
+1. **Page:** `pages/dream.tsx`
+2. **Component:**
+
+   ```tsx
+   // components/DreamInput.tsx
+   import { useState, useEffect } from 'react';
+   export default function DreamInput() {
+     const [text, setText] = useState('');
+     const [tags, setTags] = useState<string[]>([]);
+     const [estimate, setEstimate] = useState({ tokens: 0, cost: 0 });
+     useEffect(() => {
+       // Basit token estimator: 1 token ≈ 4 karakter
+       const tokens = Math.ceil(text.length / 4);
+       setEstimate({ tokens, cost: tokens * 0.00002 });
+     }, [text]);
+     return (
+       <div>
+         <textarea
+           placeholder="Create an AI fitness coach app..."
+           value={text} onChange={e => setText(e.target.value)}
+           className="w-full h-32 p-4 border rounded"
+         />
+         <div className="mt-2 flex justify-between items-center">
+           <TagSelector tags={tags} onChange={setTags}/>
+           <div className="text-sm text-gray-500">
+             ~{estimate.tokens} tokens, ${estimate.cost.toFixed(4)}
+           </div>
+         </div>
+       </div>
+     );
+   }
+   ```
+3. **TagSelector:** `components/TagSelector.tsx`
+
+   * Öntanımlı tag seti: `['Fitness','Mobile','Startup','WebApp','Department']`
+   * Kullanıcı yeni tag ekleyebilir (multi-select).
+4. **Buton:**
+
+   * “Generate Blueprint” → onClick → `POST /api/dream`
+
+## 1.2. Backend API (FastAPI + LangGraph)
+
+1. **Route:**
+
+   ```python
+   # app/api/dream.py
+   from fastapi import APIRouter
+   from pydantic import BaseModel
+   router = APIRouter()
+   class DreamRequest(BaseModel):
+     vision_text: str
+     tags: list[str]
+     goal: str
+   class DreamResponse(BaseModel):
+     initial_brief: str
+     extracted_tags: list[str]
+     cost_estimate: dict
+   @router.post("/dream", response_model=DreamResponse)
+   async def dream(req: DreamRequest):
+     # 1. Tag Extraction Chain
+     tags = await services.tag_extraction_chain(req.vision_text)
+     # 2. Blueprint Draft Chain
+     brief = await services.blueprint_draft_chain(req.vision_text, tags, req.goal)
+     # 3. Return
+     return DreamResponse(
+       initial_brief=brief,
+       extracted_tags=tags,
+       cost_estimate={"tokens": len(req.vision_text)//4, "cost": (len(req.vision_text)//4)*0.00002}
+     )
+   ```
+2. **Chains:**
+
+   * **tag\_extraction\_chain**:
+
+     * Prompt:
+
+       ```
+       You are a tag extractor. Given this user vision text, output 5–7 relevant tags from [Fitness, Mobile, Startup, WebApp, …].
+       ```
+   * **blueprint\_draft\_chain**:
+
+     * Prompt şablonu:
+
+       ```
+       You are a business analyst. Generate a short BRD preview: Vision, Objectives, high-level milestones.
+       Input: {{vision_text}}, Tags: {{tags}}, Goal: {{goal}}
+       ```
+3. **Test Mode:**
+
+   * `main.py --test-mode` ile OpenAI çağrılarını stub’la
+
+## 1.3. Docker Compose
+
+```yaml
+version: "3.8"
+services:
+  frontend:
+    build: ./frontend
+    ports: ["3000:3000"]
+  api:
+    build: ./backend
+    ports: ["8000:8000"]
+    depends_on: ["redis","postgres","vector-db"]
+  redis:
+    image: redis:7
+  postgres:
+    image: postgres:15
+    environment: POSTGRES_PASSWORD: example
+  vector-db:
+    image: ghcr.io/chroma-core/chroma:latest
+```
+
+---
+
+# 2. MATURATION AŞAMASI
+
+*Kullanıcının draft BRD’sini 4 akışta netleştirip **9 artefact** üretme*
+
+| Akış                        | Artefact’lar                                                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Discovery & Alignment**   | 1. Refined BRD (Vision & Objectives)<br>2. Kick-off Document (Goals & Success Metrics)                        |
+| **Definition & Clarity**    | 3. Detailed Scope Document<br>4. Functional Requirements Specification                                        |
+| **Feasibility & Risk**      | 5. Non-Functional Requirements Specification<br>6. Technology Stack & Risk Register<br>7. Acceptance Criteria |
+| **Governance & Compliance** | 8. Compliance Checklist<br>9. Governance & Roles Plan<br>10. Matured Brief (Final Blueprint)                  |
+
+> **Not:** Toplamda 9 + 1 (Matured Brief final hali) = 10 doküman. Bunların her biri versioned olarak saklanacak.
+
+## 2.1. Frontend Chat UI
+
+* **Page:** `pages/maturation.tsx`
+* **Komponentler:**
+
+  * **ChatWindow:** Mesaj balonları, akış durum göstergesi (Discovery ✓, Clarity ✗, …).
+  * **MessageInput:** Kullanıcı yanıtları için kısa input veya pre-defined seçenekler.
+* **UX İpuçları:**
+
+  1. Sıkıcı form doldurtmak yerine, “Bana bu hedefi onaylıyor musun?” tarzı kısa sorular.
+  2. İlerlemeyi gösteren yatay progress bar.
+  3. Hangi artefact’ı ürettiğimizi, “Deliverable: Detailed Scope Doc” gibi başlıkla anlık bilgi.
+
+## 2.2. Backend Orkestrasyon ve Chain Yapısı
+
+* **services/maturation\_service.py**
+
+  ```python
+  class MaturationService:
+    async def run_discovery(self, draft: str):
+      # 1. Refine BRD
+      refined = await self.llm_chain("refine_brd", draft)
+      # 2. Extract Goals & Metrics
+      kick_off = await self.llm_chain("kickoff_doc", refined)
+      return refined, kick_off
+
+    async def run_clarity(self, refined_brd: str):
+      scope = await self.llm_chain("detailed_scope", refined_brd)
+      frs   = await self.llm_chain("functional_spec", scope)
+      return scope, frs
+
+    # benzer şekilde feasibility, governance
+  ```
+* **LangSmith İzleme:**
+
+  * Her chain’e özel **Run** aç, latency, token kullanımı, success rate’i dashboard’la.
+  * Pipeline:
+
+    1. `DiscoveryChain`
+    2. `ClarityChain`
+    3. `FeasibilityChain`
+    4. `GovernanceChain`
+
+## 2.3. Doküman Üretimi & Versiyon Kontrol
+
+1. **Markdown & PDF:**
+
+   * `services/doc_generator.py` içinde `pypandoc` ile `.md → .pdf`
+2. **Git Commit:**
+
+   ```python
+   import git
+   repo = git.Repo(".")
+   repo.index.add([...])  
+   repo.index.commit(f"chore: add artefact {name} v{version}")
+   ```
+3. **Depolama:**
+
+   * `/artefacts/{project_id}/v{n}/{artifact_name}.md/.pdf`
+
+## 2.4. Maturation Agent Yapısı
+
+* **Container:** `cofound-maturation-agent`
+* **Özellikler:**
+
+  * Startup’da `MaturationService`’i yükle
+  * `/consume` endpoint’le mesaj kuyruğundan (RabbitMQ) kullanıcı sorularını çek
+  * `POST /produce` ile `ChatWindow`’a cevap yolla
+
+---
+
+# 3. ASSEMBLE AŞAMASI
+
+*“From Blueprint to Brigade” – AI agent’lardan oluşan multi-agent takımını otomatik oluşturma*
+
+## 3.1. Blueprint Analizi
+
+* **Endpoint:** `POST /api/assemble`
+* **Service:** `services/assemble_service.py`
+
+  ```python
+  class AssembleService:
+    async def plan_team(self, matured_brief: str):
+      roles = await self.llm_chain("role_discovery", matured_brief)
+      sizing = await self.llm_chain("sizing_estimator", matured_brief)
+      pod_spec = await self._generate_pod_spec(roles, sizing)
+      return {"roles": roles, "sizing": sizing, "pod_spec": pod_spec}
+  ```
+* **LLM Prompts:**
+
+  1. **RoleDiscovery**: “Given this blueprint, list required AI agent roles…”
+  2. **SizingEstimator**: “Estimate how many agents per role, run time, token & cost…”
+
+## 3.2. UI Onay & Launch
+
+* **Page:** `pages/assemble.tsx`
+* **İçerik:**
+
+  * Rol tablosu: Role | # Agents | Est. Tokens | Est. Cost
+  * “Approve & Launch” butonu
+* **Buton Action:**
+
+  * `POST /api/operate/launch` → Orkestratör başlatılır
+
+## 3.3. Orkestrasyon & Çalıştırma
+
+1. **Kubernetes** (GKE)
+
+   * Agent’lar için `Deployment` ve `HorizontalPodAutoscaler`
+   * `pod_spec` içindeki container image, resource limit & request
+2. **Service Mesh:** Istio veya Linkerd (isteğe bağlı)
+3. **Mesaj Kuyruğu:** RabbitMQ – agent’lar görev almak için `task_queue` dinler
+4. **Monitoring:**
+
+   * **Prometheus**: Pod metrikleri (CPU, Memory, custom LLM latency)
+   * **Grafana**: Dashboards
+   * **LangSmith**: LLM performans raporları
+
+---
+
+# 4. LOKAL → CLOUD GEÇİŞİ
+
+## 4.1. Lokal Test
+
+```bash
+docker-compose up --build
+# Frontend @ http://localhost:3000
+# API      @ http://localhost:8000
+```
+
+* Test modunda LLM chain’leri mock’layarak uçtan uca akışı doğrula.
+
+## 4.2. Terraform ile GCP İnşa
+
+* **infra/terraform/main.tf**
+
+  ```hcl
+  provider "google" { project = var.project_id, region = var.region }
+  resource "google_container_cluster" "cofound" { ... }
+  resource "google_sql_database_instance" "postgres" { ... }
+  resource "google_redis_instance" "cache" { ... }
+  ```
+* `terraform init` → `terraform plan` → `terraform apply`
+
+## 4.3. CI/CD (GitHub Actions)
+
+```yaml
+name: CI/CD
+on: [push: main]
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm ci && npm run build
+      - name: Build Backend
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          docker build -t gcr.io/$PROJECT/api:$GITHUB_SHA .
+      - name: Terraform Deploy
+        uses: hashicorp/terraform-github-actions@v1
+        with:
+          tf_actions_version: latest
+          tf_working_dir: infra/terraform
+          tf_fmt: true
+```
+
+---
+
+Bu detaylı yol haritası ve teknik brief, **CoFound.ai**’in ilk üç adımını uçtan uca hayata geçirecek. Kod, doküman, altyapı ve izleme katmanlarını eksiksiz açıklamaya çalıştım. Soruların, ek ihtiyaçların veya mimari derinleştirme taleplerin varsa lütfen hemen geri dön!
+Kolay gelsin!

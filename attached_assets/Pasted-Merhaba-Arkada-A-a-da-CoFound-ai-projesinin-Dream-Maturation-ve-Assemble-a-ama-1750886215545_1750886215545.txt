@@ -1,0 +1,155 @@
+Merhaba \[Arkadaş],
+
+Aşağıda CoFound.ai projesinin **Dream**, **Maturation** ve **Assemble** aşamalarını, mimari ve geliştirme sorumluluklarıyla adım adım özetledim. Geliştirmeye başlarken takip etmen gereken yol haritası şöyle:
+
+---
+
+## 1. Dream Aşaması – Kullanıcının “Hayalini” Al
+
+**Amaç:**
+Kullanıcıya ilham verecek, basit ve teşvik edici bir ön yüz ile “hayalini” (vision) toplayıp, otomatik tag’leme ve ilk draft blueprint’i üretmek.
+
+### 1.1. Frontend (Next.js + React)
+
+* **Input alanı**
+
+  * Tek satırlık “Create an AI fitness coach app…” gibi placeholder’lı.
+  * Kullanıcı yazdıkça eşzamanlı token tahmini göster.
+* **Etiket (Tag) Önerileri**
+
+  * Fitness, Mobile, Startup, WebApp, Department vb.
+  * Etiketleri toggle/dropdown ile seçilebilir yap.
+* **Ek Seçimler**
+
+  * Goal Selector: Prototype / MVP / Scale
+  * Audience Persona
+  * Tech Preferences (e.g. React, Node.js, Python)
+
+### 1.2. Backend (FastAPI)
+
+* **Endpoint:** `POST /api/dream`
+* **İş Akışı:**
+
+  1. Frontend JSON’u alır → `/api/dream`’e gönderir.
+  2. FastAPI içinde LangGraph orchestration:
+
+     * **Tag Extraction Chain** → prompt: “Extract tags from vision text…”
+     * **Blueprint Draft Chain** → prompt: “Generate BRD preview with objectives & scope draft…”
+  3. Yanıtları dön → frontend’de alt panelde “BRD Preview” + token & cost estimate göster.
+
+### 1.3. Altyapı & Docker
+
+```yaml
+services:
+  web: # Next.js
+  api: # FastAPI + LangGraph
+  redis:
+  postgres:
+  vector-db: # Chroma/FAISS
+```
+
+* Konfigürasyon: `.env` ile `OPENAI_API_KEY`, `LANGSMITH_API_KEY`
+* Local test modu: `python api/main.py --test-mode`
+
+---
+
+## 2. Maturation Aşaması – Draft’ı Olgunlaştırıp 9 Artefact Üret
+
+**Amaç:**
+Kullanıcının ilk draft’ını 4 akışta (Discovery, Clarity, Feasibility, Governance) adım adım netleştirip aşağıdaki **9 artefact**’ı üretmek.
+
+| Akış                           | Artefact’lar                                                                                                     | Workshop Usage                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| **1. Discovery & Alignment**   | – Refined BRD (Vision & Objectives)  <br> **Kick-off document** (goals & success metrics)                        | Tüm paydaşlara “kick-off” dokümanı olarak sunulur                 |
+| **2. Definition & Clarity**    | – Detailed Scope Document  <br> – Functional Requirements Specification                                          | Sınırları ve fonksiyonel gereksinimleri interaktif Q\&A’da netler |
+| **3. Feasibility & Risk**      | – Non-Functional Requirements Specification  <br> – Technology Stack & Risk Register  <br> – Acceptance Criteria | Teknik derin-dalış & risk workshop’u                              |
+| **4. Governance & Compliance** | – Compliance Checklist  <br> – Governance & Roles Plan  <br> – Matured Brief (Final Blueprint)                   | Formal onay & sign-off paketi                                     |
+
+### 2.1. Frontend Chat UI
+
+* Sohbet balonlarıyla **CoFounder Agent**:
+
+  * Adım adım sorular sorar, “✔️” işaretiyle ilerler.
+  * Gereken bilgi gelene kadar nazikçe hatırlatır, asla sıkıcı olmaz.
+
+### 2.2. Backend Orkestrasyon
+
+* Her akış için ayrı **LangGraph chain** tanımla:
+
+  1. **DiscoveryChain** → BRD parse + strateji onayı
+  2. **ClarityChain** → scope, entegrasyon, varlıklar, fonksiyonel gereksinimler
+  3. **FeasibilityChain** → NFR, mimari, erişim, veri akışı, risk, KPI
+  4. **GovernanceChain** → compliance, rol dağılımı, sign-off
+* **LangSmith** ile her chain’in performansını, latency & token kullanımını monitor et.
+
+### 2.3. Artefact Yönetimi
+
+* Üretilen dokümanlar hem **Markdown** hem de **PDF** formatında
+* Versiyon kontrol: Git repository içinde `/artefacts/{projectId}/v{n}`
+* Otomatik commit & push: `gitpython` veya GitHub Actions
+
+---
+
+## 3. Assemble Aşaması – Blueprint’ten AI Takımına
+
+**Amaç:**
+Son halini almış blueprint’e göre, ideal **multi-agent squad**’ı otomatik kurup, kullanıcı onayına sunmak.
+
+### 3.1. Blueprint Analizi
+
+* Endpoint: `POST /api/assemble` → Matured Brief’i al
+* LLM chain:
+
+  1. **RoleDiscovery**: Hangi roller (Planner, Architect, Developer, Tester, DevOps) gerekiyor?
+  2. **SizingEstimator**: Agent sayısı, çalışma süresi, token & cost tahmini
+  3. **PodSpecGenerator**: Kubernetes CRD veya Docker Compose servis şablonları üret
+
+### 3.2. UI Onay Ekranı
+
+* Kurulacak agent listesini, her agent’ın:
+
+  * Rolü
+  * Tahmini çalışma süresi
+  * Token sayısı & maliyet
+* Kullanıcı “Approve & Launch” dediğinde:
+
+  * Orkestratör arka planda container/pod’ları ayağa kaldırır.
+
+### 3.3. Altyapı & Orkestrasyon
+
+* **Kubernetes (GKE)** veya **Docker Swarm**
+* Mesaj kuyruğu: RabbitMQ / Kafka
+* Metric & logging: Prometheus + Grafana
+* Agent container’ları:
+
+  * Image’ları Docker Hub / GCR’da sakla
+  * Her agent kendi microservice, LLM client + görev tanımı
+
+---
+
+## 4. Lokal’den Cloud’a Geçiş
+
+1. **Local Geliştirme**
+
+   * `docker-compose up --build`
+   * Test modunda `--test-mode` ile LLM çağrılarını mock’la
+2. **GCP Deploy**
+
+   * **Terraform** ile:
+
+     * Compute Engine GPU (A2/T4) + GKE cluster
+     * Cloud SQL (Postgres), Memorystore (Redis)
+     * Cloud Storage (artefact’lar için)
+   * **CI/CD:** GitHub Actions → Terraform Plan & Apply → Docker Build → GKE Deploy
+3. **Monitoring & Observability**
+
+   * LangSmith + Prometheus + Grafana dashboard’ları
+   * Uptime & error alert’ler (Slack/Email)
+
+---
+
+Bu üç aşamayı tamamladığında hem kullanıcıdan alınan “hayal”den, olgun bir blueprint’e; oradan da o blueprint’i gerçekleştirecek AI takıma kadar tüm pipeline otomatize edilmiş olacak. Sonraki adımlar (Prototype, Feedback, Iterate, Validate, Go Live, Evolve) da aynı mimari prensiplerle eklenecek.
+
+Her aşama için prompt şablonları, GitHub reposunda `docs/prompts/` altında hazır. Detay veya mimari soruların olursa direkt bana yazabilirsin. Hadi başlayalım!
+
+Kolay gelsin.
