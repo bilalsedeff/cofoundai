@@ -1,0 +1,45 @@
+2025-06-25 21:57:56,736 - cofoundai.communication.protocol - INFO - Agent Protocol API routes registered
+Starting CoFound.ai backend on port 5000
+INFO:     Started server process [4689]
+INFO:     Waiting for application startup.
+INFO:cofoundai.api.backend_api:Initializing LLM interface...
+INFO:cofoundai.core.llm_interface:Using test LLM (no API key required)
+WARNING:cofoundai.agents.langgraph_agent:Could not create LangGraph agent for VisionAnalyst: missing LLM or tools
+INFO:cofoundai.agents.langgraph_agent:Initialized LangGraph agent: VisionAnalyst
+INFO:cofoundai.core.llm_interface:Using test LLM (no API key required)
+WARNING:cofoundai.agents.langgraph_agent:Could not create LangGraph agent for BlueprintGenerator: missing LLM or tools
+INFO:cofoundai.agents.langgraph_agent:Initialized LangGraph agent: BlueprintGenerator
+2025-06-25 21:57:56,770 - cofoundai.orchestration.agentic_graph - INFO - Using Anthropic Claude as fallback
+INFO:cofoundai.orchestration.agentic_graph:Using Anthropic Claude as fallback
+ERROR:cofoundai.agents.langgraph_agent:Failed to initialize LangGraph agent: 
+{"timestamp": 1750888676.7746174, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "VisionAnalyst", "tools": ["transfer_to_BlueprintGenerator"]}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7746174, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "VisionAnalyst", "tools": ["transfer_to_BlueprintGenerator"]}}
+ERROR:cofoundai.agents.langgraph_agent:Failed to initialize LangGraph agent: 
+{"timestamp": 1750888676.7788463, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "BlueprintGenerator", "tools": ["transfer_to_VisionAnalyst"]}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7788463, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Agent tools configuration", "agent": "BlueprintGenerator", "tools": ["transfer_to_VisionAnalyst"]}}
+{"timestamp": 1750888676.7793021, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added dummy agent to graph", "agent": "VisionAnalyst"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7793021, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added dummy agent to graph", "agent": "VisionAnalyst"}}
+{"timestamp": 1750888676.7794766, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added dummy agent to graph", "agent": "BlueprintGenerator"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7794766, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added dummy agent to graph", "agent": "BlueprintGenerator"}}
+{"timestamp": 1750888676.7797923, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added conditional edge", "from_agent": "VisionAnalyst", "to_agent": "BlueprintGenerator"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7797923, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added conditional edge", "from_agent": "VisionAnalyst", "to_agent": "BlueprintGenerator"}}
+{"timestamp": 1750888676.7800906, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added conditional edge", "from_agent": "BlueprintGenerator", "to_agent": "VisionAnalyst"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7800906, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Added conditional edge", "from_agent": "BlueprintGenerator", "to_agent": "VisionAnalyst"}}
+{"timestamp": 1750888676.7802207, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Set entry point to first agent", "agent": "VisionAnalyst"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7802207, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "DEBUG", "data": {"message": "Set entry point to first agent", "agent": "VisionAnalyst"}}
+{"timestamp": 1750888676.7803464, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7803464, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Building dynamic routing graph"}}
+{"timestamp": 1750888676.7818222, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Graph built and compiled", "agent_count": 2}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7818222, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Graph built and compiled", "agent_count": 2}}
+2025-06-25 21:57:56,781 - cofoundai.orchestration.agentic_graph - INFO - Initialized agentic graph for project: system
+INFO:cofoundai.orchestration.agentic_graph:Initialized agentic graph for project: system
+{"timestamp": 1750888676.7820399, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Graph initialized", "project_id": "system", "agent_count": 2}}
+INFO:json_logger_agentic_graph_system:{"timestamp": 1750888676.7820399, "formatted_time": "2025-06-25 21:57:56", "logger": "agentic_graph_system", "level": "INFO", "data": {"message": "Graph initialized", "project_id": "system", "agent_count": 2}}
+INFO:cofoundai.api.backend_api:System initialized successfully!
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:5000 (Press CTRL+C to quit)
+INFO:     172.31.128.22:36390 - "GET / HTTP/1.1" 200 OK
+INFO:     172.31.128.22:43088 - "GET / HTTP/1.1" 200 OK
+INFO:     172.31.128.22:43098 - "GET /http%3A/localhost%3A5000/ HTTP/1.1" 404 Not Found
+INFO:     172.31.128.22:54570 - "GET /http%3A/localhost%3A5000/ HTTP/1.1" 404 Not Found
+INFO:     172.31.128.22:54570 - "GET /favicon.ico HTTP/1.1" 404 Not Found
