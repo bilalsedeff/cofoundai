@@ -31,6 +31,18 @@ try:
 except ImportError:
     VERTEX_AI_AVAILABLE = False
 
+try:
+    import requests
+    HUGGINGFACE_AVAILABLE = True
+except ImportError:
+    HUGGINGFACE_AVAILABLE = False
+
+try:
+    import ollama
+    OLLAMA_AVAILABLE = True
+except ImportError:
+    OLLAMA_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 @dataclass
@@ -252,6 +264,96 @@ class AnthropicLLM(BaseLLM):
 
         return input_cost + output_cost
 
+class HuggingFaceLLM(BaseLLM):
+    """HuggingFace API implementation - Free tier available"""
+
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__(config)
+        if not HUGGINGFACE_AVAILABLE:
+            raise ImportError("Requests library not available. Install with: pip install requests")
+
+        self.api_url = f"https://api-inference.huggingface.co/models/{self.model_name}"
+        self.headers = {"Authorization": f"Bearer {self.api_key}"}
+
+    async def generate(self, prompt: str, **kwargs) -> LLMResponse:
+        """Generate response using HuggingFace Inference API"""
+        try:
+            payload = {
+                "inputs": prompt,
+                "parameters": {
+                    "max_new_tokens": kwargs.get("max_tokens", 512),
+                    "temperature": kwargs.get("temperature", self.temperature),
+                    "return_full_text": False
+                }
+            }
+
+            response = requests.post(self.api_url, headers=self.headers, json=payload)
+            response.raise_for_status()
+
+            result = response.json()
+            if isinstance(result, list) and len(result) > 0:
+                content = result[0].get("generated_text", "").strip()
+            else:
+                content = str(result)
+
+            return LLMResponse(
+                content=content,
+                model=self.model_name,
+                tokens_used=len(prompt.split()) + len(content.split()),
+                cost=0.0,  # Free tier
+                metadata={"provider": "huggingface"}
+            )
+
+        except Exception as e:
+            logger.error(f"HuggingFace API error: {e}")
+            raise
+
+    def estimate_cost(self, prompt: str, response: str = "") -> float:
+        return 0.0  # Free tier
+
+class OllamaLLM(BaseLLM):
+    """Ollama local LLM implementation - Completely free"""
+
+    def __init__(self, config: Dict[str, Any]):
+        super().__init__(config)
+        self.base_url = config.get("base_url", "http://localhost:11434")
+
+    async def generate(self, prompt: str, **kwargs) -> LLMResponse:
+        """Generate response using local Ollama"""
+        try:
+            import requests
+            
+            payload = {
+                "model": self.model_name,
+                "prompt": prompt,
+                "stream": False,
+                "options": {
+                    "temperature": kwargs.get("temperature", self.temperature),
+                    "num_predict": kwargs.get("max_tokens", self.max_tokens)
+                }
+            }
+
+            response = requests.post(f"{self.base_url}/api/generate", json=payload)
+            response.raise_for_status()
+
+            result = response.json()
+            content = result.get("response", "")
+
+            return LLMResponse(
+                content=content,
+                model=self.model_name,
+                tokens_used=len(prompt.split()) + len(content.split()),
+                cost=0.0,  # Completely free
+                metadata={"provider": "ollama", "local": True}
+            )
+
+        except Exception as e:
+            logger.error(f"Ollama API error: {e}")
+            raise
+
+    def estimate_cost(self, prompt: str, response: str = "") -> float:
+        return 0.0  # Completely free
+
 class TestLLM(BaseLLM):
     """Test LLM implementation for development without API keys"""
 
@@ -409,6 +511,18 @@ class LLMFactory:
                 return TestLLM(config)
             return VertexAILLM(config)
 
+        elif provider == "huggingface" or provider == "hf":
+            if not HUGGINGFACE_AVAILABLE:
+                raise ImportError("Requests library not available. Install with: pip install requests")
+            api_key = config.get("api_key") or os.getenv("HUGGINGFACE_API_KEY")
+            if not api_key:
+                logger.warning("HuggingFace API key not found, falling back to test mode")
+                return TestLLM(config)
+            return HuggingFaceLLM(config)
+
+        elif provider == "ollama":
+            return OllamaLLM(config)
+
         elif provider == "test":
             return TestLLM(config)
 
@@ -440,6 +554,16 @@ class LLMFactory:
                 "model_name": os.getenv("MODEL_NAME", "gemini-pro"),
                 "project_id": os.getenv("GOOGLE_CLOUD_PROJECT"),
                 "region": os.getenv("GOOGLE_CLOUD_REGION", "us-central1")
+            })
+        elif provider in ["huggingface", "hf"]:
+            base_config.update({
+                "model_name": os.getenv("MODEL_NAME", "microsoft/DialoGPT-medium"),
+                "api_key": os.getenv("HUGGINGFACE_API_KEY")
+            })
+        elif provider == "ollama":
+            base_config.update({
+                "model_name": os.getenv("MODEL_NAME", "llama2:7b"),
+                "base_url": os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
             })
         elif provider == "test":
             base_config.update({

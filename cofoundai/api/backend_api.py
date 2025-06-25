@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -71,7 +70,7 @@ async def startup_event():
     try:
         # Initialize LLM
         logger.info("Initializing LLM interface...")
-        
+
         # Create agents for the dream phase
         agent_configs = [
             {
@@ -97,21 +96,21 @@ async def startup_event():
                 "model_name": os.getenv("MODEL_NAME", "gpt-4o")
             }
         ]
-        
+
         # Create agent instances
         agents = {}
         for config in agent_configs:
             agent = LangGraphAgent(config)
             agents[agent.name] = agent
-        
+
         # Initialize orchestrator
         orchestrator = AgenticGraph(
             project_id="system",
             agents=agents
         )
-        
+
         logger.info("System initialized successfully!")
-        
+
     except Exception as e:
         logger.error(f"Failed to initialize system: {e}")
         raise
@@ -127,18 +126,18 @@ async def dream_phase(request: DreamRequest):
     try:
         if not orchestrator:
             raise HTTPException(status_code=500, detail="System not initialized")
-        
+
         # Generate project ID
         import uuid
         project_id = f"proj_{uuid.uuid4().hex[:8]}"
-        
+
         # Create dream processing prompt
         dream_prompt = f"""
         User Vision: {request.vision_text}
         Selected Tags: {', '.join(request.tags)}
         Goal: {request.goal}
         Tech Preferences: {', '.join(request.tech_preferences)}
-        
+
         Please analyze this vision and provide:
         1. A refined project brief with clear objectives
         2. Extracted and additional relevant tags 
@@ -146,26 +145,26 @@ async def dream_phase(request: DreamRequest):
         4. Technology recommendations
         5. Cost and timeline estimates
         """
-        
+
         # Process through orchestrator
         result = orchestrator.run(dream_prompt)
-        
+
         # Extract information from result
         if isinstance(result, dict) and "messages" in result:
             messages = result["messages"]
             last_message = messages[-1] if messages else None
-            
+
             if last_message and hasattr(last_message, 'content'):
                 response_content = last_message.content
             else:
                 response_content = "Blueprint generated successfully"
         else:
             response_content = str(result)
-        
+
         # Estimate tokens and cost (simplified)
         total_tokens = len(dream_prompt.split()) + len(response_content.split())
         estimated_cost = total_tokens * 0.00002  # Rough estimate
-        
+
         return DreamResponse(
             initial_brief=response_content,
             extracted_tags=request.tags + ["AI-Generated", "CoFound.ai"],
@@ -177,7 +176,7 @@ async def dream_phase(request: DreamRequest):
             status="completed",
             project_id=project_id
         )
-        
+
     except Exception as e:
         logger.error(f"Error in dream phase: {e}")
         raise HTTPException(status_code=500, detail=f"Dream phase failed: {str(e)}")
@@ -202,21 +201,21 @@ async def maturation_phase(request: MaturationRequest):
                 "content": "Detailed functional requirements have been documented."
             }
         ]
-        
+
         next_phase_map = {
             "discovery": "clarity",
             "clarity": "feasibility", 
             "feasibility": "governance",
             "governance": None
         }
-        
+
         return MaturationResponse(
             artifacts=artifacts,
             next_phase=next_phase_map.get(request.phase),
             status="completed",
             project_id=request.project_id
         )
-        
+
     except Exception as e:
         logger.error(f"Error in maturation phase: {e}")
         raise HTTPException(status_code=500, detail=f"Maturation phase failed: {str(e)}")
@@ -246,9 +245,9 @@ async def assemble_phase(request: AssembleRequest):
                 "estimated_cost": 0.30
             }
         ]
-        
+
         total_cost = sum(agent["estimated_cost"] for agent in team_composition)
-        
+
         return AssembleResponse(
             team_composition=team_composition,
             estimated_cost={
@@ -263,7 +262,7 @@ async def assemble_phase(request: AssembleRequest):
             },
             status="ready_for_launch"
         )
-        
+
     except Exception as e:
         logger.error(f"Error in assemble phase: {e}")
         raise HTTPException(status_code=500, detail=f"Assemble phase failed: {str(e)}")

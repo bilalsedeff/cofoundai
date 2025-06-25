@@ -68,4 +68,16 @@ Flask-CORS>=4.0.0
 
 # Additional utilities for production
 sqlalchemy>=2.0.0
-psycopg2-binary>=2.9.0 
+psycopg2-binary>=2.9.0
+
+# Optional dependencies for advanced features
+langgraph>=0.2.0
+anthropic>=0.34.0
+google-cloud-aiplatform>=1.38.0
+redis>=5.0.0
+
+# Free LLM alternatives
+requests>=2.31.0  # For HuggingFace API
+huggingface-hub>=0.20.0  # Optional for HF models
+transformers>=4.36.0  # Optional for local HF models
+torch>=2.1.0  # Optional for local models

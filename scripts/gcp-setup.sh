@@ -2,6 +2,7 @@
 
 # CoFound.ai Google Cloud Platform Setup Script
 # Bu script CoFound.ai sistemini GCP'de kurmak için gerekli adımları otomatikleştirir
+# OpenAI LLM kullanır, sadece Google Cloud compute kaynaklarını ayarlar
 
 set -e  # Exit on any error
 

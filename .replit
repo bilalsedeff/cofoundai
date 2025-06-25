@@ -55,6 +55,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "python cofoundai/api/backend_api.py"
 
+[[workflows.workflow]]
+name = "Test Free LLMs"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_free_llms.py"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
