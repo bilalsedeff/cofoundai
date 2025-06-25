@@ -982,6 +982,23 @@ class CoFoundAI {
     }
 }
 
+// Test API connection
+function testAPI() {
+    fetch(`${API_BASE}/`)
+        .then(response => response.json())
+        .then(data => {
+            alert('API Connection Successful!\n' + JSON.stringify(data, null, 2));
+        })
+        .catch(error => {
+            alert('API Connection Failed: ' + error.message);
+        });
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('CoFound.ai frontend loaded');
+});
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     new CoFoundAI();

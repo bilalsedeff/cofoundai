@@ -272,58 +272,20 @@
         window.onload = checkApiStatus;
     </script>
     <script src="script.js"></script>
-</body>
-</html>
-```<script>
-        // Function to test the Dream API
-        async function testDream() {
-            const vision = document.getElementById('vision-input').value;
-            const dreamResultDiv = document.getElementById('dream-result');
 
-            dreamResultDiv.textContent = "Loading...";
-
+    <script>
+        async function testAPI() {
             try {
-                const response = await fetch('/api/dream', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ vision: vision })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                const response = await fetch('/health');
+                if (response.ok) {
+                    alert('API connection successful!');
+                } else {
+                    alert('API connection failed. Status: ' + response.status);
                 }
-
-                const data = await response.json();
-                dreamResultDiv.textContent = JSON.stringify(data, null, 2); // Pretty print JSON
             } catch (error) {
-                dreamResultDiv.textContent = `Error: ${error}`;
+                alert('API connection failed: ' + error);
             }
         }
-
-         // Function to check the API status
-         async function checkApiStatus() {
-            const apiStatusDiv = document.getElementById('api-status');
-            apiStatusDiv.textContent = "Checking API...";
-
-            try {
-                const response = await fetch('/health'); // Assuming /health endpoint exists
-                if (!response.ok) {
-                    throw new Error(`API health check failed with status: ${response.status}`);
-                }
-                apiStatusDiv.textContent = "API is healthy!";
-                apiStatusDiv.style.color = 'green';
-            } catch (error) {
-                apiStatusDiv.textContent = `API is down: ${error}`;
-                apiStatusDiv.style.color = 'red';
-            }
-        }
-
-        // Call checkApiStatus when the page loads
-        window.onload = checkApiStatus;
     </script>
-    <script src="script.js"></script>
 </body>
 </html>
-`
