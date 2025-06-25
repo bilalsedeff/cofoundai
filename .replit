@@ -8,7 +8,7 @@ channel = "stable-24_05"
 run = ["sh", "-c", "uvicorn undefined:app --host 0.0.0.0 --port 3000"]
 
 [workflows]
-runButton = "Test Dream Flow"
+runButton = "Test Dream Flow (Fixed)"
 
 [[workflows.workflow]]
 name = "Run Backend"
@@ -63,6 +63,15 @@ mode = "sequential"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "python test_free_llms.py"
+
+[[workflows.workflow]]
+name = "Test Dream Flow (Fixed)"
+author = 43415462
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python test_dream_flow.py"
 
 [[ports]]
 localPort = 5000

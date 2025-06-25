@@ -109,11 +109,19 @@ class LangGraphAgent(BaseAgent):
             if langchain_llm and self.tools:
                 # Create system message from system_prompt
                 from langchain_core.messages import SystemMessage
-                messages = [SystemMessage(
-                    content=self.system_prompt)] if self.system_prompt else []
-
-                self.langgraph_agent = create_react_agent(
-                    langchain_llm, self.tools, messages_modifier=messages)
+                
+                if self.system_prompt:
+                    # For newer langgraph versions, pass system_prompt as state_modifier
+                    try:
+                        self.langgraph_agent = create_react_agent(
+                            langchain_llm, self.tools, state_modifier=self.system_prompt)
+                    except TypeError:
+                        # Fallback for older versions or if state_modifier doesn't work
+                        self.langgraph_agent = create_react_agent(
+                            langchain_llm, self.tools)
+                else:
+                    self.langgraph_agent = create_react_agent(
+                        langchain_llm, self.tools)
             else:
                 self.langgraph_agent = None
                 logger.warning(

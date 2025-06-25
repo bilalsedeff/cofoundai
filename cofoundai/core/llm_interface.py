@@ -468,7 +468,7 @@ class LLMFactory:
     """Factory class for creating LLM instances"""
 
     @staticmethod
-    def create_llm(provider: str = None, config: Dict[str, Any] = None) -> BaseLLM:
+    def create_llm(provider: str = None, model_name: str = None, config: Dict[str, Any] = None) -> BaseLLM:
         """Create LLM instance based on provider"""
 
         if provider is None:
@@ -476,6 +476,10 @@ class LLMFactory:
 
         if config is None:
             config = LLMFactory.get_default_config(provider)
+        
+        # Override model_name if provided
+        if model_name:
+            config["model_name"] = model_name
 
         provider = provider.lower()
 
