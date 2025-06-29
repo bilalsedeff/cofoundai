@@ -145,7 +145,7 @@ def simulate_multi_agent_workflow():
     finally:
         # Note: Not removing the project directory so user can inspect the results
         print("\nNote: Test project directory was not deleted for inspection.")
-        print(f"You can find it at: {project_dir}")
+        print(f"You can find it at: {project_dir}")roject_dir}")
 
 if __name__ == "__main__":
     simulate_multi_agent_workflow() 
