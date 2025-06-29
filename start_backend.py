@@ -13,10 +13,14 @@ from pathlib import Path
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
-# Set environment variables for development
+# Set environment variables for local development
 os.environ.setdefault("LLM_PROVIDER", "test")
 os.environ.setdefault("DEVELOPMENT_MODE", "true")
 os.environ.setdefault("MODEL_NAME", "gpt-4o")
+os.environ.setdefault("DATABASE_URL", "postgresql://cofoundai_user:cofoundai_password@localhost:5432/cofoundai")
+os.environ.setdefault("REDIS_URL", "redis://localhost:6379/0")
+os.environ.setdefault("API_HOST", "0.0.0.0")
+os.environ.setdefault("API_PORT", "5000")
 
 if __name__ == "__main__":
     import uvicorn

@@ -3,289 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CoFound.ai - AI-Powered Development Platform</title>
+    <title>CoFound.ai - Local Development</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <h1>CoFound.ai</h1>
-                <span class="tagline">Transform Ideas into Reality</span>
-            </div>
-            <div class="phase-indicator">
-                <div class="phase active" data-phase="dream">Dream</div>
-                <div class="phase" data-phase="maturation">Mature</div>
-                <div class="phase" data-phase="assemble">Assemble</div>
-            </div>
+    <div id="app">
+        <header>
+            <h1>🚀 CoFound.ai</h1>
+            <p>Multi-Agent Software Development System - Local Development Mode</p>
         </header>
 
-        <!-- Dream Phase -->
-        <div id="dream-phase" class="phase-content active">
-            <div class="dream-container">
-                <h2>What's Your Vision? 🚀</h2>
-                <p class="subtitle">Describe your dream project in your own words</p>
+        <main class="container">
+            <section class="dream-section">
+                <h2>💭 Dream Phase</h2>
+                <textarea 
+                    id="dreamInput" 
+                    placeholder="Describe your software project idea..."
+                    rows="6"
+                ></textarea>
+                <button id="generateBtn" onclick="submitDream()">Generate Blueprint</button>
+            </section>
 
-                <div class="input-section">
-                    <textarea 
-                        id="vision-input" 
-                        placeholder="Create an AI fitness coach app that helps users track workouts and provides personalized nutrition advice..."
-                        rows="6"
-                    ></textarea>
-
-                    <div class="input-meta">
-                        <div class="token-estimate">
-                            <span id="token-count">0</span> tokens
-                            <span id="cost-estimate">~$0.00</span>
-                        </div>
+            <section class="status-section">
+                <h2>📊 System Status</h2>
+                <div id="systemStatus">
+                    <div class="status-item">
+                        <span class="status-label">Backend API:</span>
+                        <span id="backendStatus" class="status-value">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Database:</span>
+                        <span id="databaseStatus" class="status-value">Checking...</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">LLM Provider:</span>
+                        <span id="llmStatus" class="status-value">Test Mode</span>
                     </div>
                 </div>
+            </section>
 
-                <div class="options-section">
-                    <div class="option-group">
-                        <label>Goal</label>
-                        <select id="goal-selector">
-                            <option value="prototype">Prototype</option>
-                            <option value="mvp">MVP</option>
-                            <option value="production">Production Ready</option>
-                        </select>
-                    </div>
-
-                    <div class="option-group">
-                        <label>Technology Preferences</label>
-                        <div class="tag-selector" id="tech-tags">
-                            <span class="tag" data-value="react">React</span>
-                            <span class="tag" data-value="python">Python</span>
-                            <span class="tag" data-value="nodejs">Node.js</span>
-                            <span class="tag" data-value="mobile">Mobile</span>
-                            <span class="tag" data-value="ai">AI/ML</span>
-                            <span class="tag" data-value="blockchain">Blockchain</span>
-                        </div>
-                    </div>
-
-                    <div class="option-group">
-                        <label>Project Categories</label>
-                        <div class="tag-selector" id="category-tags">
-                            <span class="tag" data-value="webapp">Web App</span>
-                            <span class="tag" data-value="mobile">Mobile App</span>
-                            <span class="tag" data-value="api">API Service</span>
-                            <span class="tag" data-value="ecommerce">E-commerce</span>
-                            <span class="tag" data-value="social">Social Platform</span>
-                            <span class="tag" data-value="enterprise">Enterprise</span>
-                        </div>
-                    </div>
+            <section class="results-section">
+                <h2>🎯 Results</h2>
+                <div id="results" class="results-container">
+                    <p>Submit a dream to see the magic happen...</p>
                 </div>
-
-                <button id="generate-blueprint" class="primary-button">
-                    Generate Blueprint ✨
-                </button>
-            </div>
-
-            <!-- Blueprint Preview -->
-            <div id="blueprint-preview" class="blueprint-preview hidden">
-                <h3>Your Project Blueprint</h3>
-                <div class="blueprint-content">
-                    <div id="blueprint-text"></div>
-                    <div class="blueprint-meta">
-                        <div class="cost-breakdown">
-                            <h4>Estimated Cost</h4>
-                            <div id="cost-details"></div>
-                        </div>
-                        <div class="extracted-tags">
-                            <h4>Project Tags</h4>
-                            <div id="project-tags"></div>
-                        </div>
-                    </div>
-                </div>
-                <button id="proceed-to-maturation" class="secondary-button">
-                    Proceed to Maturation 🎯
-                </button>
-            </div>
-        </div>
-
-        <!-- Maturation Phase -->
-        <div id="maturation-phase" class="phase-content">
-            <div class="maturation-container">
-                <h2>Let's Mature Your Idea 🎯</h2>
-                <p class="subtitle">We'll refine your project through 4 focused steps</p>
-
-                <div class="maturation-steps">
-                    <div class="step active" data-step="discovery">
-                        <div class="step-header">
-                            <span class="step-number">1</span>
-                            <span class="step-title">Discovery & Alignment</span>
-                        </div>
-                        <div class="step-content">
-                            <p>Let's clarify your vision and align on objectives</p>
-                        </div>
-                    </div>
-
-                    <div class="step" data-step="clarity">
-                        <div class="step-header">
-                            <span class="step-number">2</span>
-                            <span class="step-title">Definition & Clarity</span>
-                        </div>
-                        <div class="step-content">
-                            <p>Define detailed scope and functional requirements</p>
-                        </div>
-                    </div>
-
-                    <div class="step" data-step="feasibility">
-                        <div class="step-header">
-                            <span class="step-number">3</span>
-                            <span class="step-title">Feasibility & Risk</span>
-                        </div>
-                        <div class="step-content">
-                            <p>Assess technical feasibility and identify risks</p>
-                        </div>
-                    </div>
-
-                    <div class="step" data-step="governance">
-                        <div class="step-header">
-                            <span class="step-number">4</span>
-                            <span class="step-title">Governance & Compliance</span>
-                        </div>
-                        <div class="step-content">
-                            <p>Establish governance framework and compliance requirements</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="chat-interface">
-                    <div id="chat-messages" class="chat-messages"></div>
-                    <div class="chat-input-container">
-                        <input type="text" id="chat-input" placeholder="Share your thoughts or answer the question...">
-                        <button id="send-message">Send</button>
-                    </div>
-                </div>
-
-                <div id="artifacts-panel" class="artifacts-panel">
-                    <h3>Generated Artifacts</h3>
-                    <div id="artifacts-list"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Assemble Phase -->
-        <div id="assemble-phase" class="phase-content">
-            <div class="assemble-container">
-                <h2>Assemble Your AI Team 🤖</h2>
-                <p class="subtitle">Based on your mature blueprint, here's your recommended AI development team</p>
-
-                <div id="team-composition" class="team-composition">
-                    <!-- Team members will be populated here -->
-                </div>
-
-                <div class="deployment-options">
-                    <h3>Deployment Configuration</h3>
-                    <div id="deployment-spec"></div>
-                </div>
-
-                <div class="cost-summary">
-                    <h3>Cost Summary</h3>
-                    <div id="total-cost"></div>
-                </div>
-
-                <button id="launch-team" class="primary-button">
-                    Launch AI Team 🚀
-                </button>
-            </div>
-        </div>
-
-        <!-- Loading Overlay -->
-        <div id="loading-overlay" class="loading-overlay hidden">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <p id="loading-text">Processing your vision...</p>
-            </div>
-        </div>
-
-        <!-- Status Messages -->
-        <div id="status-message" class="status-message hidden"></div>
+            </section>
+        </main>
     </div>
 
-    <main>
-        <div class="hero">
-            <h1>CoFound.ai</h1>
-            <p>Multi-Agent Software Development System</p>
-            <div id="api-status" style="margin: 20px 0; font-weight: bold;">Checking API...</div>
-
-            <div style="margin: 30px 0; max-width: 600px;">
-                <h3>Test Dream Phase</h3>
-                <textarea id="vision-input" placeholder="Enter your app vision here..." 
-                         style="width: 100%; height: 100px; margin: 10px 0; padding: 10px;"></textarea>
-                <button onclick="testDream()" class="cta-button">Test Dream API</button>
-                <div id="dream-result" style="margin-top: 20px; text-align: left; background: #f5f5f5; padding: 15px; border-radius: 5px;"></div>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        // Function to test the Dream API
-        async function testDream() {
-            const vision = document.getElementById('vision-input').value;
-            const dreamResultDiv = document.getElementById('dream-result');
-
-            dreamResultDiv.textContent = "Loading...";
-
-            try {
-                const response = await fetch('/api/dream', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ vision: vision })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                dreamResultDiv.textContent = JSON.stringify(data, null, 2); // Pretty print JSON
-            } catch (error) {
-                dreamResultDiv.textContent = `Error: ${error}`;
-            }
-        }
-
-         // Function to check the API status
-         async function checkApiStatus() {
-            const apiStatusDiv = document.getElementById('api-status');
-            apiStatusDiv.textContent = "Checking API...";
-
-            try {
-                const response = await fetch('/health'); // Assuming /health endpoint exists
-                if (!response.ok) {
-                    throw new Error(`API health check failed with status: ${response.status}`);
-                }
-                apiStatusDiv.textContent = "API is healthy!";
-                apiStatusDiv.style.color = 'green';
-            } catch (error) {
-                apiStatusDiv.textContent = `API is down: ${error}`;
-                apiStatusDiv.style.color = 'red';
-            }
-        }
-
-        // Call checkApiStatus when the page loads
-        window.onload = checkApiStatus;
-    </script>
     <script src="script.js"></script>
-
-    <script>
-        async function testAPI() {
-            try {
-                const response = await fetch('/health');
-                if (response.ok) {
-                    alert('API connection successful!');
-                } else {
-                    alert('API connection failed. Status: ' + response.status);
-                }
-            } catch (error) {
-                alert('API connection failed: ' + error);
-            }
-        }
-    </script>
 </body>
 </html>
